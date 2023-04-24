@@ -1,0 +1,73 @@
+version: "3.9"
+
+services:
+  postgres:
+    container_name: postgres
+    build: ./postgres
+    restart: always
+    expose:
+      - 5432
+    networks:
+      - ft_transcendence
+    volumes:
+      - ./postgres/DB_DATA:/var/lib/postgres
+    env_file: .env
+
+  nginx:
+    container_name: nginx
+    build: ./nginx
+    depends_on:
+      - backend
+      - frontend
+      - postgres
+    restart: always
+    networks:
+      - ft_transcendence
+    ports:
+      - 443:443
+    env_file: .env
+
+  backend:
+    container_name: backend
+    build: ./backend
+    depends_on:
+      - postgres
+    restart: always
+    expose:
+      - 8080
+    networks:
+      - ft_transcendence
+    volumes:
+      - ./backend/Backend/:/var/www/backend
+    env_file: .env
+
+  frontend:
+    container_name: frontend
+    build: ./frontend
+    depends_on:
+      - backend
+    restart: always
+    expose:
+      - 5050
+    networks:
+      - ft_transcendence
+    volumes:
+      - ./frontend/Frontend/:/var/www/frontend
+    env_file: .env
+
+  # Remove everything related to pgadmin before finishing the project
+  # pgadmin:
+  #   container_name: pgadmin
+  #   build: ./pgadmin
+  #   depends_on:
+  #     - postgres
+  #   restart: always
+  #   networks:
+  #     - ft_transcendence
+  #   ports:
+  #     - 7070:80
+  #   env_file: .env
+
+networks:
+  ft_transcendence:
+    driver: bridge
