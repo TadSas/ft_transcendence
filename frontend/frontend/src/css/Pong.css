@@ -1,0 +1,9 @@
+.Pong{
+  text-align: center;
+  height:100vh;
+  background-color:#1B1A1F;
+  display:flex;
+  justify-content: center;
+  align-items: center;
+  border:1px solid green;
+}
