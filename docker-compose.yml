@@ -38,7 +38,7 @@ services:
     networks:
       - ft_transcendence
     volumes:
-      - ./backend/Backend/:/var/www/backend
+      - ./backend/backend/:/var/www/backend
     env_file: .env
 
   frontend:
@@ -52,7 +52,7 @@ services:
     networks:
       - ft_transcendence
     volumes:
-      - ./frontend/Frontend/:/var/www/frontend
+      - ./frontend/frontend/:/var/www/frontend
     env_file: .env
 
   # Remove everything related to pgadmin before finishing the project

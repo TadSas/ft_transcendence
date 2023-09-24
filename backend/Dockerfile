@@ -4,9 +4,9 @@ RUN apt-get update && apt-get install -y vim
 
 RUN npm install -g @nestjs/cli
 
-COPY ./Backend/package.json /tmp/package.json
+COPY ./backend/package.json /tmp/package.json
 
-COPY ./Backend/package-lock.json /tmp/package-lock.json
+COPY ./backend/package-lock.json /tmp/package-lock.json
 
 # RUN cd /tmp && npm install
 
@@ -14,7 +14,7 @@ COPY ./Backend/package-lock.json /tmp/package-lock.json
 
 WORKDIR /var/www/backend
 
-COPY Backend/ ./
+COPY backend/ ./
 
 # RUN npm install
 

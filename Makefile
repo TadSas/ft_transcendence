@@ -25,7 +25,8 @@ clean:
 
 fclean:	clean
 	@docker system prune -af
-	@rm -rf backend/Backend/node_modules/*
-	@rm -rf backend/Backend/dest/*
+	@rm -rf backend/frontend/node_modules/*
+	@rm -rf backend/backend/node_modules/*
+	@rm -rf backend/backend/dest/*
 
 .PHONY:	all up down re status st clean fclean

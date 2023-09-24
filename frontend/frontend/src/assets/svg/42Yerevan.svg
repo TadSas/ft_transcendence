@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="Layer_1" x="0px" y="0px" viewBox="0 0 250 250" style="enable-background:new 0 0 250 250;" xml:space="preserve">
+  <style type="text/css">	.st0{fill:#D3D3D3;}	.st1{fill:#034EA1;}	.st2{fill:#FFF100;}	.st3{fill-rule:evenodd;clip-rule:evenodd;fill:#D3D3D3;}	.st4{fill:#2D2D2D;}	.st5{fill-rule:evenodd;clip-rule:evenodd;fill:#2D2D2D;}	.st6{fill:#000100;}	.st7{fill:#1D1D1B;}	.st8{fill:#F0A71E;}	.st9{fill:#212153;}	.st10{fill-rule:evenodd;clip-rule:evenodd;fill:#212153;}	.st11{fill-rule:evenodd;clip-rule:evenodd;fill:none;}	.st12{fill-rule:evenodd;clip-rule:evenodd;fill:#E33137;}	.st13{fill-rule:evenodd;clip-rule:evenodd;}</style>
+  <g>
+    <g>
+      <polygon class="st6" points="103.43,42.19 68.95,42.19 0,111.14 0,139.05 68.95,139.05 68.95,173.53 103.43,173.53 103.43,111.14     34.48,111.14   "></polygon>
+      <polygon class="st6" points="118.2,76.67 152.68,42.19 118.2,42.19   "></polygon>
+      <polygon class="st6" points="187.15,76.67 187.15,42.19 152.68,42.19 152.68,76.67 118.2,111.14 118.2,145.62 152.68,145.62     152.68,111.14   "></polygon>
+      <polygon class="st6" points="187.15,111.14 152.68,145.62 187.15,145.62   "></polygon>
+    </g>
+    <rect x="118.2" y="173.53" class="st7" width="2.72" height="34.28"></rect>
+    <g>
+      <path d="M138.81,189.96l-5.31-9.69h4.79l2.97,5.64l4.33-5.64h5.12l-7.7,9.69l-1.04,8.47h-4.19L138.81,189.96z"></path>
+      <path d="M162.27,183.81h-5.93l-0.44,3.51h5.72l-0.44,3.54h-5.72l-0.49,4.03h6.04l-0.44,3.54h-10.13l2.23-18.16h10.02    L162.27,183.81z"></path>
+      <path d="M172.04,180.27c1.74,0,3.46,0.16,4.82,1.63c0.63,0.65,1.31,1.82,1.31,3.7c0,1.71-0.6,3.08-1.5,3.98    c-0.79,0.76-1.88,1.28-2.89,1.47l4.68,7.38h-4.9l-4.38-7.16l-0.87,7.16h-4.19l2.23-18.16H172.04z M169.51,188.52h1.03    c0.68,0,1.72-0.08,2.45-0.65c0.73-0.57,0.93-1.36,0.93-2.12c0-0.57-0.14-1.31-0.87-1.77c-0.54-0.35-1.33-0.44-2.29-0.44h-0.63    L169.51,188.52z"></path>
+      <path d="M192.46,183.81h-5.93l-0.44,3.51h5.72l-0.44,3.54h-5.72l-0.49,4.03h6.04l-0.44,3.54h-10.13l2.23-18.16h10.02    L192.46,183.81z"></path>
+      <path d="M199.02,180.27l3.19,11.63l6.02-11.63h4.68l-9.91,18.16h-2.89l-5.45-18.16H199.02z"></path>
+      <path d="M222.89,195h-6.86l-1.71,3.43h-4.52l9.58-18.16h3.86l4.87,18.16h-4.3L222.89,195z M222.13,191.78l-1.47-6.4l-3.05,6.4    H222.13z"></path>
+      <path d="M230.07,198.43l2.26-18.16h3.65l8.36,11.82l1.47-11.82H250l-2.23,18.16h-3.65l-8.41-11.87l-1.44,11.87H230.07z"></path>
+    </g>
+  </g>
+</svg>
