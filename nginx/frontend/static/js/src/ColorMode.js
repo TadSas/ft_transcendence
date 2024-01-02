@@ -4,9 +4,8 @@ export default () => {
 
   const getPreferredTheme = () => {
     const storedTheme = getStoredTheme()
-    if (storedTheme) {
+    if (storedTheme)
       return storedTheme
-    }
 
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
   }
@@ -24,14 +23,15 @@ export default () => {
   const showActiveTheme = (theme, focus = false) => {
     const themeSwitcher = document.querySelector('#bd-theme')
 
-    if (!themeSwitcher) {
+    if (!themeSwitcher)
       return
-    }
 
     const themeSwitcherText = document.querySelector('#bd-theme-text')
-    const activeThemeIcon = document.querySelector('.theme-icon-active use')
+    const activeThemeIcon = document.querySelector('.theme-icon-active')
+    const activeThemeIconName = Array.from(activeThemeIcon.classList).filter(option => option.startsWith("bi-"))[0].substring(3)
+
     const btnToActive = document.querySelector(`[data-bs-theme-value="${theme}"]`)
-    const svgOfActiveBtn = btnToActive.querySelector('svg use').getAttribute('href')
+    const svgOfActiveBtn = Array.from(btnToActive.querySelector('i').classList).filter(option => option.startsWith("bi-"))[0].substring(3)
 
     document.querySelectorAll('[data-bs-theme-value]').forEach(element => {
       element.classList.remove('active')
@@ -40,13 +40,14 @@ export default () => {
 
     btnToActive.classList.add('active')
     btnToActive.setAttribute('aria-pressed', 'true')
-    activeThemeIcon.setAttribute('href', svgOfActiveBtn)
+    activeThemeIcon.classList.remove(`bi-${activeThemeIconName}`)
+    activeThemeIcon.classList.add(`bi-${svgOfActiveBtn}`)
+
     const themeSwitcherLabel = `${themeSwitcherText.textContent} (${btnToActive.dataset.bsThemeValue})`
     themeSwitcher.setAttribute('aria-label', themeSwitcherLabel)
 
-    if (focus) {
+    if (focus)
       themeSwitcher.focus()
-    }
   }
 
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {

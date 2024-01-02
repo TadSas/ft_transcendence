@@ -7,34 +7,33 @@ import ColorMode from "./snippets/ColorMode.js"
 export default class {
   constructor(params) {
     this.eventStore = []
-    this.params = params;
+    this.params = params
   }
 
   setTitle(title) {
-    document.title = title;
+    document.title = title
   }
 
   async getContent() {
-    return "";
+    return ""
   }
 
   registerEvents() {
     switch (document.readyState) {
       case "loading":
         console.log("The document is loading.")
-        break;
+        break
       case "interactive": {
         console.log("The document has finished loading and we can access DOM elements.")
-        break;
+        break
       }
       case "complete":
         console.log("The page is fully loaded.")
-        break;
+        break
     }
     this.eventStore.forEach(events => {
       Object.entries(events).forEach(([eventType, eventList]) => {
         Object.entries(eventList).forEach(([element, event]) => {
-          console.log(eventType, element, eval(element))
           eval(element).addEventListener(eventType, event)
         })
       })
@@ -73,7 +72,7 @@ export default class {
 
   getColorMode() {
     const colorModeSnippet = new ColorMode
-    const colorModeElement = document.querySelector("#color-mode")
+    const colorModeElement = document.querySelector("#theme")
 
     if (colorModeElement.innerHTML === '') {
       colorModeElement.innerHTML = colorModeSnippet.getSnippet()
@@ -81,7 +80,15 @@ export default class {
     }
   }
 
+  toggleContainer() {
+    const loggedCont = document.getElementById("logged")
+
+    if (loggedCont.classList.contains("d-none"))
+      loggedCont.classList.remove("d-none")
+  }
+
   getBase(routes, match) {
+    this.toggleContainer()
     this.getSidebar(routes, match)
     this.getHeader()
     this.getFooter()

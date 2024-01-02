@@ -3,6 +3,8 @@
   fill: currentColor;
 }
 
+/* --------------------------------Color mode-------------------------------- */
+
 .btn-bd-primary {
   --bd-violet-bg: #712cf9;
   --bd-violet-rgb: 112.520718, 44.062154, 249.437846;
@@ -28,13 +30,11 @@
   display: block !important;
 }
 
-.text-small {
-  font-size: 85%;
-}
-
 .dropdown-toggle:not(:focus) {
   outline: 0;
 }
+
+/* ---------------------------------Sidebar---------------------------------- */
 
 #sidebar {
   min-width: 250px;
@@ -42,8 +42,8 @@
 }
 
 #sidebar.active {
-  min-width: 80px;
-  max-width: 80px;
+  min-width: 90px;
+  max-width: 90px;
 }
 
 .sidebar-transition {
@@ -77,4 +77,37 @@
   .sidebar-title-transition {
     display: none;
   }
+}
+
+/* ---------------------------------Sign-in---------------------------------- */
+
+.form-signin {
+  max-width: 330px;
+  padding: 1rem;
+}
+
+.form-signin .form-floating:focus-within {
+  z-index: 2;
+}
+
+.form-signin input[type="email"] {
+  margin-bottom: -1px;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.form-signin input[type="password"] {
+  margin-bottom: 10px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+/* ------------------------------Pop-up message------------------------------ */
+
+#message {
+  z-index: 5;
+  left: 50%;
+  top: 50px;
+  position: fixed;
+  -webkit-transform: translateX(-50%);
 }
