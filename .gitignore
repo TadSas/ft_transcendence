@@ -160,3 +160,4 @@ cython_debug/
 #.idea/
 
 nginx/frontend/bootstrap/
+nginx/frontend/threejs/
