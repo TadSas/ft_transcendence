@@ -2,47 +2,184 @@ import BaseView from "./BaseView.js"
 
 import * as THREE from '/threejs/build/three.module.js'
 
+
 class PongGame {
   constructor(containerID, width = 1280, height = 720) {
     this.width = width
     this.height = height
     this.containerID = containerID
-    
+
+    this.ballColor = 0xdc3545
+    this.paddleColor = 0x0d6efd
+
     this.scene = new THREE.Scene()
     this.camera = new THREE.PerspectiveCamera(75, this.width / this.height, 0.1, 1000)
-    this.renderer = new THREE.WebGLRenderer({antialias: true, alpha: true})
+    this.camera.position.z = 10
 
-    this.ball
-    this.wall
-    this.paddle
-
-    this.dx = 0.05
-    this.dy = 0
-    this.moving = 0
-
-    this.initGame()
-  }
-
-  initGame() {
+    this.renderer = new THREE.WebGLRenderer() // {antialias: true, alpha: true}
     this.renderer.setSize(this.width, this.height)
-    document.getElementById(containerID).appendChild(this.renderer.domElement)
+
+    document.getElementById(this.containerID).appendChild(this.renderer.domElement)
+
+    this.ball = this.addCube(0, 0, 0, 1, 1, 0.5)
+    this.ball.material = new THREE.MeshBasicMaterial({color: this.ballColor})
+
+    this.leftPaddle = this.addCube(-5, 0, 0, 0.1, 3, 0.5)
+    this.rightPaddle = this.addCube(5, 0, 0, 0.1, 3, 0.5)
+
+    this.gameTopBound = 6
+    this.gameBottomBound = -6
+    this.gameLeftBound = -6
+    this.gameRightBound = 6
+
+    this.ballxStep = 0.05
+    this.ballyStep = 0.05
+
+    this.ballStartDirection = -1
+
+    this.paddleyStep = 0.1
+
+    this.paddleUp = 1
+    this.paddleDown = -1
+    this.paddleStatic = 0
+
+    this.updateRate = 10
+
+    this.dx
+    this.dy
   }
 
-  addCube = (x, y, w, h) => {
+  start() {
+    this.setEntitiesDefualtParameters()
+
+    this.update()
+
+    this.animate()
+
+    this.setKeyboardEvents()
+  }
+
+  setEntitiesDefualtParameters() {
+    this.dx = this.ballxStep * this.ballStartDirection
+    this.dy = 0
+
+    this.ball.position.x = 0
+    this.ball.position.y = 0
+
+    this.leftPaddle.position.y = 0
+    this.rightPaddle.position.y = 0
+
+    this.leftPaddle.userData['movingDirection'] = this.paddleStatic
+    this.rightPaddle.userData['movingDirection'] = this.paddleStatic
+  }
+
+  update() {
+    this.animateBall()
+    this.movePaddles()
+    this.checkCollisionWith(this.rightPaddle)
+    this.checkCollisionWith(this.leftPaddle)
+    this.checkOutOfBounds()
+    setTimeout(this.update.bind(this), this.updateRate)
+  }
+
+  animate() {
+    requestAnimationFrame(this.animate.bind(this))
+    this.renderer.render(this.scene, this.camera)
+  }
+
+  setKeyboardEvents() {
+    window.onkeydown = e => {
+      switch(e.key) {
+        case "ArrowUp":
+          this.rightPaddle.userData['movingDirection'] = this.paddleUp
+
+          break
+        case "ArrowDown":
+          this.rightPaddle.userData['movingDirection'] = this.paddleDown
+
+          break
+        case "w":
+          this.leftPaddle.userData['movingDirection'] = this.paddleUp
+
+          break
+        case "s":
+          this.leftPaddle.userData['movingDirection'] = this.paddleDown
+
+          break
+        default:
+          break
+      }
+    }
+
+    window.onkeyup = e => {
+      switch(e.key) {
+        case "ArrowUp":
+        case "ArrowDown":
+          this.rightPaddle.userData['movingDirection'] = this.paddleStatic
+
+          break
+        case "w":
+        case "s":
+          this.leftPaddle.userData['movingDirection'] = this.paddleStatic
+
+          break
+      }
+    }
+  }
+
+  animateBall() {
+    this.ball.position.y = this.precisionSum(this.ball.position.y, this.dy)
+    this.ball.position.x = this.precisionSum(this.ball.position.x, this.dx)
+  }
+
+  movePaddles() {
+    this.rightPaddle.position.y += this.paddleyStep * this.rightPaddle.userData['movingDirection']
+    this.leftPaddle.position.y += this.paddleyStep * this.leftPaddle.userData['movingDirection']
+  }
+
+  checkCollisionWith(element) {
+    // There is a big issue in collision detection
+    if (Math.abs(this.ball.position.x - element.position.x) <= 1) {
+      if (
+        (element.position.y - element.scale.y / 2) < (this.ball.position.y + this.ball.scale.y / 2) &&
+        (element.position.y + element.scale.y / 2) > (this.ball.position.y - this.ball.scale.y / 2)
+      ) {
+        this.dx *= -1
+
+        if (this.ball.position.x < 0)
+          this.dy += this.leftPaddle.userData['movingDirection'] * this.ballxStep
+        else
+          this.dy += this.rightPaddle.userData['movingDirection'] * this.ballxStep
+      }
+    }
+  }
+
+  checkOutOfBounds() {
+    if (this.ball.position.y > this.gameTopBound || this.ball.position.y < this.gameBottomBound)
+      this.setEntitiesDefualtParameters()
+
+    if (this.ball.position.x > this.gameRightBound || this.ball.position.x < this.gameLeftBound)
+      this.setEntitiesDefualtParameters()
+  }
+
+  addCube = (x, y, z, width, height, length) => {
     const cube = new THREE.Mesh(
       new THREE.BoxGeometry(1, 1, 1),
-      new THREE.MeshBasicMaterial({color: 0x0d6efd})
+      new THREE.MeshBasicMaterial({color: this.paddleColor})
     )
 
-    cube.position.set(x, y, 0)
-    cube.scale.set(w, h, 0.5)
+    cube.position.set(x, y, z)
+    cube.scale.set(width, height, length)
 
     this.scene.add(cube)
 
     return cube
   }
-}
 
+  precisionSum(x, y) {
+    return Math.round((x + y + Number.EPSILON) * 100) / 100
+  }
+}
 
 export default class extends BaseView {
   constructor(params) {
@@ -51,132 +188,7 @@ export default class extends BaseView {
   }
 
   async getContent(routes, match) {
-    // new PongGame('game')
-
-    // Experimental game engine
-
-    const width = 1280
-    const height = 720
-    
-    const scene = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000)
-
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: true
-    })
-    renderer.setSize(width, height)
-    document.getElementById('game').appendChild(renderer.domElement)
-    
-    const addCube = (x, y, w, h) => {
-      const geometry = new THREE.BoxGeometry(1, 1, 1)
-      const material = new THREE.MeshBasicMaterial({color: 0x0d6efd})
-      const cube = new THREE.Mesh(geometry, material)
-      cube.position.set(x, y, 0)
-      cube.scale.set(w, h, 0.5)
-      scene.add(cube)
-
-      return cube
-    }
-    
-    let ball
-    let wall
-    let paddle
-
-    let dx = 0.25
-    let dy = 0
-    let moving = 0
-    
-    const init = () => {
-      scene.clear()
-      dx = 0.25
-      dy = 0
-      moving = 0
-      camera.position.z = 10
-      ball = addCube(0, 0, 1, 1)
-      ball.material = new THREE.MeshBasicMaterial({color: 0xdc3545})
-      wall = addCube(-5, 0, 0.1, 3)
-      paddle = addCube(5, 0, 0.1, 3)
-    }
-    init()
-
-    const precisionSum = (x, y) => {
-      return Math.round((x + y + Number.EPSILON) * 1000) / 1000
-    }
-
-    const animateBall = () => {
-      ball.position.y = precisionSum(ball.position.y, dy)
-      ball.position.x = precisionSum(ball.position.x, dx)
-    }
-
-    const checkCollisionWith = (element, paddle = false) => {
-      if (Math.abs(ball.position.x - element.position.x) <= 1) {
-        if (
-          // left corner of wall is smaller rigth corner of ball and
-          // (element.position.x - element.scale.x / 2) < (ball.position.x + ball.scale.x / 2) &&
-          // left corner of ball is smaller than right corner of wall
-          // (ball.position.x - ball.scale.x / 2) < (element.position.x + element.scale.x / 2)
-          (Math.abs(ball.position.x + (ball.scale.x / 2)) == Math.abs(element.position.x)) ||
-          (Math.abs(ball.position.x - (ball.scale.x / 2)) == Math.abs(element.position.x))
-        ) {
-          dx *= -1
-          // if (paddle && moving != 0)
-          dy += moving * 0.1
-        }
-      }
-    }
-
-    const checkOutOfBounds = () => {
-      if (ball.position.y < -6 || ball.position.y > 6)
-        init()
-
-      if (ball.position.x < -6 || ball.position.x > 6)
-        init()
-    }
-
-    const update = () => {
-      animateBall()
-      checkCollisionWith(paddle, true)
-      checkCollisionWith(wall)
-      checkOutOfBounds()
-      setTimeout(update, 50)
-    }
-    update()
-
-    const animate = () => {
-      requestAnimationFrame(animate)
-      renderer.render(scene, camera)
-    }
-    animate()
-
-    window.onkeydown = e => {
-      switch(e.key) {
-        case "ArrowUp":
-          paddle.position.y += 0.5
-          moving = -1
-          break
-        case "ArrowDown":
-          paddle.position.y += -0.5
-          moving = 1
-          break
-        case "w":
-          wall.position.y += 0.5
-          moving = -1
-          break
-        case "s":
-          wall.position.y += -0.5
-          moving = 1
-          break
-        default:
-          break
-      }
-    }
-
-    window.onkeyup = e => {
-      moving = 0
-    }
-
-    // End of experimental game engine
+    new PongGame('game').start()
 
     this.getBase(routes, match)
 
