@@ -1,25 +1,24 @@
 version: "3.9"
 
 services:
-  # postgres:
-  #   container_name: postgres
-  #   build: ./postgres
-  #   restart: always
-  #   expose:
-  #     - 5432
-  #   networks:
-  #     - ft_transcendence
-  #   volumes:
-  #     - ./postgres/DB_DATA:/var/lib/postgres
-  #   env_file: .env
+  postgres:
+    container_name: postgres
+    build: ./postgres
+    restart: always
+    expose:
+      - 5432
+    networks:
+      - ft_transcendence
+    volumes:
+      - ./postgres/DB_DATA:/var/lib/postgres
+    env_file: .env
 
   nginx:
     container_name: nginx
     build: ./nginx
     depends_on:
       - auth
-      # - frontend
-      # - postgres
+      - postgres
     restart: always
     networks:
       - ft_transcendence
@@ -32,8 +31,8 @@ services:
   auth:
     container_name: auth
     build: ./backend/auth
-    # depends_on:
-      # - postgres
+    depends_on:
+      - postgres
     restart: always
     expose:
       - 8080
@@ -45,20 +44,6 @@ services:
       - ./backend/auth/config/:/var/www/config
       - ./backend/auth/manage.py:/var/www/manage.py
     env_file: .env
-
-  # frontend:
-  #   container_name: frontend
-  #   build: ./frontend
-  #   depends_on:
-  #     - backend
-  #   restart: always
-  #   expose:
-  #     - 5050
-  #   networks:
-  #     - ft_transcendence
-  #   volumes:
-  #     - ./frontend/frontend/:/var/www/frontend
-  #   env_file: .env
 
   # Remove everything related to pgadmin before finishing the project
   # pgadmin:

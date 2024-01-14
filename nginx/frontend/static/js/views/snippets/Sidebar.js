@@ -38,14 +38,15 @@ export default class extends BaseSnippet {
         <ul id="navigation-list" class="nav flex-column mb-auto nav-pills">
           ${
             Object.values(routes).map(
-            route => `
-            <li class="nav-item">
-              <a href="${route.path}" class="nav-link ${route.path === match ? 'active' : 'link-body-emphasis'}" data-link>
-                <i class="bi bi-${route.icon} pe-none me-2"></i>
-                <span class="sidebar-title-transition">${route.name}</span>
-              </a>
-            </li>`
-            ).join('')
+            route => {
+              return route.sideBar ? `
+              <li class="nav-item">
+                <a href="${route.path}" class="nav-link ${route.path === match ? 'active' : 'link-body-emphasis'}" data-link>
+                  <i class="bi bi-${route.icon} pe-none me-2"></i>
+                  <span class="sidebar-title-transition">${route.name}</span>
+                </a>
+              </li>` : ''
+            }).join('')
           }
         </ul>
       </div>

@@ -10,7 +10,7 @@ export default class extends BaseSnippet {
     return {}
   }
 
-  getSnippet(routes, match) {
+  getSnippet() {
     return `
       <div class="container-fluid d-grid gap-3 align-items-center" style="grid-template-columns: 1fr 2fr;">
         <div class="dropdown">

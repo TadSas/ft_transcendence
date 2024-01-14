@@ -48,7 +48,7 @@ class httpRequest {
           Promise.reject(response)
       } else {
         if (response.ok)
-          return {'status': 0, 'message': response.text().then(text => text)}
+          return {'status': 0, 'message': Promise.resolve(response.text().then(text => text))}
         else
           Promise.reject(response)
       }

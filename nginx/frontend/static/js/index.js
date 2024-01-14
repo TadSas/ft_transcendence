@@ -1,18 +1,18 @@
-import Login from "./views/Login.js"
-import Posts from "./views/Posts.js"
+import Login from "./views/LoginView.js"
+import Posts from "./views/PostsView.js"
 import PostView from "./views/PostView.js"
-import Settings from "./views/Settings.js"
-import Dashboard from "./views/Dashboard.js"
+import Settings from "./views/SettingsView.js"
+import Dashboard from "./views/DashboardView.js"
 
 import setupColorMode from "./src/ColorMode.js"
 
 
 const routes = [
-  { path: "/", view: Dashboard, name: "Dashboard", icon: "house-door" },
-  { path: "/login", view: Login, name: "Login", icon: "box-arrow-in-right", container: "login" },
-  { path: "/posts", view: Posts, name: "Posts", icon: "grid" },
-  // { path: "/posts/:id", view: PostView, name: "Posts", icon: "grid" },
-  { path: "/settings", view: Settings, name: "Settings", icon: "speedometer2" }
+  {path: "/", view: Dashboard, name: "Dashboard", icon: "house-door", sideBar: true},
+  {path: "/login", view: Login, name: "Login", icon: "box-arrow-in-right", container: "login", sideBar: false},
+  {path: "/posts", view: Posts, name: "Posts", icon: "grid", sideBar: true},
+  // {path: "/posts/:id", view: PostView, name: "Posts", icon: "grid", sideBar: false},
+  {path: "/settings", view: Settings, name: "Settings", icon: "speedometer2", sideBar: true}
 ]
 
 const pathToRegex = path => {
@@ -54,6 +54,7 @@ const router = async () => {
   const matchedRoute = match.route
 
   document.querySelector(`#${matchedRoute.container || 'content'}`).innerHTML = await view.getContent(routes, matchedRoute.path)
+  view.registerEvents(view.viewEventStore)
 
   setupColorMode()
 }

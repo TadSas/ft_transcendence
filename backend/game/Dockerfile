@@ -10,8 +10,7 @@ COPY . /
 RUN apt-get -y update --no-install-recommends && \
     apt-get install -y --no-install-recommends vim wget && \
     pip install --upgrade pip && \
-    pip install django && \
-    apt-get -y purge && \
+    pip install -r /config/requirements.txt && \
     apt -y autoremove && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf ~/.cache/pip/* && \

@@ -7,6 +7,7 @@ import ColorMode from "./snippets/ColorMode.js"
 export default class {
   constructor(params) {
     this.eventStore = []
+    this.viewEventStore = []
     this.params = params
   }
 
@@ -18,7 +19,7 @@ export default class {
     return ""
   }
 
-  registerEvents() {
+  registerEvents(eventStore = []) {
     switch (document.readyState) {
       case "loading":
         console.log("The document is loading.")
@@ -31,7 +32,7 @@ export default class {
         console.log("The page is fully loaded.")
         break
     }
-    this.eventStore.forEach(events => {
+    eventStore.forEach(events => {
       Object.entries(events).forEach(([eventType, eventList]) => {
         Object.entries(eventList).forEach(([element, event]) => {
           eval(element).addEventListener(eventType, event)
@@ -94,6 +95,6 @@ export default class {
     this.getFooter()
     this.getColorMode()
 
-    this.registerEvents()
+    this.registerEvents(this.eventStore)
   }
 }
