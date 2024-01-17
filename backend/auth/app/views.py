@@ -1,4 +1,7 @@
 import json
+import secrets
+
+from urllib.parse import urlencode
 
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
@@ -19,7 +22,8 @@ class AuthorizationUriView(APIView):
         redirect_uri = 'https://192.168.0.106/auth/api/callback'
         response_type = 'code'
         scope = 'public'
-        state = 'e49ae6a9-9cd8-4857-95f5-7e8d39a272af'
+        state = secrets.token_urlsafe(36)
+        state = 'e49ae6a9-9cd8-4857-95f5-7e8d39a272af' # remove later
 
         # response query string
         code = 'd858db9d01a8562e35f110f97012404a800a98afed9445cbcac65e8e39fcd95e'
