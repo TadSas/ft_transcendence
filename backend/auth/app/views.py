@@ -4,6 +4,7 @@ import secrets
 from urllib.parse import urlencode
 
 from django.http import JsonResponse
+from django.shortcuts import redirect
 from django.middleware.csrf import get_token
 from django.contrib.auth import authenticate, login, logout
 
@@ -19,7 +20,7 @@ class AuthorizationUriView(APIView):
     def get(request, format=None):
         oauth_url = 'https://api.intra.42.fr/oauth/authorize'
         client_id = 'u-s4t2ud-dc0e95331cec0da8e1734d27dcb39f568c3220de23ee32d917e947e7f58475f0'
-        redirect_uri = 'https://192.168.0.106/auth/api/callback'
+        redirect_uri = 'https://localhost/auth/api/callback'
         response_type = 'code'
         scope = 'public'
         state = secrets.token_urlsafe(36)
@@ -36,15 +37,16 @@ class AuthorizationUriView(APIView):
         )
 
         return JsonResponse({'redirect_uri': redirect_uri})
-    
+
 
 class CallbackView(APIView):
     @staticmethod
     def get(request, format=None):
-        return JsonResponse({
+        print({
             'code': request.query_params.get('code'),
-            'state': request.query_params.get('state')}
-        )
+            'state': request.query_params.get('state')
+        })
+        return redirect("/login")
 
 
 class GetCsrfView(APIView):

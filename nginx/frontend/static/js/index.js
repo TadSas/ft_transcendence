@@ -3,16 +3,18 @@ import Posts from "./views/PostsView.js"
 import PostView from "./views/PostView.js"
 import Settings from "./views/SettingsView.js"
 import Dashboard from "./views/DashboardView.js"
+import AuthCallback from "./views/AuthCallback.js"
 
 import setupColorMode from "./src/ColorMode.js"
 
 
 const routes = [
   {path: "/", view: Dashboard, name: "Dashboard", icon: "house-door", sideBar: true},
-  {path: "/login", view: Login, name: "Login", icon: "box-arrow-in-right", container: "login", sideBar: false},
+  {path: "/login", view: Login, name: "Login", container: "login", sideBar: false},
   {path: "/posts", view: Posts, name: "Posts", icon: "grid", sideBar: true},
   // {path: "/posts/:id", view: PostView, name: "Posts", icon: "grid", sideBar: false},
-  {path: "/settings", view: Settings, name: "Settings", icon: "speedometer2", sideBar: true}
+  {path: "/settings", view: Settings, name: "Settings", icon: "speedometer2", sideBar: true},
+  {path: "/auth/api/callback", view: AuthCallback, name: "AuthCallback", sideBar: false}
 ]
 
 const pathToRegex = path => {
@@ -62,6 +64,7 @@ const router = async () => {
 window.addEventListener("popstate", router)
 
 document.addEventListener("DOMContentLoaded", () => {
+  console.log('location.pathname:', location.pathname)
   if (localStorage.getItem('logged') === null && location.pathname !== '/login')
     location.href = `${location.origin}/login`
   else
