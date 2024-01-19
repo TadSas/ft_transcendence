@@ -1,9 +1,7 @@
 import Login from "./views/LoginView.js"
 import Posts from "./views/PostsView.js"
-import PostView from "./views/PostView.js"
 import Settings from "./views/SettingsView.js"
 import Dashboard from "./views/DashboardView.js"
-import AuthCallback from "./views/AuthCallback.js"
 
 import setupColorMode from "./src/ColorMode.js"
 
@@ -14,7 +12,6 @@ const routes = [
   {path: "/posts", view: Posts, name: "Posts", icon: "grid", sideBar: true},
   // {path: "/posts/:id", view: PostView, name: "Posts", icon: "grid", sideBar: false},
   {path: "/settings", view: Settings, name: "Settings", icon: "speedometer2", sideBar: true},
-  {path: "/auth/api/callback", view: AuthCallback, name: "AuthCallback", sideBar: false}
 ]
 
 const pathToRegex = path => {

@@ -1,7 +1,10 @@
+import jwt
 import json
 import secrets
+import datetime
 
 from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 
 from django.http import JsonResponse
 from django.shortcuts import redirect
@@ -15,7 +18,7 @@ from rest_framework.authentication import (
 )
 
 
-class AuthorizationUriView(APIView):
+class LoginView(APIView):
     @staticmethod
     def get(request, format=None):
         oauth_url = 'https://api.intra.42.fr/oauth/authorize'
@@ -35,6 +38,7 @@ class AuthorizationUriView(APIView):
             f'redirect_uri={redirect_uri}&response_type={response_type}&'
             f'scope={scope}&state={state}'
         )
+        request.session['auth_state'] = state
 
         return JsonResponse({'redirect_uri': redirect_uri})
 
@@ -42,10 +46,33 @@ class AuthorizationUriView(APIView):
 class CallbackView(APIView):
     @staticmethod
     def get(request, format=None):
-        print({
-            'code': request.query_params.get('code'),
-            'state': request.query_params.get('state')
-        })
+        qs = request.query_params
+
+        callback_code = qs.get('code')
+        callback_state = qs.get('state')
+
+        auth_state = request.session.get('auth_state')
+
+        # if not auth_state or auth_state != callback_state:
+        #     return redirect("/login")
+
+        # create jwt payload
+        payload = {
+            'id': 'user_id'
+        }
+
+        req = Request(
+            'https://api.intra.42.fr/oauth/token',
+            urlencode({
+                'grant_type': 'authorization_code',
+                'client_id': '',
+                'client_secret': '',
+                'code': '',
+                'redirect_uri': '',
+                'state': auth_state,
+            }).encode()
+        )
+
         return redirect("/login")
 
 
@@ -56,27 +83,6 @@ class GetCsrfView(APIView):
         response['X-CSRFToken'] = get_token(request)
 
         return response
-
-
-class LoginView(APIView):
-    @staticmethod
-    def post(request, format=None):
-        data = json.loads(request.body)
-        username = data.get('username')
-        password = data.get('password')
-
-        if username is None or password is None:
-            return JsonResponse(
-                {'detail': 'Please provide username and password.'},
-                status=400
-            )
-
-        if (user := authenticate(username=username, password=password)) is None:
-            return JsonResponse({'detail': 'Invalid credentials.'}, status=400)
-
-        login(request, user)
-
-        return JsonResponse({'detail': 'Successfully logged in.'})
 
 
 class LogoutView(APIView):
