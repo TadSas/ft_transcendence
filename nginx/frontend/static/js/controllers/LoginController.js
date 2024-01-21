@@ -7,7 +7,6 @@ var LoginController = (() => {
   // Public
   self.submit = () => {
     new httpRequest({resource: 'auth/api/login/', method: 'GET', successCallback: response => {
-      console.log(response)
       if ('redirect_uri' in response)
         location.href = response.redirect_uri
       else

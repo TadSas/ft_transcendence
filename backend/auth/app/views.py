@@ -21,26 +21,17 @@ from rest_framework.authentication import (
 class LoginView(APIView):
     @staticmethod
     def get(request, format=None):
-        oauth_url = 'https://api.intra.42.fr/oauth/authorize'
-        client_id = 'u-s4t2ud-dc0e95331cec0da8e1734d27dcb39f568c3220de23ee32d917e947e7f58475f0'
-        redirect_uri = 'https://localhost/auth/api/callback'
-        response_type = 'code'
-        scope = 'public'
-        state = secrets.token_urlsafe(36)
-        state = 'e49ae6a9-9cd8-4857-95f5-7e8d39a272af' # remove later
+        request.session['auth_state'] = (state := secrets.token_urlsafe(64))
 
-        # response query string
-        code = 'd858db9d01a8562e35f110f97012404a800a98afed9445cbcac65e8e39fcd95e'
-        state = 'e49ae6a9-9cd8-4857-95f5-7e8d39a272af'
-
-        redirect_uri = (
-            f'{oauth_url}?client_id={client_id}&'
-            f'redirect_uri={redirect_uri}&response_type={response_type}&'
-            f'scope={scope}&state={state}'
-        )
-        request.session['auth_state'] = state
-
-        return JsonResponse({'redirect_uri': redirect_uri})
+        return JsonResponse({'redirect_uri': (
+            f'https://api.intra.42.fr/oauth/authorize?{urlencode({
+                'client_id': 'u-s4t2ud-dc0e95331cec0da8e1734d27dcb39f568c3220de23ee32d917e947e7f58475f0',
+                'redirect_uri': 'https://192.168.0.106/auth/api/callback',
+                'response_type': 'code',
+                'scope': 'public',
+                'state': state
+            })}'
+        )})
 
 
 class CallbackView(APIView):
@@ -53,25 +44,47 @@ class CallbackView(APIView):
 
         auth_state = request.session.get('auth_state')
 
-        # if not auth_state or auth_state != callback_state:
-        #     return redirect("/login")
+        if not auth_state or auth_state != callback_state:
+            return redirect("/login")
 
-        # create jwt payload
-        payload = {
-            'id': 'user_id'
-        }
-
-        req = Request(
-            'https://api.intra.42.fr/oauth/token',
-            urlencode({
+        request = Request(
+            url='https://api.intra.42.fr/oauth/token',
+            data=urlencode({
                 'grant_type': 'authorization_code',
-                'client_id': '',
-                'client_secret': '',
-                'code': '',
-                'redirect_uri': '',
+                'client_id': 'u-s4t2ud-dc0e95331cec0da8e1734d27dcb39f568c3220de23ee32d917e947e7f58475f0',
+                'client_secret': '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',
+                'code': callback_code,
+                'redirect_uri': 'https://192.168.0.106/auth/api/callback',
                 'state': auth_state,
             }).encode()
         )
+
+        try:
+            with urlopen(request) as response:
+                response_data = json.loads(response.read().decode())
+                # print(f"\nresponse_data: {response_data}\n")
+                access_token = response_data.get('access_token', '')
+
+            request = Request(url='https://api.intra.42.fr/v2/me')
+            request.add_header('Authorization', f'Bearer {access_token}')
+
+            with urlopen(request) as response:
+                response_data = json.loads(response.read().decode())
+                # print(f"\nresponse_data: {response_data}\n")
+
+            """
+            {
+                "access_token": "c090bbc130da535b883cd328ef21feba31e4fe005969dc211bd7775928f9ffbc",
+                "token_type": "bearer",
+                "expires_in": 5520,
+                "refresh_token": "08b3019b8bdb4f3336b5f29528e19ef3434e3fcbbe99dfa89b75cbd8a81fad8b",
+                "scope": "public",
+                "created_at": 1705672847, # datetime.fromtimestamp()
+                "secret_valid_until": 1706508016 # datetime.fromtimestamp()
+            }
+            """
+        except Exception as ex:
+            print(f"\nex: {ex}\n")
 
         return redirect("/login")
 
