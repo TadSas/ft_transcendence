@@ -26,7 +26,7 @@ class LoginView(APIView):
         return JsonResponse({'redirect_uri': (
             f'https://api.intra.42.fr/oauth/authorize?{urlencode({
                 'client_id': 'u-s4t2ud-dc0e95331cec0da8e1734d27dcb39f568c3220de23ee32d917e947e7f58475f0',
-                'redirect_uri': 'https://192.168.0.106/auth/api/callback',
+                'redirect_uri': 'https://localhost/auth/api/callback',
                 'response_type': 'code',
                 'scope': 'public',
                 'state': state
@@ -54,7 +54,7 @@ class CallbackView(APIView):
                 'client_id': 'u-s4t2ud-dc0e95331cec0da8e1734d27dcb39f568c3220de23ee32d917e947e7f58475f0',
                 'client_secret': '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',
                 'code': callback_code,
-                'redirect_uri': 'https://192.168.0.106/auth/api/callback',
+                'redirect_uri': 'https://localhost/auth/api/callback',
                 'state': auth_state,
             }).encode()
         )
@@ -70,7 +70,7 @@ class CallbackView(APIView):
 
             with urlopen(request) as response:
                 response_data = json.loads(response.read().decode())
-                # print(f"\nresponse_data: {response_data}\n")
+                print(f"\nresponse_data: {response_data}\n")
 
             """
             {

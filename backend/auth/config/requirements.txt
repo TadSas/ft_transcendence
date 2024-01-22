@@ -1,4 +1,5 @@
 PyJWT
+Pillow
 django
 psycopg[binary]
 djangorestframework
