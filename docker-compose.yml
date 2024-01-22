@@ -39,10 +39,7 @@ services:
     networks:
       - ft_transcendence
     volumes:
-      - ./backend/auth/app/:/var/www/app
-      - ./backend/auth/auth/:/var/www/auth
-      - ./backend/auth/config/:/var/www/config
-      - ./backend/auth/manage.py:/var/www/manage.py
+      - ./backend/auth:/var/www/auth
     env_file: .env
 
   # Remove everything related to pgadmin before finishing the project
