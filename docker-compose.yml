@@ -10,7 +10,7 @@ services:
     networks:
       - ft_transcendence
     volumes:
-      - ./postgres/DB_DATA:/var/lib/postgres
+      - ./postgres/DB_DATA:/var/lib/postgresql/data
     env_file: .env
 
   nginx:
