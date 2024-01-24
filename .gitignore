@@ -160,3 +160,4 @@ cython_debug/
 #.idea/
 
 .env
+backend/auth/config/config.ini
