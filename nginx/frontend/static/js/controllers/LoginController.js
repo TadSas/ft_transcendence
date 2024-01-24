@@ -11,7 +11,11 @@ var LoginController = (() => {
         location.href = response.redirect_uri
       else
         showMessage('There was a problem with redirection to the authorization server.', 'danger')
-    }})
+    }}).send()
+  }
+
+  self.authenticationCheck = () => {
+    return new httpRequest({resource: 'auth/api/authentication/check', method: 'GET', sync: true, successCallback: () => {}}).send()
   }
 
   return self

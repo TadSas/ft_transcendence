@@ -1,10 +1,13 @@
 import jwt
 import secrets
+import datetime
 
 from django.http import JsonResponse
 from django.shortcuts import redirect
 
 from rest_framework.views import APIView
+
+from auth.settings import SECRET_KEY
 
 from .main import AuthController
 
@@ -35,10 +38,37 @@ class CallbackView(APIView):
             authCont.exchange_access_token(callback_code, callback_state)
         )
 
-        return redirect("/login#alo")
+        payload = {
+            'id': user_id,
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),
+            'iat': datetime.datetime.utcnow()
+        }
+
+        token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+
+        response = redirect("/login")
+        response.set_cookie(key='jwt', value=token, httponly=True)
+
+        return response
 
 
 class LogoutView(APIView):
     @staticmethod
     def get(request):
         return JsonResponse({'detail': 'Successfully logged out.'})
+
+
+class AuthenticationCheckView(APIView):
+    @staticmethod
+    def get(request):
+        authenticated = True
+
+        if not (token := request.COOKIES.get('jwt')):
+            authenticated = False
+
+        try:
+            jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+        except Exception:
+            authenticated = False
+
+        return JsonResponse({'authenticated': authenticated})

@@ -10,7 +10,6 @@ const routes = [
   {path: "/", view: Dashboard, name: "Dashboard", icon: "house-door", sideBar: true},
   {path: "/login", view: Login, name: "Login", container: "login", sideBar: false},
   {path: "/posts", view: Posts, name: "Posts", icon: "grid", sideBar: true},
-  // {path: "/posts/:id", view: PostView, name: "Posts", icon: "grid", sideBar: false},
   {path: "/settings", view: Settings, name: "Settings", icon: "speedometer2", sideBar: true},
 ]
 
@@ -61,16 +60,19 @@ const router = async () => {
 window.addEventListener("popstate", router)
 
 document.addEventListener("DOMContentLoaded", () => {
-  console.log('location.pathname:', location.pathname)
-  if (localStorage.getItem('logged') === null && location.pathname !== '/login')
-    location.href = `${location.origin}/login`
+  if (LoginController.authenticationCheck().authenticated)
+    history.pushState(null, null, '/')
   else
-    router()
+    history.pushState(null, null, '/login')
+
+  router()
 
   document.body.addEventListener("click", e => {
     if (e.target.matches("[data-link]")) {
       e.preventDefault()
-      navigateTo(e.target.href)
+
+      if (location.href !== e.target.href)
+        navigateTo(e.target.href)
     }
   })
 })

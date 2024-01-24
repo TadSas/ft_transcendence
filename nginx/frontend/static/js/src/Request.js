@@ -1,18 +1,17 @@
 class httpRequest {
-  constructor({resource, method, headers, body, successCallback, skipLoader}) {
+  constructor({resource, method, headers, body, successCallback, skipLoader, sync}) {
     this.resource = resource || ''
     this.method = method || 'GET'
     this.headers = {'Content-Type': 'application/json', ...(headers || {})}
     this.body = body || {}
     this.successCallback = successCallback
     this.skipLoader = skipLoader || false
+    this.sync = sync || false
 
     if (this.#validateParams())
       return
 
     this.#prepareParams()
-
-    this.#send()
   }
 
   #validateParams = () => {
@@ -32,11 +31,15 @@ class httpRequest {
       headers: this.headers,
     }
 
-    this.method === 'POST' && (this.options['body'] = this.body)
+    if (this.method === 'POST')
+      this.options['body'] = this.body
   }
 
-  #send = () => {
+  send = () => {
     !this.skipLoader && showLoader()
+
+    if (this.sync)
+      return this.#syncSend()
 
     fetch(this.resource, this.options).then(response => {
       const contentType = response.headers.get("content-type")
@@ -68,5 +71,27 @@ class httpRequest {
       console.error(error)
       hideLoader()
     })
+  }
+
+  #syncSend = () => {
+    const request = new XMLHttpRequest()
+
+    request.open(this.method, this.resource, false)
+
+    Object.entries(this.headers).forEach(([key, value]) => {
+      request.setRequestHeader(key, value)
+    })
+
+    request.send(this.body)
+    
+    if (request.status === 200) {
+      try {
+        return JSON.parse(request.response)
+      } catch (e) {
+        return request.response
+      }
+    }
+
+    return null
   }
 }
