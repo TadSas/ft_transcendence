@@ -24,12 +24,9 @@ export default class extends BaseSnippet {
           </form>
           <div class="flex-shrink-0 dropdown">
             <a href="/" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-link>
-              <img src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle">
+              <img src="/auth/api/avatar" alt="mdo" width="32" height="32" class="rounded-circle">
             </a>
             <ul class="dropdown-menu shadow" style="">
-              <li>
-                <a class="dropdown-item" href="/" data-link>New project...</a>
-              </li>
               <li>
                 <a class="dropdown-item" href="/" data-link>Settings</a>
               </li>

@@ -83,8 +83,8 @@ class httpRequest {
     })
 
     request.send(this.body)
-    
-    if (request.status === 200) {
+
+    if (request.status === 403 || request.status === 200) {
       try {
         return JSON.parse(request.response)
       } catch (e) {

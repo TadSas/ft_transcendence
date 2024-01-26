@@ -2,27 +2,26 @@ import jwt
 import secrets
 import datetime
 
-from django.http import JsonResponse
 from django.shortcuts import redirect
+from django.http import JsonResponse, HttpResponse
 
 from rest_framework.views import APIView
 
 from auth.settings import SECRET_KEY
 
 from .main import AuthController
+from .permissions import JWTAuthentication
 
 
 class LoginView(APIView):
-    @staticmethod
-    def get(request):
+    def get(self, request):
         request.session['auth_state'] = (state := secrets.token_urlsafe(64)[:64])
 
         return JsonResponse({'redirect_uri': AuthController().get_authorization_url(state)})
 
 
 class CallbackView(APIView):
-    @staticmethod
-    def get(request):
+    def get(self, request):
         qs = request.query_params
         authCont = AuthController()
 
@@ -53,14 +52,12 @@ class CallbackView(APIView):
 
 
 class LogoutView(APIView):
-    @staticmethod
-    def get(request):
+    def get(self, request):
         return JsonResponse({'detail': 'Successfully logged out.'})
 
 
 class AuthenticationCheckView(APIView):
-    @staticmethod
-    def get(request):
+    def get(self, request):
         authenticated = True
 
         if not (token := request.COOKIES.get('jwt')):
@@ -72,3 +69,14 @@ class AuthenticationCheckView(APIView):
             authenticated = False
 
         return JsonResponse({'authenticated': authenticated})
+
+
+class UserAvatarView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request):
+        response = HttpResponse(AuthController().get_user_avatar())
+        response['Content-Type'] = "image/png"
+        response['Cache-Control'] = "max-age=0"
+
+        return response

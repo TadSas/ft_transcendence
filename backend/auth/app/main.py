@@ -1,6 +1,7 @@
 import json
 import secrets
 
+from io import BytesIO
 from datetime import datetime
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -134,3 +135,18 @@ class AuthController:
                 return serializer.data['id']
         except Exception as ex:
             raise AuthException(str(ex))
+
+    def get_user_avatar(self, user_id: str = '') -> BytesIO:
+        """
+
+        Parameters
+        ----------
+        user_id : str
+
+        Returns
+        -------
+        BytesIO
+
+        """
+        with open('/media/avatars/default/default_avatar.jpg', 'rb') as fd:
+            return BytesIO(fd.read())
