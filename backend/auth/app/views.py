@@ -6,6 +6,7 @@ from django.shortcuts import redirect
 from django.http import JsonResponse, HttpResponse
 
 from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser
 
 from auth.settings import SECRET_KEY
 
@@ -80,6 +81,7 @@ class AuthenticationCheckView(APIView):
 
 
 class UserAvatarView(APIView):
+    parser_classes = [MultiPartParser]
     authentication_classes = [JWTAuthentication]
 
     def get(self, request):
@@ -88,6 +90,10 @@ class UserAvatarView(APIView):
         response['Cache-Control'] = "max-age=0"
 
         return response
+
+    def put(self, request):
+        file = request.FILES['avatar']
+        return JsonResponse({'message': 'Avatar uploaded'})
 
 
 class UserView(APIView):

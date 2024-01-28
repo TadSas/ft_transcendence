@@ -97,6 +97,11 @@ DATABASES = {
 
 REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'app.exceptions.auth_exception_handler',
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FileUploadParser',
+        'rest_framework.parsers.MultiPartParser',
+    ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'app.permissions.JWTAuthentication',
     ],

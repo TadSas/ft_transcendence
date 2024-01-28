@@ -10,18 +10,19 @@ var SettingsController = (() => {
   }
 
   self.uploadAvatar = () => {
-    // const selectedImage = document.getElementById(avatarImageId)
-    // const fileInput = event.target
+    const formData = new FormData()
 
-    // if (fileInput.files && fileInput.files[0]) {
-    //     const reader = new FileReader()
+    formData.append("filename", document.getElementById('avatarInput').files[0])
 
-    //     reader.onload = function(e) {
-    //         selectedImage.src = e.target.result
-    //     };
-
-    //     reader.readAsDataURL(fileInput.files[0])
-    // }
+    new httpRequest({
+      resource: 'auth/api/avatar',
+      method: 'PUT',
+      headers: {'Content-Type': 'multipart/form-data'},
+      body: formData,
+      successCallback: response => {
+        return response
+      }
+    }).send()
 }
 
   return self
