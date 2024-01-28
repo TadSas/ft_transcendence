@@ -41,7 +41,7 @@ class httpRequest {
     if (this.sync)
       return this.#syncSend()
 
-    fetch(this.resource, this.options).then(response => {
+    return fetch(this.resource, this.options).then(response => {
       const contentType = response.headers.get("content-type")
 
       if (contentType && contentType.indexOf("application/json") !== -1) {
@@ -65,7 +65,7 @@ class httpRequest {
           return showMessage(responseData.message, 'warning')
       }
 
-      this.successCallback(responseData)
+      return this.successCallback(responseData)
     }).catch((error) => {
       showMessage(`${('Error message: ')}${error}`, 'danger')
       console.error(error)

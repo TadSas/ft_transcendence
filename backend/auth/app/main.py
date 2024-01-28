@@ -6,6 +6,7 @@ from datetime import datetime
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
+from .models import Users
 from .exceptions import AuthException
 from .config import FTTRANSCENDENCE, FTAPI
 from .serializers import UsersSerializer, AuthTokenSerializer
@@ -150,3 +151,26 @@ class AuthController:
         """
         with open('/media/avatars/default/default_avatar.jpg', 'rb') as fd:
             return BytesIO(fd.read())
+
+    def get_user_information(self, user: Users) -> dict:
+        """  Returns user data
+
+        Parameters
+        ----------
+        user : Users
+
+        Returns
+        -------
+        dict
+
+        """
+        user_data = UsersSerializer(user).data
+
+        user_data.pop('id')
+        user_data.pop('updated_at')
+        user_data.pop('avatar_path')
+        user_data.pop('two_factor_enabled')
+        
+        user_data['created_at'] = user.created_at.strftime("%d-%m-%Y %H:%M")
+
+        return user_data

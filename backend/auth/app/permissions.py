@@ -1,7 +1,5 @@
 import jwt
 
-from django.http import JsonResponse
-
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.authentication import BaseAuthentication
 
@@ -17,8 +15,7 @@ class JWTAuthentication(BaseAuthentication):
 
         try:
             payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-            user = Users.objects.filter(id=payload.get('id'))
-            print(f"\nuser: {user}\n")
+            user = Users.objects.filter(id=payload.get('id')).first()
         except Exception:
             raise AuthenticationFailed({'authenticated': False})
 

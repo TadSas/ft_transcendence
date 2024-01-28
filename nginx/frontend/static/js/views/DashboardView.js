@@ -354,12 +354,12 @@ export default class extends BaseView {
   }
 
   async getContent(routes, match) {
-    new FontLoader().load('static/fonts/Bit5x3_Regular.json', font => {
-      new PongGame('game', font).start()
-    })
+    // new FontLoader().load('static/fonts/Bit5x3_Regular.json', font => {
+    //   new PongGame('game', font).start()
+    // })
 
     this.getBase(routes, match)
-
+    
     return `
       <h1>Dashboard</h1>
       <p>You are viewing the dashboard!</p>

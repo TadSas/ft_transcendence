@@ -1,5 +1,6 @@
 import Login from "./views/LoginView.js"
 import Posts from "./views/PostsView.js"
+import Profile from "./views/ProfileView.js"
 import Settings from "./views/SettingsView.js"
 import Dashboard from "./views/DashboardView.js"
 
@@ -8,6 +9,7 @@ import setupColorMode from "./src/ColorMode.js"
 
 const routes = [
   {path: "/", view: Dashboard, name: "Dashboard", icon: "house-door", sideBar: true},
+  {path: "/profile", view: Profile, name: "Profile", icon: "person-circle", sideBar: true},
   {path: "/login", view: Login, name: "Login", container: "login", sideBar: false},
   {path: "/posts", view: Posts, name: "Posts", icon: "grid", sideBar: true},
   {path: "/settings", view: Settings, name: "Settings", icon: "speedometer2", sideBar: true},

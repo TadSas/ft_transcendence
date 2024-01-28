@@ -96,10 +96,7 @@ DATABASES = {
 # https://www.django-rest-framework.org/api-guide/settings/
 
 REST_FRAMEWORK = {
-    'EXCEPTION_HANDLER': 'app.exceptions.custom_exception_handler',
-    'DEFAULT_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer',
-    ],
+    'EXCEPTION_HANDLER': 'app.exceptions.auth_exception_handler',
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'app.permissions.JWTAuthentication',
     ],

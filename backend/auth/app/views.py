@@ -14,6 +14,8 @@ from .permissions import JWTAuthentication
 
 
 class LoginView(APIView):
+    authentication_classes = []
+
     def get(self, request):
         request.session['auth_state'] = (state := secrets.token_urlsafe(64)[:64])
 
@@ -21,6 +23,8 @@ class LoginView(APIView):
 
 
 class CallbackView(APIView):
+    authentication_classes = []
+
     def get(self, request):
         qs = request.query_params
         authCont = AuthController()
@@ -52,11 +56,15 @@ class CallbackView(APIView):
 
 
 class LogoutView(APIView):
+    authentication_classes = []
+
     def get(self, request):
         return JsonResponse({'detail': 'Successfully logged out.'})
 
 
 class AuthenticationCheckView(APIView):
+    authentication_classes = []
+
     def get(self, request):
         authenticated = True
 
@@ -80,3 +88,10 @@ class UserAvatarView(APIView):
         response['Cache-Control'] = "max-age=0"
 
         return response
+
+
+class UserView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request):
+        return JsonResponse({'data': AuthController().get_user_information(request.user)})

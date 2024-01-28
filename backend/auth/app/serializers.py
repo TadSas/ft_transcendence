@@ -24,6 +24,7 @@ class UsersSerializer(serializers.Serializer):
             login=validated_data['login'],
             defaults=validated_data
         )
+
         return instance
 
     def update(self, instance, validated_data):
@@ -36,6 +37,7 @@ class UsersSerializer(serializers.Serializer):
         instance.updated_at = validated_data.get('updated_at', instance.updated_at)
         instance.two_factor_enabled = validated_data.get('two_factor_enabled', instance.two_factor_enabled)
         instance.save()
+
         return instance
 
 

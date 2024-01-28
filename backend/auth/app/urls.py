@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import (
+    UserView,
     LoginView,
     LogoutView,
     CallbackView,
@@ -10,6 +11,7 @@ from .views import (
 
 
 urlpatterns = [
+    path('user', UserView.as_view(), name='api-user'),
     path('login', LoginView.as_view(), name='api-login'),
     path('logout', LogoutView.as_view(), name='api-logout'),
     path('avatar', UserAvatarView.as_view(), name='api-avatar'),
