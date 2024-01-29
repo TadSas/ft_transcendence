@@ -44,7 +44,22 @@ var SettingsController = (() => {
           showMessage(response['message'])
       }
     }).send()
-}
+  }
+
+  self.submit = (formId) => {
+    const body = {}
+
+    Array.from(document.getElementById(formId).getElementsByTagName('input')).forEach(element => {
+      if (element.type === 'checkbox')
+        body[element.id] = element.checked
+      else
+        body[element.id] = element.value
+    })
+
+    new httpRequest({resource: 'auth/api/user', method: 'POST', body: JSON.stringify(body), successCallback: response => {
+      return response
+    }}).send()
+  }
 
   return self
 })()

@@ -7,7 +7,7 @@ class httpRequest {
     this.skipLoader = skipLoader || false
     this.sync = sync || false
 
-    if (typeof headers === 'object' && Object.keys(headers).length !== 0)
+    if (!headers || typeof headers === 'object' && Object.keys(headers).length !== 0)
       this.headers = {'Content-Type': 'application/json', ...(headers || {})}
 
     if (this.#validateParams())
@@ -80,7 +80,7 @@ class httpRequest {
 
     request.open(this.method, this.resource, false)
 
-    if (typeof headers === 'object' && Object.keys(headers).length !== 0)
+    if (!this.headers || typeof this.headers === 'object' && Object.keys(this.headers).length !== 0)
       Object.entries(this.headers).forEach(([key, value]) => {
         request.setRequestHeader(key, value)
       })

@@ -3,14 +3,14 @@ import jwt
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.authentication import BaseAuthentication
 
-from auth.settings import SECRET_KEY
+from auth.settings import SECRET_KEY, JWT_COOKIE_NAME
 
 from .models import Users
 
 
 class JWTAuthentication(BaseAuthentication):
     def authenticate(self, request):
-        if not (token := request.COOKIES.get('jwt')):
+        if not (token := request.COOKIES.get(JWT_COOKIE_NAME)):
             raise AuthenticationFailed({'authenticated': False})
 
         try:

@@ -3,13 +3,12 @@ import uuid
 import secrets
 import datetime
 
-from django.shortcuts import redirect
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser
 
-from auth.settings import SECRET_KEY, ALLOWED_IMAGE_EXTENSIONS
+from auth.settings import SECRET_KEY, ALLOWED_IMAGE_EXTENSIONS, JWT_COOKIE_NAME
 
 from .permissions import JWTAuthentication
 from .main import AuthController, UserController
@@ -37,7 +36,7 @@ class CallbackView(APIView):
         auth_state = request.session.get('auth_state')
 
         if not auth_state or auth_state != callback_state:
-            return redirect("/login")
+            return HttpResponseRedirect("/login")
 
         user_id = authCont.retrieve_logged_user(
             authCont.exchange_access_token(callback_code, callback_state)
@@ -51,17 +50,21 @@ class CallbackView(APIView):
 
         token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
 
-        response = redirect("/login")
-        response.set_cookie(key='jwt', value=token, httponly=True)
+        response = HttpResponseRedirect("/login")
+        response.set_cookie(key=JWT_COOKIE_NAME, value=token, httponly=True, secure=True, samesite='Lax')
 
         return response
 
 
 class LogoutView(APIView):
-    authentication_classes = []
+    authentication_classes = [JWTAuthentication]
 
     def get(self, request):
-        return JsonResponse({'detail': 'Successfully logged out.'})
+        response = HttpResponseRedirect('/login')
+        response.delete_cookie(JWT_COOKIE_NAME)
+        response.delete_cookie('sessionid')
+
+        return response
 
 
 class AuthenticationCheckView(APIView):
@@ -70,7 +73,7 @@ class AuthenticationCheckView(APIView):
     def get(self, request):
         authenticated = True
 
-        if not (token := request.COOKIES.get('jwt')):
+        if not (token := request.COOKIES.get(JWT_COOKIE_NAME)):
             authenticated = False
 
         try:
@@ -98,7 +101,7 @@ class UserAvatarView(APIView):
 
         avatar = request_files['avatar']
 
-        if (avatar_extension := str(avatar).split('.')[-1]) not in ALLOWED_IMAGE_EXTENSIONS:
+        if (avatar_extension := str(avatar).split('.')[-1]).lower() not in ALLOWED_IMAGE_EXTENSIONS:
             return JsonResponse({
                 'status': 1,
                 'message':(
@@ -119,3 +122,6 @@ class UserView(APIView):
 
     def get(self, request):
         return JsonResponse({'status': 0, 'data': UserController().get_user_information(request.user)})
+    
+    def post(self, request):
+        return JsonResponse({'status': 0, **UserController().update_user_information(request.user, request.data)})

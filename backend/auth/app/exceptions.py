@@ -3,7 +3,7 @@ from rest_framework.views import exception_handler
 
 
 class AuthException(Exception):
-    def __init__(self, message, errors):
+    def __init__(self, message, errors = ''):
         super().__init__(message)
 
         self.errors = errors

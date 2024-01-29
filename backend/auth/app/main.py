@@ -62,7 +62,6 @@ class AuthController:
         AuthException
 
         """
-        # TODO: Check if access_token stored in dabase expired, then query the new one
         request = Request(
             url=f"{FTAPI.AUTHORIZATION_URL}/oauth/token",
             data=urlencode({
@@ -151,21 +150,6 @@ class UserController:
     def __init__(self):
         pass
 
-    def get_user_avatar(self, user: Users) -> BytesIO:
-        """ Get user avatar as a bytes
-
-        Parameters
-        ----------
-        user : Users
-
-        Returns
-        -------
-        BytesIO
-
-        """
-        with open(f'{MEDIA_ROOT}/{user.avatar_path}', 'rb') as fd:
-            return BytesIO(fd.read())
-
     def get_user_information(self, user: Users) -> dict:
         """ Returns user data
 
@@ -187,6 +171,54 @@ class UserController:
         user_data['created_at'] = user.created_at.strftime("%d-%m-%Y %H:%M")
 
         return user_data
+    
+    def update_user_information(self, user: Users, user_data: dict) -> dict:
+        """ Updates user information using form data
+
+        Parameters
+        ----------
+        user : Users
+        user_data : dict
+
+        Returns
+        -------
+        dict
+
+        """
+        if not (user_data := dict(filter(lambda item: item[0] and item[1], user_data.items()))):
+            return {'message': 'Nothing to update'}
+
+        allowed_fields = {'first_name', 'last_name', 'email', 'two_factor_enabled'}
+        received_fields = set(user_data.keys())
+
+        if allowed_fields < received_fields:
+            pass
+
+        serializer = UsersSerializer(data={'login': user.login, **user_data}, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+        else:
+            # TODO: Return wrong fields with its descriptions
+            raise AuthException("Error occurred while updating user information", serializer.errors)
+
+    def get_user_avatar(self, user: Users) -> BytesIO:
+        """ Get user avatar as a bytes
+
+        Parameters
+        ----------
+        user : Users
+
+        Returns
+        -------
+        BytesIO
+
+        """
+        if not (avatar_path := Path(f'{MEDIA_ROOT}/{user.avatar_path}')).is_file():
+            return BytesIO(b'')
+
+        with open(avatar_path, 'rb') as fd:
+            return BytesIO(fd.read())
 
     def update_user_avatar(self, user: Users, new_avatar_path: str) -> None:
         """ Updateding user avatar and removing the old one

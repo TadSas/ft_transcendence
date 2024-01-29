@@ -24,7 +24,7 @@ export default class extends BaseView {
     <div class="position-relative p-5 text-start bg-body border border-dashed rounded-4 mb-5">
       <h3 class="text-body-emphasis border-bottom pb-2">General information</h3>
       <div class="d-flex align-items-end flex-row mt-4">
-        <div class="container text-center">
+        <div id="userSettings" class="container text-center">
           ${
             (() => {
               let content = ''
@@ -51,7 +51,7 @@ export default class extends BaseView {
             })()
           }
           <div class="d-flex align-items-start">
-            ${Components.button({})}
+            ${Components.button({'buttonLabel': 'Submit', 'js': {'onclick': "SettingsController.submit('userSettings')"}})}
           </div>
         </div>
       </div>
@@ -71,7 +71,12 @@ export default class extends BaseView {
 
         <div class="col-lg-4">
           <div class="position-relative p-5 text-center bg-body border border-dashed rounded-4">
-            <img id="userAvatar" src="/auth/api/avatar" width="256px" height="256px" class="rounded-circle border object-fit-cover" onclick="SettingsController.triggerAvatarUpload('userAvatarInput')" >
+            <div class="avatar-container">
+              <img id="userAvatar" src="/auth/api/avatar" width="256px" height="256px" class="rounded-circle border object-fit-cover" onclick="SettingsController.triggerAvatarUpload('userAvatarInput')">
+              <div class="overlay d-flex justify-content-center align-items-center pe-none">
+                <i class="bi bi-pencil-square h3 pe-none"></i>
+              </div>
+            </div>
             ${Components.file({'id': 'userAvatarInput', 'hide': true, 'js': {'onchange': `SettingsController.uploadAvatar('userAvatarInput','userAvatar')`}})}
             <h1>username</h1>
             <span class="badge rounded-pill text-bg-${statuses[status || 'offline']}">
