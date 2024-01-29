@@ -24,7 +24,7 @@ export default class extends BaseSnippet {
           </form>
           <div class="flex-shrink-0 dropdown">
             <a href="/" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-              <img src="/auth/api/avatar" alt="mdo" width="32" height="32" class="rounded-circle object-fit-cover">
+              <img id="headerUserAvatar" src="/auth/api/avatar" alt="mdo" width="32" height="32" class="rounded-circle object-fit-cover">
             </a>
             <ul class="dropdown-menu shadow" style="">
               <li>

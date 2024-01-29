@@ -2,11 +2,13 @@ class httpRequest {
   constructor({resource, method, headers, body, successCallback, skipLoader, sync}) {
     this.resource = resource || ''
     this.method = method || 'GET'
-    this.headers = {'Content-Type': 'application/json', ...(headers || {})}
     this.body = body || {}
     this.successCallback = successCallback
     this.skipLoader = skipLoader || false
     this.sync = sync || false
+
+    if (typeof headers === 'object' && Object.keys(headers).length !== 0)
+      this.headers = {'Content-Type': 'application/json', ...(headers || {})}
 
     if (this.#validateParams())
       return
@@ -31,7 +33,7 @@ class httpRequest {
       headers: this.headers,
     }
 
-    if (this.method === 'POST')
+    if (['POST', 'PUT'].includes(this.method))
       this.options['body'] = this.body
   }
 
@@ -78,9 +80,10 @@ class httpRequest {
 
     request.open(this.method, this.resource, false)
 
-    Object.entries(this.headers).forEach(([key, value]) => {
-      request.setRequestHeader(key, value)
-    })
+    if (typeof headers === 'object' && Object.keys(headers).length !== 0)
+      Object.entries(this.headers).forEach(([key, value]) => {
+        request.setRequestHeader(key, value)
+      })
 
     request.send(this.body)
 

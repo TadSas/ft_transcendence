@@ -28,7 +28,7 @@ var Components = (() => {
       ${
         (() => {
           let events = ''
-          
+
           for (const event in js) {
             events += `${event}=${js[event]} `
           }
@@ -59,7 +59,7 @@ var Components = (() => {
     return `
     <div class="${hide ? 'visually-hidden' : 'form-check form-switch'}">
       ${labelIncluded && labelPosition == 'before' ? label : ''}
-      <input class="form-check-input" type="checkbox" id="${id}" checked="" ${disabled && 'disabled'}>
+      <input class="form-check-input" type="checkbox" id="${id}" ${placeholder && 'checked'} ${disabled && 'disabled'}>
       ${labelIncluded && labelPosition == 'after' ? label : ''}
     </div>
     `

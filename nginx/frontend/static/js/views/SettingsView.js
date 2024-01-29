@@ -71,8 +71,8 @@ export default class extends BaseView {
 
         <div class="col-lg-4">
           <div class="position-relative p-5 text-center bg-body border border-dashed rounded-4">
-            <img id="userAvatar" src="/auth/api/avatar" width="256px" height="256px" class="rounded-circle border object-fit-cover" onclick="SettingsController.triggerAvatarUpload('avatarInput')" >
-            ${Components.file({'id': 'avatarInput', 'hide': true, 'js': {'onchange': "SettingsController.uploadAvatar()"}})}
+            <img id="userAvatar" src="/auth/api/avatar" width="256px" height="256px" class="rounded-circle border object-fit-cover" onclick="SettingsController.triggerAvatarUpload('userAvatarInput')" >
+            ${Components.file({'id': 'userAvatarInput', 'hide': true, 'js': {'onchange': `SettingsController.uploadAvatar('userAvatarInput','userAvatar')`}})}
             <h1>username</h1>
             <span class="badge rounded-pill text-bg-${statuses[status || 'offline']}">
               <span class="align-middle">Status: ${status}</span>

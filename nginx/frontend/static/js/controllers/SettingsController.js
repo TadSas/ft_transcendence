@@ -5,22 +5,43 @@ var SettingsController = (() => {
   var foo = () => {}
 
   // Public
-  self.triggerAvatarUpload = (elementId) => {
-    document.getElementById(elementId).click()
+  self.triggerAvatarUpload = (avatarImageId) => {
+    document.getElementById(avatarImageId).click()
   }
 
-  self.uploadAvatar = () => {
+  self.uploadAvatar = (avatarImageInputId, avatarImageId) => {
     const formData = new FormData()
 
-    formData.append("filename", document.getElementById('avatarInput').files[0])
+    formData.append("avatar", document.getElementById(avatarImageInputId).files[0])
 
     new httpRequest({
       resource: 'auth/api/avatar',
       method: 'PUT',
-      headers: {'Content-Type': 'multipart/form-data'},
+      headers: {},
       body: formData,
       successCallback: response => {
-        return response
+        if (!response)
+          return showMessage('Failed to upload avatar. The size of image exceeded the 1MB', 'danger')
+
+        if ('status' in response && response['status'] === 0) {
+          const selectedImage = document.getElementById(avatarImageId)
+          const headerImage = document.getElementById('headerUserAvatar')
+          const fileInput = document.getElementById(avatarImageInputId)
+
+          if (fileInput.files && fileInput.files[0]) {
+            const reader = new FileReader()
+
+            reader.onload = function(e) {
+                selectedImage.src = e.target.result
+                headerImage.src = e.target.result
+            }
+
+            reader.readAsDataURL(fileInput.files[0])
+          }
+        }
+
+        if ('message' in response && response['message'])
+          showMessage(response['message'])
       }
     }).send()
 }

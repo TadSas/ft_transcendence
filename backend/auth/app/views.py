@@ -1,4 +1,5 @@
 import jwt
+import uuid
 import secrets
 import datetime
 
@@ -8,10 +9,10 @@ from django.http import JsonResponse, HttpResponse
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser
 
-from auth.settings import SECRET_KEY
+from auth.settings import SECRET_KEY, ALLOWED_IMAGE_EXTENSIONS
 
-from .main import AuthController
 from .permissions import JWTAuthentication
+from .main import AuthController, UserController
 
 
 class LoginView(APIView):
@@ -20,7 +21,7 @@ class LoginView(APIView):
     def get(self, request):
         request.session['auth_state'] = (state := secrets.token_urlsafe(64)[:64])
 
-        return JsonResponse({'redirect_uri': AuthController().get_authorization_url(state)})
+        return JsonResponse({'status': 0, 'redirect_uri': AuthController().get_authorization_url(state)})
 
 
 class CallbackView(APIView):
@@ -77,7 +78,7 @@ class AuthenticationCheckView(APIView):
         except Exception:
             authenticated = False
 
-        return JsonResponse({'authenticated': authenticated})
+        return JsonResponse({'status': 0, 'authenticated': authenticated})
 
 
 class UserAvatarView(APIView):
@@ -85,19 +86,36 @@ class UserAvatarView(APIView):
     authentication_classes = [JWTAuthentication]
 
     def get(self, request):
-        response = HttpResponse(AuthController().get_user_avatar())
+        response = HttpResponse(UserController().get_user_avatar(request.user))
         response['Content-Type'] = "image/png"
         response['Cache-Control'] = "max-age=0"
 
         return response
 
     def put(self, request):
-        file = request.FILES['avatar']
-        return JsonResponse({'message': 'Avatar uploaded'})
+        if not (request_files := request.FILES) or 'avatar' not in request_files:
+            return JsonResponse({'status': 1, 'message': 'No avatar found to upload'})
+
+        avatar = request_files['avatar']
+
+        if (avatar_extension := str(avatar).split('.')[-1]) not in ALLOWED_IMAGE_EXTENSIONS:
+            return JsonResponse({
+                'status': 1,
+                'message':(
+                    'Uploaded file has an unsupported extension. '
+                    f"(Allowed extensions: {', '.join(ALLOWED_IMAGE_EXTENSIONS)})"
+                )
+            })
+
+        avatar.name = f"{str(uuid.uuid4())}.{avatar_extension}"
+
+        UserController().update_user_avatar(request.user, avatar)
+
+        return JsonResponse({'status': 0, 'message': 'Avatar successfully updated'})
 
 
 class UserView(APIView):
     authentication_classes = [JWTAuthentication]
 
     def get(self, request):
-        return JsonResponse({'data': AuthController().get_user_information(request.user)})
+        return JsonResponse({'status': 0, 'data': UserController().get_user_information(request.user)})

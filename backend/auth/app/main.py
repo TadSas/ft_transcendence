@@ -2,6 +2,7 @@ import json
 import secrets
 
 from io import BytesIO
+from pathlib import Path
 from datetime import datetime
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -11,8 +12,11 @@ from .exceptions import AuthException
 from .config import FTTRANSCENDENCE, FTAPI
 from .serializers import UsersSerializer, AuthTokenSerializer
 
+from auth.settings import MEDIA_ROOT
+
 
 class AuthController:
+
     def __init__(self):
         pass
 
@@ -120,9 +124,13 @@ class AuthController:
         try:
             with urlopen(request) as response:
                 response_data = json.loads(response.read().decode())
+                login = response_data.get('login', '')
+
+                if user := Users.objects.filter(login=login).first():
+                    return str(user.id)
 
                 serializer = UsersSerializer(data={
-                    'login': response_data.get('login', ''),
+                    'login': login,
                     'email': response_data.get('email', ''),
                     'first_name': response_data.get('first_name', ''),
                     'last_name': response_data.get('last_name', ''),
@@ -137,23 +145,29 @@ class AuthController:
         except Exception as ex:
             raise AuthException(str(ex))
 
-    def get_user_avatar(self, user_id: str = '') -> BytesIO:
-        """
+
+class UserController:
+
+    def __init__(self):
+        pass
+
+    def get_user_avatar(self, user: Users) -> BytesIO:
+        """ Get user avatar as a bytes
 
         Parameters
         ----------
-        user_id : str
+        user : Users
 
         Returns
         -------
         BytesIO
 
         """
-        with open('/media/avatars/default/default_avatar.jpg', 'rb') as fd:
+        with open(f'{MEDIA_ROOT}/{user.avatar_path}', 'rb') as fd:
             return BytesIO(fd.read())
 
     def get_user_information(self, user: Users) -> dict:
-        """  Returns user data
+        """ Returns user data
 
         Parameters
         ----------
@@ -169,8 +183,26 @@ class AuthController:
         user_data.pop('id')
         user_data.pop('updated_at')
         user_data.pop('avatar_path')
-        user_data.pop('two_factor_enabled')
-        
+
         user_data['created_at'] = user.created_at.strftime("%d-%m-%Y %H:%M")
 
         return user_data
+
+    def update_user_avatar(self, user: Users, new_avatar_path: str) -> None:
+        """ Updateding user avatar and removing the old one
+
+        Parameters
+        ----------
+        user : Users
+        new_avatar_path : str
+
+        """
+        if (old_avatar_path := Path(f'{MEDIA_ROOT}/{user.avatar_path}')).is_file():
+            old_avatar_path.unlink()
+
+        serializer = UsersSerializer(data={'login': user.login, 'avatar_path': new_avatar_path}, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+        else:
+            raise AuthException("Error occurred while updating user avatar", serializer.errors)
