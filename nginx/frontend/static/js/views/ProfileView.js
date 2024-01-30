@@ -145,10 +145,10 @@ export default class extends BaseView {
         <div class="col-lg-4">
           <div class="position-relative p-5 text-center bg-body border border-dashed rounded-4">
             <img src="/auth/api/avatar" width="256px" height="256px" class="rounded-circle border object-fit-cover">
-            <h1>username</h1>
+            <h1>${userInformation['login'] || ''}</h1>
             <span class="badge rounded-pill text-bg-${statuses[status || 'offline']}">
               <span class="align-middle">Status: ${status}</span>
-              <span class="spinner-grow spinner-grow-sm align-middle"></span>
+              ${['online', 'in-game'].includes(status) ? '<span class="spinner-grow spinner-grow-sm align-middle"></span>': ''}
             </span>
           </div>
         </div>

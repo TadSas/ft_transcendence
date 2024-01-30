@@ -126,6 +126,8 @@ class AuthController:
                 login = response_data.get('login', '')
 
                 if user := Users.objects.filter(login=login).first():
+                    UserController().set_status(user, 'online')
+
                     return str(user.id)
 
                 serializer = UsersSerializer(data={
@@ -133,6 +135,7 @@ class AuthController:
                     'email': response_data.get('email', ''),
                     'first_name': response_data.get('first_name', ''),
                     'last_name': response_data.get('last_name', ''),
+                    'status': 'online',
                 })
 
                 if serializer.is_valid():
@@ -187,6 +190,14 @@ class UserController:
         """
         if not (user_data := dict(filter(lambda item: item[1] != '', user_data.items()))):
             return {'message': 'Nothing to update', 'data': {}}
+        
+        user_info = Users.objects.filter(login=user.login).first().__dict__
+
+        for field_name, field_value in user_data.items():
+            if user_info.get(field_name, '') != field_value:
+                break
+        else:
+            return {'message': 'Nothing to update', 'data': {}}
 
         allowed_fields = {'first_name', 'last_name', 'email', 'two_factor_enabled'}
         received_fields = set(user_data.keys())
@@ -239,3 +250,20 @@ class UserController:
             serializer.save()
         else:
             raise AuthException("Error occurred while updating user avatar", serializer.errors)
+
+    def set_status(self, user: Users, status: str) -> None:
+        """ Sets the user status
+
+        Parameters
+        ----------
+        user : Users
+        status : str
+
+        """
+        if status not in ('offline', 'online', 'in-game'):
+            return
+
+        serializer = UsersSerializer(data={'login': user.login, 'status': status}, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()

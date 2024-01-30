@@ -60,6 +60,8 @@ class LogoutView(APIView):
     authentication_classes = [JWTAuthentication]
 
     def get(self, request):
+        UserController().set_status(request.user, 'offline')
+
         response = HttpResponseRedirect('/login')
         response.delete_cookie(JWT_COOKIE_NAME)
         response.delete_cookie('sessionid')

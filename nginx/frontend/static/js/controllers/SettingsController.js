@@ -57,11 +57,35 @@ var SettingsController = (() => {
     })
 
     new httpRequest({resource: 'auth/api/user', method: 'POST', body: JSON.stringify(body), successCallback: response => {
+      console.log('response:', response)
       if ('message' in response) {
-        if ('data' in response)
+        if ('data' in response) {
+          for (const [key, value] of Object.entries(response['data'])) {
+            if (value.constructor === Array && value.length > 0)
+              document.getElementById(`${key}_invalid_feedback`).innerText = value[0]
+
+            document.getElementById(key).classList.add('is-invalid')
+          }
+
           showMessage(response['message'], 'danger')
-        else
-          showMessage(response['message'])
+        }
+        else {
+          for (const [key, value] of Object.entries(body)) {
+            if (!value)
+              continue
+
+            const element = document.getElementById(key)
+
+            if (element.classList.contains('is-invalid'))
+              element.classList.remove('is-invalid')
+
+            element.classList.add('is-valid')
+            element.value = ''
+            element.placeholder = value
+          }
+
+          showMessage(response['message'], 'success')
+        }
       }
     }}).send()
   }

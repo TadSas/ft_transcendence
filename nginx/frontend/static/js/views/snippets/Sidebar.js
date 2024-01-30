@@ -31,7 +31,7 @@ export default class extends BaseSnippet {
     return `
       <div class="d-flex flex-column flex-shrink-0 p-3 bg-body-tertiary vh-100">
         <a href="/" class="d-flex mx-3 align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none" data-link>
-          <i class="bi bi-bootstrap-fill pe-none me-2"></i>
+          <i class="bi bi-bootstrap-fill pe-none me-2 margin-13px"></i>
           <span class="fs-4 sidebar-title-transition">Sidebar title</span>
         </a>
         <hr>

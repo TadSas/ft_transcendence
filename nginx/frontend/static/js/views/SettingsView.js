@@ -40,6 +40,7 @@ export default class extends BaseView {
                   <div class="col-8 col-sm-8">
                     <div class="px-2">
                       ${userInformationHeaders[header]['type']({'id': header, 'placeholder': userInformation[header] || ''})}
+                      <div class="invalid-feedback" id="${header}_invalid_feedback"></div>
                     </div>
                   </div>
                 </div>
@@ -78,10 +79,10 @@ export default class extends BaseView {
               </div>
             </div>
             ${Components.file({'id': 'userAvatarInput', 'hide': true, 'js': {'onchange': `SettingsController.uploadAvatar('userAvatarInput','userAvatar')`}})}
-            <h1>username</h1>
+            <h1>${userInformation['login'] || ''}</h1>
             <span class="badge rounded-pill text-bg-${statuses[status || 'offline']}">
               <span class="align-middle">Status: ${status}</span>
-              <span class="spinner-grow spinner-grow-sm align-middle"></span>
+              ${['online', 'in-game'].includes(status) ? '<span class="spinner-grow spinner-grow-sm align-middle"></span>': ''}
             </span>
           </div>
         </div>
