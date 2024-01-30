@@ -171,7 +171,7 @@ class UserController:
         user_data['created_at'] = user.created_at.strftime("%d-%m-%Y %H:%M")
 
         return user_data
-    
+
     def update_user_information(self, user: Users, user_data: dict) -> dict:
         """ Updates user information using form data
 
@@ -185,22 +185,23 @@ class UserController:
         dict
 
         """
-        if not (user_data := dict(filter(lambda item: item[0] and item[1], user_data.items()))):
-            return {'message': 'Nothing to update'}
+        if not (user_data := dict(filter(lambda item: item[1] != '', user_data.items()))):
+            return {'message': 'Nothing to update', 'data': {}}
 
         allowed_fields = {'first_name', 'last_name', 'email', 'two_factor_enabled'}
         received_fields = set(user_data.keys())
 
-        if allowed_fields < received_fields:
-            pass
+        if allowed_fields.issubset(received_fields) and (diff_fields := received_fields.difference(allowed_fields)):
+            return {'message': f"Unsupported fields were submitted: ({', '.join(diff_fields)})", 'data': {}}
 
         serializer = UsersSerializer(data={'login': user.login, **user_data}, partial=True)
 
         if serializer.is_valid():
             serializer.save()
         else:
-            # TODO: Return wrong fields with its descriptions
-            raise AuthException("Error occurred while updating user information", serializer.errors)
+            return {'message': 'Invalid values for fields', 'data': serializer.errors}
+
+        return {'message': 'User data successfully updated'}
 
     def get_user_avatar(self, user: Users) -> BytesIO:
         """ Get user avatar as a bytes

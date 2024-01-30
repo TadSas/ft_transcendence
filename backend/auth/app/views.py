@@ -122,6 +122,6 @@ class UserView(APIView):
 
     def get(self, request):
         return JsonResponse({'status': 0, 'data': UserController().get_user_information(request.user)})
-    
+
     def post(self, request):
         return JsonResponse({'status': 0, **UserController().update_user_information(request.user, request.data)})

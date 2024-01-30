@@ -51,13 +51,18 @@ var SettingsController = (() => {
 
     Array.from(document.getElementById(formId).getElementsByTagName('input')).forEach(element => {
       if (element.type === 'checkbox')
-        body[element.id] = element.checked
+        body[element.id] = element.checked || false
       else
         body[element.id] = element.value
     })
 
     new httpRequest({resource: 'auth/api/user', method: 'POST', body: JSON.stringify(body), successCallback: response => {
-      return response
+      if ('message' in response) {
+        if ('data' in response)
+          showMessage(response['message'], 'danger')
+        else
+          showMessage(response['message'])
+      }
     }}).send()
   }
 
