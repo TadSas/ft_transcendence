@@ -36,7 +36,7 @@ class Users(AbstractBaseUser):
     )
     avatar_path = models.ImageField(
         upload_to='avatars',
-        default='avatars/default/stormtrooper.jpg'
+        default='avatars/default/default_avatar.jpg'
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

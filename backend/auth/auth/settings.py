@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import os
+
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -24,7 +26,7 @@ MEDIA_URL = '/media/'
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-$82dgb2t_3h#i+swi#7c!bi2x%iyczec62c#%!x%&fbmax_=gh'
+SECRET_KEY = os.environ['auth_project_secret']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -133,14 +135,14 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = os.environ['TIME_ZONE']
 
 USE_I18N = True
 
 USE_TZ = True
 
 ALLOWED_IMAGE_EXTENSIONS = [
-    'jpg', 'jpeg', 'png', '.gif'
+    'jpg', 'jpeg', 'png', 'gif'
 ]
 
 

@@ -14,7 +14,7 @@ export default class extends BaseView {
       'first_name': {'label': 'Name', 'type': Components.text},
       'last_name': {'label': 'Surname', 'type':  Components.text},
       'email': {'label': 'Email', 'type':  Components.email},
-      'two_factor_enabled': {'label': 'Two facto authentication', 'type': Components.checkbox}
+      'two_factor_enabled': {'label': 'Two factor authentication', 'type': Components.checkbox}
     }
 
     const user = await new httpRequest({resource: 'auth/api/user', method: 'GET', successCallback: response => {return response}}).send()

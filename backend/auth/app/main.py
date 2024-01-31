@@ -7,6 +7,8 @@ from datetime import datetime
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
+from django.utils import timezone
+
 from .models import Users
 from .exceptions import AuthException
 from .config import FTTRANSCENDENCE, FTAPI
@@ -171,7 +173,7 @@ class UserController:
         user_data.pop('updated_at')
         user_data.pop('avatar_path')
 
-        user_data['created_at'] = user.created_at.strftime("%d-%m-%Y %H:%M")
+        user_data['created_at'] = timezone.localtime(user.created_at).strftime("%d-%m-%Y %H:%M")
 
         return user_data
 
