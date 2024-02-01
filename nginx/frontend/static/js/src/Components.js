@@ -1,15 +1,40 @@
 var Components = (() => {
   var self = {}
 
+  var buttonClasses = {
+    'primary': 'btn btn-primary',
+    'secondary': 'btn btn-secondary',
+    'success': 'btn btn-success',
+    'danger': 'btn btn-danger',
+    'warning': 'btn btn-warning',
+    'info': 'btn btn-info',
+    'light': 'btn btn-light',
+    'dark': 'btn btn-dark',
+    'link': 'btn btn-link',
+    'close': 'btn-close',
+  }
+
   // Private
   var foo = () => {}
 
-  self.button = ({buttonLabel = '', buttonType = 'button', hide = false, disabled = false, js = {}}) => {
+  self.button = ({buttonId = '', buttonLabel = '', buttonType = 'button', buttonClass = 'primary', hide = false, disabled = false, dataAttributes = {}, js = {}}) => {
     return `
     <button
+      id="${buttonId}"
       type="${buttonType}"
-      class="${hide ? 'visually-hidden' : 'btn btn-primary'}"
+      class="${hide ? 'visually-hidden' : buttonClasses[buttonClass || 'primary']}"
       ${disabled ? 'disabled' : ''}
+      ${
+        (() => {
+          let attributes = ''
+
+          for (const attribute in dataAttributes) {
+            attributes += `data-${attribute}=${dataAttributes[attribute]} `
+          }
+
+          return attributes
+        })()
+      }
       ${
         (() => {
           let events = ''
@@ -81,25 +106,46 @@ var Components = (() => {
     `
   }
 
-  self.modal = ({id = '', titleId = '', title = '', body = '', cancelButtonTitle = '', approveButtonTitle = ''}) => {
-    // const button = self.button({})
-    // const cancelButton = self.button({})
-    // const approveButton = self.button({})
+  self.modal = ({
+    show = false, size = '',
+    modalId = '',  buttonId = '', cancelButtonId = '', approveButtonId = '',
+    modalTitle = '', buttonTitle = '', cancelButtonTitle = '', approveButtonTitle = '',
+    modalBody = '', buttonClass = '', cancelButtonClass = '', approveButtonClass = '',
+  }) => {
+    let button = ''
+    let cancelButton = ''
+    let approveButton = ''
 
+    if (buttonId || buttonTitle || buttonClass)
+      button = self.button({'buttonId': buttonId, 'buttonClass': buttonClass})
+    if (cancelButtonId || cancelButtonTitle || cancelButtonClass)
+      cancelButton = self.button({'buttonId': cancelButtonId, 'buttonClass': cancelButtonClass, 'buttonLabel': cancelButtonTitle, 'dataAttributes': {'bs-dismiss': 'modal'}})
+    if (approveButtonId || approveButtonTitle || approveButtonClass)
+      approveButton = self.button({'buttonId': approveButtonId, 'buttonClass': approveButtonClass, 'buttonLabel': approveButtonTitle})
+
+    const modalSizes = {
+      'small': 'modal-sm',
+      'default': '',
+      'large': 'modal-lg',
+      'extra_large': 'modal-xl',
+    }
+
+    // ${self.button({'dataAttributes': {'bs-toggle': 'modal', 'bs-target': '#staticBackdropLive'}, 'buttonLabel': buttonTitle})}
     return `
-    <div class="modal fade" id="${id}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLiveLabel" style="display: none;" aria-modal="true" role="dialog">
-      <div class="modal-dialog">
+    <div class="modal-backdrop fade ${show ? 'show' : ''}"></div>
+    <div class="modal fade ${show ? 'show' : ''}" ${show ? 'style="display: block;"' : 'style="display: none;"'} id="${modalId}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLiveLabel" aria-modal="true" role="dialog">
+      <div class="${modalSizes[size || 'default']} modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">
-            <h1 class="modal-title fs-5" id="${titleId}">${title}</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <h1 class="modal-title fs-5">${modalTitle}</h1>
+            ${self.button({'buttonClass': 'close', 'dataAttributes': {'bs-dismiss': 'modal'}})}
           </div>
           <div class="modal-body">
-            <p>${body}</p>
+            <p>${modalBody}</p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${cancelButtonTitle}</button>
-            <button type="button" class="btn btn-primary">${approveButtonTitle}</button>
+            ${cancelButton}
+            ${approveButton}
           </div>
         </div>
       </div>

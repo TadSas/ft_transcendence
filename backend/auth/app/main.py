@@ -17,7 +17,7 @@ from .exceptions import AuthException
 from .config import FTTRANSCENDENCE, FTAPI
 from .serializers import UsersSerializer, AuthTokenSerializer
 
-from auth.settings import MEDIA_ROOT, QR_SECRET
+from auth.settings import MEDIA_ROOT
 
 
 class AuthController:
@@ -314,10 +314,13 @@ class QRCodeController:
         str
 
         """
-        secret = self.save_secret(
-            user=user,
-            secret="".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567", k=32))
-        )
+        try:
+            secret = QRMeta.objects.filter(user_id=user.id).first().secret
+        except Exception:
+            secret = self.save_secret(
+                user=user,
+                secret="".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567", k=32))
+            )
 
         totp_auth_qs = urlencode({
             'secret': secret,

@@ -27,7 +27,6 @@ MEDIA_URL = '/media/'
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ['AUTH_PROJECT_SECRET']
-QR_SECRET = os.environ['AUTH_QR_SECRET']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
