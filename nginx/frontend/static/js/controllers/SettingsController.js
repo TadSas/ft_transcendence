@@ -57,10 +57,9 @@ var SettingsController = (() => {
     })
 
     new httpRequest({resource: 'auth/api/user', method: 'POST', body: JSON.stringify(body), successCallback: response => {
-      console.log('response:', response)
       if ('message' in response) {
-        if ('data' in response) {
-          for (const [key, value] of Object.entries(response['data'])) {
+        if ('errors' in response) {
+          for (const [key, value] of Object.entries(response['errors'])) {
             if (value.constructor === Array && value.length > 0)
               document.getElementById(`${key}_invalid_feedback`).innerText = value[0]
 
@@ -86,6 +85,9 @@ var SettingsController = (() => {
 
           showMessage(response['message'], 'success')
         }
+
+        if ('data'in response && 'qr' in response['data'])
+          // Create modal with qr in the card component
       }
     }}).send()
   }

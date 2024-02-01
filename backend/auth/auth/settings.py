@@ -26,7 +26,8 @@ MEDIA_URL = '/media/'
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ['auth_project_secret']
+SECRET_KEY = os.environ['AUTH_PROJECT_SECRET']
+QR_SECRET = os.environ['AUTH_QR_SECRET']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -57,6 +58,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'app.middlewares.TimezoneMiddleware',
 ]
 
 ROOT_URLCONF = 'auth.urls'

@@ -50,7 +50,7 @@ class CallbackView(APIView):
 
         token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
 
-        response = HttpResponseRedirect("/login")
+        response = HttpResponseRedirect("/login#2fa")
         response.set_cookie(key=JWT_COOKIE_NAME, value=token, httponly=True, secure=True, samesite='Lax')
 
         return response

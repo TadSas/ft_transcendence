@@ -1,4 +1,7 @@
 import json
+import base64
+import qrcode
+import random
 import secrets
 
 from io import BytesIO
@@ -9,12 +12,12 @@ from urllib.request import Request, urlopen
 
 from django.utils import timezone
 
-from .models import Users
+from .models import Users, QRMeta
 from .exceptions import AuthException
 from .config import FTTRANSCENDENCE, FTAPI
 from .serializers import UsersSerializer, AuthTokenSerializer
 
-from auth.settings import MEDIA_ROOT
+from auth.settings import MEDIA_ROOT, QR_SECRET
 
 
 class AuthController:
@@ -190,31 +193,37 @@ class UserController:
         dict
 
         """
+        data = {}
+        user_login = user.login
+
         if not (user_data := dict(filter(lambda item: item[1] != '', user_data.items()))):
-            return {'message': 'Nothing to update', 'data': {}}
-        
-        user_info = Users.objects.filter(login=user.login).first().__dict__
+            return {'message': 'Nothing to update'}
+
+        user_info = Users.objects.filter(login=user_login).first().__dict__
 
         for field_name, field_value in user_data.items():
             if user_info.get(field_name, '') != field_value:
                 break
         else:
-            return {'message': 'Nothing to update', 'data': {}}
+            return {'message': 'Nothing to update'}
 
         allowed_fields = {'first_name', 'last_name', 'email', 'two_factor_enabled'}
         received_fields = set(user_data.keys())
 
         if allowed_fields.issubset(received_fields) and (diff_fields := received_fields.difference(allowed_fields)):
-            return {'message': f"Unsupported fields were submitted: ({', '.join(diff_fields)})", 'data': {}}
+            return {'message': f"Unsupported fields were submitted: ({', '.join(diff_fields)})"}
 
-        serializer = UsersSerializer(data={'login': user.login, **user_data}, partial=True)
+        serializer = UsersSerializer(data={'login': user_login, **user_data}, partial=True)
 
         if serializer.is_valid():
             serializer.save()
         else:
-            return {'message': 'Invalid values for fields', 'data': serializer.errors}
+            return {'message': 'Invalid values for fields', 'errors': serializer.errors}
 
-        return {'message': 'User data successfully updated'}
+        if serializer.validated_data['two_factor_enabled']:
+            data['qr'] = QRCodeController().create_user_qr(user)
+
+        return {'message': 'User data successfully updated', 'data': data}
 
     def get_user_avatar(self, user: Users) -> BytesIO:
         """ Get user avatar as a bytes
@@ -269,3 +278,84 @@ class UserController:
 
         if serializer.is_valid():
             serializer.save()
+
+
+class QRCodeController:
+
+    def __init__(self):
+        pass
+
+    def save_secret(self, user: Users, secret: str) -> str:
+        """
+
+        Parameters
+        ----------
+        user : Users
+        secret : str
+
+        Returns
+        -------
+        str
+
+        """
+        QRMeta.objects.update_or_create(user=user, defaults={'secret': secret})
+
+        return secret
+
+    def generate_totpauth(self, user: Users) -> str:
+        """ Generates the time based one time password auth url for Google Authenticator
+
+        Parameters
+        ----------
+        user : Users
+
+        Returns
+        -------
+        str
+
+        """
+        secret = self.save_secret(
+            user=user,
+            secret="".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567", k=32))
+        )
+
+        totp_auth_qs = urlencode({
+            'secret': secret,
+            'issuer': 'ft_transcendence',
+            'digits': '6',
+            'period': '30'
+        })
+
+        return f"otpauth://totp/{user.login}?{totp_auth_qs}"
+
+    def generate_qr_string(self, totp_auth: str) -> str:
+        """ Generates the base64 string of the qr code
+
+        Parameters
+        ----------
+        totp_auth : str
+
+        Returns
+        -------
+        str
+
+        """
+        buffer = BytesIO()
+
+        qrcode.make(totp_auth).save(buffer, format="PNG")
+
+        return base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+    def create_user_qr(self, user: Users) -> str:
+        """ Creates the 2fa (Google Authenticator) QR code for specific user
+
+        Parameters
+        ----------
+        user : Users
+
+        Returns
+        -------
+        str
+
+        """
+        return self.generate_qr_string(self.generate_totpauth(user))

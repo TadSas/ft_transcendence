@@ -5,6 +5,8 @@ from django.contrib.auth.models import AbstractBaseUser
 
 from .managers import CustomUserManager
 
+from auth.settings import AUTH_USER_MODEL
+
 
 class StatusChoices(models.TextChoices):
     ONLINE = ('online', 'Online')
@@ -56,6 +58,7 @@ class Users(AbstractBaseUser):
 
 
 class AuthToken(models.Model):
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     grant_type = models.CharField(max_length=255)
     code = models.CharField(max_length=64)
@@ -70,3 +73,12 @@ class AuthToken(models.Model):
 
     class Meta:
         verbose_name = 'AuthToken'
+
+
+class QRMeta(models.Model):
+
+    user = models.OneToOneField(AUTH_USER_MODEL, on_delete=models.CASCADE, primary_key=True)
+    secret = models.CharField(max_length=32)
+
+    class Meta:
+        verbose_name = 'QRMeta'

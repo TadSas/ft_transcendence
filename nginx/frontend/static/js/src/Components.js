@@ -81,5 +81,31 @@ var Components = (() => {
     `
   }
 
+  self.modal = ({id = '', titleId = '', title = '', body = '', cancelButtonTitle = '', approveButtonTitle = ''}) => {
+    // const button = self.button({})
+    // const cancelButton = self.button({})
+    // const approveButton = self.button({})
+
+    return `
+    <div class="modal fade" id="${id}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLiveLabel" style="display: none;" aria-modal="true" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="${titleId}">${title}</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>${body}</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${cancelButtonTitle}</button>
+            <button type="button" class="btn btn-primary">${approveButtonTitle}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    `
+  }
+
   return self
 })()
