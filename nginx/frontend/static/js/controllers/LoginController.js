@@ -14,6 +14,12 @@ var LoginController = (() => {
     }}).send()
   }
 
+  self.submitOTP = () => {
+    new httpRequest({resource: 'auth/api/twofactor/verify', method: 'POST', body: JSON.stringify({'otp': ''}), successCallback: response => {
+      response
+    }}).send()
+  }
+
   self.authenticationCheck = () => {
     return new httpRequest({resource: 'auth/api/authentication/check', method: 'GET', sync: true, successCallback: () => {}}).send()
   }

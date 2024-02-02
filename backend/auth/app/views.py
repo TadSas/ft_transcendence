@@ -1,17 +1,16 @@
 import jwt
 import uuid
 import secrets
-import datetime
 
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser
 
-from auth.settings import SECRET_KEY, ALLOWED_IMAGE_EXTENSIONS, JWT_COOKIE_NAME
+from auth.settings import SECRET_KEY, ALLOWED_IMAGE_EXTENSIONS, JWT_COOKIE_NAME, TOTP_COOKIE_NAME
 
 from .permissions import JWTAuthentication
-from .main import AuthController, UserController
+from .main import AuthController, UserController, QRCodeController
 
 
 class LoginView(APIView):
@@ -38,20 +37,47 @@ class CallbackView(APIView):
         if not auth_state or auth_state != callback_state:
             return HttpResponseRedirect("/login")
 
-        user_id = authCont.retrieve_logged_user(
+        user = authCont.retrieve_logged_user(
             authCont.exchange_access_token(callback_code, callback_state)
         )
 
-        payload = {
-            'id': user_id,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=1),
-            'iat': datetime.datetime.utcnow()
-        }
+        if user.two_factor_enabled:
+            response = HttpResponseRedirect("/login#2fa")
+            response.set_cookie(
+                key=TOTP_COOKIE_NAME,
+                value=authCont.create_user_jwt(user, SECRET_KEY),
+                httponly=True,
+                secure=True,
+                samesite='Lax'
+            )
+            return response
 
-        token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+        response = HttpResponseRedirect("/login")
+        response.set_cookie(
+            key=JWT_COOKIE_NAME,
+            value=authCont.create_user_jwt(user, SECRET_KEY),
+            httponly=True,
+            secure=True,
+            samesite='Lax'
+        )
 
-        response = HttpResponseRedirect("/login#2fa")
-        response.set_cookie(key=JWT_COOKIE_NAME, value=token, httponly=True, secure=True, samesite='Lax')
+        return response
+
+
+class TwoFactorVerifyView(APIView):
+    authentication_classes = []
+
+    def post(self, request):
+        authenticated = AuthController().validate_two_factor(
+            request.COOKIES.get(TOTP_COOKIE_NAME),
+            request.data.get('otp'),
+            SECRET_KEY
+        )
+
+        response = JsonResponse({'status': 0, 'authenticated': authenticated})
+
+        if authenticated:
+            response.delete_cookie(TOTP_COOKIE_NAME)
 
         return response
 

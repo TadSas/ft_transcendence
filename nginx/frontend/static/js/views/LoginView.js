@@ -14,6 +14,76 @@ export default class extends BaseView {
       loginCont.classList.remove("d-none")
   }
 
+  twoFactorDialogBox() {
+    const inputs = document.querySelectorAll(".otp-field > input")
+    const button = document.querySelector(".otp-button")
+
+    button.setAttribute("disabled", "")
+    inputs[0].removeAttribute("disabled")
+    inputs[0].focus()
+
+    inputs[0].addEventListener("paste", function(event) {
+      event.preventDefault()
+
+      const pastedValue = (event.clipboardData || window.clipboardData).getData("text")
+      const otpLength = inputs.length
+
+      for (let i = 0; i < otpLength; i++) {
+        if (i < pastedValue.length) {
+          inputs[i].value = pastedValue[i]
+          inputs[i].removeAttribute("disabled")
+          inputs[i].focus
+        } else {
+          inputs[i].value = ""
+          inputs[i].focus
+        }
+      }
+    })
+
+    inputs.forEach((input, index1) => {
+      input.addEventListener("keyup", (e) => {
+        const currentInput = input
+        const nextInput = input.nextElementSibling
+        const prevInput = input.previousElementSibling
+
+        if (currentInput.value.length > 1) {
+          currentInput.value = ""
+          return
+        }
+
+        if (
+          nextInput &&
+          nextInput.hasAttribute("disabled") &&
+          currentInput.value !== ""
+        ) {
+          nextInput.removeAttribute("disabled")
+          nextInput.focus()
+        }
+
+        if (e.key === "Backspace") {
+          inputs.forEach((input, index2) => {
+            if (index1 <= index2 && prevInput) {
+              input.setAttribute("disabled", true)
+              input.value = ""
+              prevInput.focus()
+            }
+          })
+        }
+
+        button.classList.remove("active")
+        button.setAttribute("disabled", "disabled")
+
+        const inputsNo = inputs.length
+        if (!inputs[inputsNo - 1].disabled && inputs[inputsNo - 1].value !== "") {
+          button.classList.add("active")
+          button.removeAttribute("disabled")
+
+          return
+        }
+      })
+    })
+  }
+
   async getContent() {
     this.getColorMode()
     this.toggleContainer()
@@ -96,9 +166,47 @@ export default class extends BaseView {
               gradients[randomNumber(gradients.length)]
             )
           )
+
+          this.twoFactorDialogBox()
         }
       }
     })
+
+    const oauth = `
+      <div class="${window.location.hash === '#2fa' ? 'd-none' : 'd-block'}">
+        <button class="w-100 btn btn-lg btn-primary" onClick="LoginController.submit()">Sign in with 42</button>
+        <hr class="my-4">
+        <small class="text-body-secondary">By clicking Sign in with 42, you will be redirected to 42's authorization service.</small>
+      </div>
+    `
+    const twofa = `
+      <section class="container-fluid bg-body-tertiary ${window.location.hash === '#2fa' ? 'd-block' : 'd-none'}">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-6 col-lg-4" style="min-width: 500px;">
+              <div class="card-body text-center">
+                <h4>Two Factor Authentication</h4>
+
+                <p>
+                  <small class="text-body-secondary">
+                    Please enter your Google Authenticator OTP to <br> verify your account.
+                  </small>
+                </p>
+
+                <div class="otp-field mb-4">
+                  <input class="border rounded-3" type="number" disabled />
+                  <input class="border rounded-3" type="number" disabled />
+                  <input class="border rounded-3" type="number" disabled />
+                  <input class="border rounded-3" type="number" disabled />
+                  <input class="border rounded-3" type="number" disabled />
+                  <input class="border rounded-3" type="number" disabled />
+                </div>
+
+                <button class="otp-button btn btn-primary" disabled>Verify</button>
+              </div>
+            </div>
+          </div>
+      </section>
+    `
 
     return `
       <div class="d-flex align-items-center py-4 bg-body-tertiary  vh-100">
@@ -110,26 +218,8 @@ export default class extends BaseView {
             </div>
             <div class="col-md-10 mx-auto col-lg-5">
               <div id="login-form" class="p-4 p-md-5 border rounded-3 bg-body-tertiary">
-                ${
-                  false ? `
-                    <div class="form-floating mb-3">
-                      <input type="email" class="form-control" id="floatingInput" placeholder="name@example.com">
-                      <label for="floatingInput">Email address</label>
-                    </div>
-                    <div class="form-floating mb-3">
-                      <input type="password" class="form-control" id="floatingPassword" placeholder="Password">
-                      <label for="floatingPassword">Password</label>
-                    </div>
-                    <div class="checkbox mb-3">
-                      <label>
-                        <input type="checkbox" value="remember-me"> Remember me
-                      </label>
-                    </div>
-                  ` : ''
-                }
-                <button class="w-100 btn btn-lg btn-primary" onClick="LoginController.submit()">Sign in with 42</button>
-                <hr class="my-4">
-                <small class="text-body-secondary">By clicking Sign in with 42, you will be redirected to 42's authorization service.</small>
+              ${twofa}
+              ${oauth}
               </div>
             </div>
           </div>

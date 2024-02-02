@@ -1,4 +1,6 @@
+import jwt
 import json
+import pyotp
 import base64
 import qrcode
 import random
@@ -6,8 +8,8 @@ import secrets
 
 from io import BytesIO
 from pathlib import Path
-from datetime import datetime
 from urllib.parse import urlencode
+from datetime import datetime, timedelta
 from urllib.request import Request, urlopen
 
 from django.utils import timezone
@@ -24,6 +26,20 @@ class AuthController:
 
     def __init__(self):
         pass
+
+    def get_user_by_id(self, user_id: str) -> Users:
+        """Get user by id
+
+        Parameters
+        ----------
+        user_id : str
+
+        Returns
+        -------
+        Users
+
+        """
+        return Users.objects.filter(id=user_id).first()
 
     def get_authorization_url(self, state: str = '') -> str:
         """ Constructing the authorization url for redirection to 42oauth
@@ -106,7 +122,7 @@ class AuthController:
         except Exception as ex:
             raise AuthException(str(ex))
 
-    def retrieve_logged_user(self, access_token: str) -> str:
+    def retrieve_logged_user(self, access_token: str) -> Users:
         """ Method for getting access token owner (logged-in user) data
 
         Parameters
@@ -115,7 +131,7 @@ class AuthController:
 
         Returns
         -------
-        str
+        Users
 
         Raises
         ------
@@ -133,7 +149,7 @@ class AuthController:
                 if user := Users.objects.filter(login=login).first():
                     UserController().set_status(user, 'online')
 
-                    return str(user.id)
+                    return user
 
                 serializer = UsersSerializer(data={
                     'login': login,
@@ -148,9 +164,61 @@ class AuthController:
                 else:
                     raise AuthException("Error occurred while storing user data", serializer.errors)
 
-                return serializer.data['id']
+                return Users.objects.filter(login=login).first()
         except Exception as ex:
             raise AuthException(str(ex))
+
+    def create_user_jwt(self, user: Users, secret_key: str) -> str:
+        """ Creates jwt for provided user
+
+        Parameters
+        ----------
+        user : Users
+        secret_key : str
+
+        Returns
+        -------
+        str
+
+        """
+        return jwt.encode(
+            {
+                'id': str(user.id),
+                'exp': datetime.utcnow() + timedelta(days=1),
+                'iat': datetime.utcnow()
+            },
+            secret_key,
+            algorithm='HS256'
+        )
+
+    def validate_two_factor(self, totp_token: str, otp: str, secret_key: str) -> bool:
+        """ Validates multiple factors to check if one-time password is valid
+
+        Parameters
+        ----------
+        totp_token : str
+        otp : str
+        secret_key : str
+
+        Returns
+        -------
+        bool
+
+        """
+        if not totp_token:
+            return False
+
+        try:
+            user = AuthController().get_user_by_id(
+                jwt.decode(totp_token, secret_key, algorithms=['HS256']).get('id')
+            )
+        except Exception as ex:
+            return False
+
+        if not otp:
+            return False
+
+        return QRCodeController().verify_otp(user, otp)
 
 
 class UserController:
@@ -302,6 +370,23 @@ class QRCodeController:
 
         return secret
 
+    def get_user_secret(self, user: Users) -> str:
+        """ Get user secret from QRMeta table
+
+        Parameters
+        ----------
+        user : Users
+
+        Returns
+        -------
+        str
+
+        """
+        try:
+            return QRMeta.objects.filter(user_id=user.id).first().secret
+        except Exception:
+            return ''
+
     def generate_totpauth(self, user: Users) -> str:
         """ Generates the time based one time password auth url for Google Authenticator
 
@@ -314,22 +399,20 @@ class QRCodeController:
         str
 
         """
-        try:
-            secret = QRMeta.objects.filter(user_id=user.id).first().secret
-        except Exception:
+        if not (secret := self.get_user_secret(user)):
             secret = self.save_secret(
                 user=user,
                 secret="".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ234567", k=32))
             )
 
+        totp_auth = pyotp.totp.TOTP(secret).provisioning_uri(name=user.login)
         totp_auth_qs = urlencode({
-            'secret': secret,
             'issuer': 'ft_transcendence',
             'digits': '6',
             'period': '30'
         })
 
-        return f"otpauth://totp/{user.login}?{totp_auth_qs}"
+        return f"{totp_auth}&{totp_auth_qs}"
 
     def generate_qr_string(self, totp_auth: str) -> str:
         """ Generates the base64 string of the qr code
@@ -362,3 +445,21 @@ class QRCodeController:
 
         """
         return self.generate_qr_string(self.generate_totpauth(user))
+
+    def verify_otp(self, user: Users, otp: str) -> bool:
+        """ Verifies the one-time password inputted by the user
+
+        Parameters
+        ----------
+        user : Users
+        otp : str
+
+        Returns
+        -------
+        bool
+
+        """
+        if not (secret := self.get_user_secret(user)):
+            return False
+
+        return pyotp.TOTP(secret).verify(otp)

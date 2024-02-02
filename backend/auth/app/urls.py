@@ -6,6 +6,7 @@ from .views import (
     LogoutView,
     CallbackView,
     UserAvatarView,
+    TwoFactorVerifyView,
     AuthenticationCheckView,
 )
 
@@ -16,5 +17,6 @@ urlpatterns = [
     path('logout', LogoutView.as_view(), name='api-logout'),
     path('avatar', UserAvatarView.as_view(), name='api-avatar'),
     path('callback', CallbackView.as_view(), name='api-callback'),
+    path('twofactor/verify', TwoFactorVerifyView.as_view(), name='api-twofactor-verify'),
     path('authentication/check', AuthenticationCheckView.as_view(), name='api-authentication-check')
 ]

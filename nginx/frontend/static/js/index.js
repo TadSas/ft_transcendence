@@ -66,8 +66,9 @@ window.addEventListener("popstate", router)
 document.addEventListener("DOMContentLoaded", () => {
   if (LoginController.authenticationCheck().authenticated)
     history.pushState(null, null, '/')
-  else
-    history.pushState(null, null, '/login')
+  else {
+    history.pushState(null, null, `/login${window.location.hash}`)
+  }
 
   router()
 

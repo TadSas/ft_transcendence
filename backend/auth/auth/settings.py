@@ -157,6 +157,8 @@ STATIC_URL = 'static/'
 
 JWT_COOKIE_NAME = 'ft_transcendence_jwt'
 
+TOTP_COOKIE_NAME = 'totp_jwt'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 ALLOWED_HOSTS = ['auth']
