@@ -19,7 +19,7 @@ from .exceptions import AuthException
 from .config import FTTRANSCENDENCE, FTAPI
 from .serializers import UsersSerializer, AuthTokenSerializer
 
-from auth.settings import MEDIA_ROOT
+from auth.settings import MEDIA_ROOT, TOTP_COOKIE_PREFIX, TOTP_COOKIE_SUFFIX
 
 
 class AuthController:
@@ -191,7 +191,30 @@ class AuthController:
             algorithm='HS256'
         )
 
-    def validate_two_factor(self, totp_token: str, otp: str, secret_key: str) -> bool:
+    def create_totp_jwt(self, user: Users, secret_key: str) -> str:
+        """ Creates jwt for two factor authentication
+
+        Parameters
+        ----------
+        user : Users
+        secret_key : str
+
+        Returns
+        -------
+        str
+
+        """
+        return jwt.encode(
+            {
+                'id': f"{TOTP_COOKIE_PREFIX}{str(user.id)}{TOTP_COOKIE_SUFFIX}",
+                'exp': datetime.utcnow() + timedelta(days=1),
+                'iat': datetime.utcnow()
+            },
+            secret_key,
+            algorithm='HS256'
+        )
+
+    def validate_two_factor(self, totp_token: str, otp: str, secret_key: str) -> tuple:
         """ Validates multiple factors to check if one-time password is valid
 
         Parameters
@@ -202,23 +225,26 @@ class AuthController:
 
         Returns
         -------
-        bool
+        tuple
+            (bool, Users)
 
         """
+        empty = False, None
+
         if not totp_token:
-            return False
+            return empty
 
         try:
-            user = AuthController().get_user_by_id(
-                jwt.decode(totp_token, secret_key, algorithms=['HS256']).get('id')
-            )
-        except Exception as ex:
-            return False
+            user_id = jwt.decode(totp_token, secret_key, algorithms=['HS256'])['id']
+            user_id = user_id.removeprefix(TOTP_COOKIE_PREFIX).removesuffix(TOTP_COOKIE_SUFFIX)
+            user = AuthController().get_user_by_id(user_id)
+        except Exception:
+            return empty
 
         if not otp:
-            return False
+            return empty
 
-        return QRCodeController().verify_otp(user, otp)
+        return QRCodeController().verify_otp(user, otp), user
 
 
 class UserController:

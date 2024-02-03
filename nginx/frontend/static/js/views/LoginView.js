@@ -46,6 +46,9 @@ export default class extends BaseView {
         const nextInput = input.nextElementSibling
         const prevInput = input.previousElementSibling
 
+        input.classList.remove('border-2')
+        input.classList.remove('border-danger')
+
         if (currentInput.value.length > 1) {
           currentInput.value = ""
           return
@@ -172,15 +175,18 @@ export default class extends BaseView {
       }
     })
 
+    const totp_jwt = getCookie("totp_jwt")
+
     const oauth = `
-      <div class="${window.location.hash === '#2fa' ? 'd-none' : 'd-block'}">
+      <div class="${totp_jwt ? 'd-none' : 'd-block'}">
+        <i class="bi bi-asterisk h1 d-flex justify-content-center mb-4"></i>
         <button class="w-100 btn btn-lg btn-primary" onClick="LoginController.submit()">Sign in with 42</button>
         <hr class="my-4">
         <small class="text-body-secondary">By clicking Sign in with 42, you will be redirected to 42's authorization service.</small>
       </div>
     `
     const twofa = `
-      <section class="container-fluid bg-body-tertiary ${window.location.hash === '#2fa' ? 'd-block' : 'd-none'}">
+      <section class="container-fluid bg-body-tertiary ${totp_jwt ? 'd-block' : 'd-none'}">
         <div class="row justify-content-center">
             <div class="col-12 col-md-6 col-lg-4" style="min-width: 500px;">
               <div class="card-body text-center">
@@ -193,15 +199,16 @@ export default class extends BaseView {
                 </p>
 
                 <div class="otp-field mb-4">
-                  <input class="border rounded-3" type="number" disabled />
-                  <input class="border rounded-3" type="number" disabled />
-                  <input class="border rounded-3" type="number" disabled />
-                  <input class="border rounded-3" type="number" disabled />
-                  <input class="border rounded-3" type="number" disabled />
-                  <input class="border rounded-3" type="number" disabled />
+                  <input class="border rounded-3" type="number" placeholder="*" disabled />
+                  <input class="border rounded-3" type="number" placeholder="*" disabled />
+                  <input class="border rounded-3" type="number" placeholder="*" disabled />
+                  <input class="border rounded-3" type="number" placeholder="*" disabled />
+                  <input class="border rounded-3" type="number" placeholder="*" disabled />
+                  <input class="border rounded-3" type="number" placeholder="*" disabled />
                 </div>
 
-                <button class="otp-button btn btn-primary" disabled>Verify</button>
+                <button class="otp-button btn btn-primary" disabled onClick="LoginController.submitOTP()" >Verify</button>
+                <a href="/" id="hiddenVerify" class="d-none" data-link></a>
               </div>
             </div>
           </div>

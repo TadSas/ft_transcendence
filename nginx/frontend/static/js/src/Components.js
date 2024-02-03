@@ -107,7 +107,7 @@ var Components = (() => {
   }
 
   self.modal = ({
-    show = false, size = '',
+    size = '',
     modalId = '',  buttonId = '', cancelButtonId = '', approveButtonId = '',
     modalTitle = '', buttonTitle = '', cancelButtonTitle = '', approveButtonTitle = '',
     modalBody = '', buttonClass = '', cancelButtonClass = '', approveButtonClass = '',
@@ -130,10 +130,8 @@ var Components = (() => {
       'extra_large': 'modal-xl',
     }
 
-    // ${self.button({'dataAttributes': {'bs-toggle': 'modal', 'bs-target': '#staticBackdropLive'}, 'buttonLabel': buttonTitle})}
     return `
-    <div class="modal-backdrop fade ${show ? 'show' : ''}"></div>
-    <div class="modal fade ${show ? 'show' : ''}" ${show ? 'style="display: block;"' : 'style="display: none;"'} id="${modalId}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLiveLabel" aria-modal="true" role="dialog">
+    <div class="modal fade" style="display: none;" id="${modalId}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
       <div class="${modalSizes[size || 'default']} modal-dialog modal-dialog-centered">
         <div class="modal-content">
           <div class="modal-header">

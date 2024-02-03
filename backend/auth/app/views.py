@@ -10,7 +10,7 @@ from rest_framework.parsers import MultiPartParser
 from auth.settings import SECRET_KEY, ALLOWED_IMAGE_EXTENSIONS, JWT_COOKIE_NAME, TOTP_COOKIE_NAME
 
 from .permissions import JWTAuthentication
-from .main import AuthController, UserController, QRCodeController
+from .main import AuthController, UserController
 
 
 class LoginView(APIView):
@@ -41,18 +41,18 @@ class CallbackView(APIView):
             authCont.exchange_access_token(callback_code, callback_state)
         )
 
+        response = HttpResponseRedirect("/login")
+
         if user.two_factor_enabled:
-            response = HttpResponseRedirect("/login#2fa")
             response.set_cookie(
                 key=TOTP_COOKIE_NAME,
-                value=authCont.create_user_jwt(user, SECRET_KEY),
-                httponly=True,
+                value=authCont.create_totp_jwt(user, SECRET_KEY),
                 secure=True,
                 samesite='Lax'
             )
+
             return response
 
-        response = HttpResponseRedirect("/login")
         response.set_cookie(
             key=JWT_COOKIE_NAME,
             value=authCont.create_user_jwt(user, SECRET_KEY),
@@ -68,7 +68,9 @@ class TwoFactorVerifyView(APIView):
     authentication_classes = []
 
     def post(self, request):
-        authenticated = AuthController().validate_two_factor(
+        authCont = AuthController()
+
+        authenticated, user = authCont.validate_two_factor(
             request.COOKIES.get(TOTP_COOKIE_NAME),
             request.data.get('otp'),
             SECRET_KEY
@@ -78,6 +80,13 @@ class TwoFactorVerifyView(APIView):
 
         if authenticated:
             response.delete_cookie(TOTP_COOKIE_NAME)
+            response.set_cookie(
+                key=JWT_COOKIE_NAME,
+                value=authCont.create_user_jwt(user, SECRET_KEY),
+                httponly=True,
+                secure=True,
+                samesite='Lax'
+            )
 
         return response
 

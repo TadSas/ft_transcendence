@@ -26,7 +26,7 @@ export default class extends BaseSnippet {
             <a href="/" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
               <img id="headerUserAvatar" src="/auth/api/avatar" alt="mdo" width="32" height="32" class="rounded-circle object-fit-cover">
             </a>
-            <ul class="dropdown-menu shadow" style="">
+            <ul id="userAvatarDropdown" class="dropdown-menu shadow" style="">
               <li>
                 <a class="dropdown-item" href="/settings" data-link>Settings</a>
               </li>

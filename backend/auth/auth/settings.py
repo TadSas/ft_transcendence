@@ -159,6 +159,10 @@ JWT_COOKIE_NAME = 'ft_transcendence_jwt'
 
 TOTP_COOKIE_NAME = 'totp_jwt'
 
+TOTP_COOKIE_PREFIX = 'you_shall'
+
+TOTP_COOKIE_SUFFIX = 'not_pass'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 ALLOWED_HOSTS = ['auth']

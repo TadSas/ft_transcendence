@@ -12,7 +12,7 @@ export default class {
   }
 
   setTitle(title) {
-    document.title = title
+    document.title = `Squeeze: ${title}`
   }
 
   async getContent() {
