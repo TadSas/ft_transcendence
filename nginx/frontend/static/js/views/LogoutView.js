@@ -10,7 +10,7 @@ export default class extends LoginView {
   }
 
   cleanUpDOM() {
-    ['sidebar', 'header', 'game', 'content', 'footer'].forEach((element) => {
+    ['sidebar', 'header', 'content', 'footer'].forEach((element) => {
       document.getElementById(element).innerHTML = ''
     })
   }

@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import os
+
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-#gs30%h)vd4sga+zjjndqzb6!0d+fy3wnwp(h2f)8jua_!3+%o'
+SECRET_KEY = os.environ['GAME_PROJECT_SECRET']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -77,11 +79,11 @@ WSGI_APPLICATION = 'game.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'transcendence',
-        'USER': 'transcendence',
-        'PASSWORD': 'transcendence',
-        'HOST': 'postgres',
-        'PORT': '5432'
+        'NAME': os.environ['POSTGRES_GAME_NAME'],
+        'USER': os.environ['POSTGRES_GAME_USER'],
+        'PASSWORD': os.environ['POSTGRES_PASSWORD'],
+        'HOST': os.environ['POSTGRES_HOST'],
+        'PORT': os.environ['POSTGRES_PORT']
     }
 }
 
@@ -127,5 +129,4 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-ALLOWED_HOSTS = ['game']
+ALLOWED_HOSTS = ['game', 'localhost', '127.0.0.1']

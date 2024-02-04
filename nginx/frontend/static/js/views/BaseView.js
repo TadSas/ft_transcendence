@@ -1,7 +1,6 @@
 import Header from "./snippets/Header.js"
 import Footer from "./snippets/Footer.js"
 import Sidebar from "./snippets/Sidebar.js"
-import ColorMode from "./snippets/ColorMode.js"
 
 
 export default class {
@@ -43,7 +42,7 @@ export default class {
 
   getSidebar(routes, match) {
     const sidebarSnippet = new Sidebar
-    const sidebarElement = document.querySelector("#sidebar")
+    const sidebarElement = document.getElementById("sidebar")
 
     if (sidebarElement.innerHTML === '') {
       sidebarElement.innerHTML = sidebarSnippet.getSnippet(routes, match)
@@ -53,7 +52,7 @@ export default class {
 
   getHeader() {
     const headerSnippet = new Header
-    const headerElement = document.querySelector("#header")
+    const headerElement = document.getElementById("header")
 
     if (headerElement.innerHTML === '') {
       headerElement.innerHTML = headerSnippet.getSnippet()
@@ -63,21 +62,14 @@ export default class {
 
   getFooter() {
     const footerSnippet = new Footer
-    const footerElement = document.querySelector("#footer")
+    const footerElement = document.getElementById("footer")
+
+    if (footerElement.classList.contains('d-none'))
+      footerElement.classList.remove('d-none')
 
     if (footerElement.innerHTML === '') {
       footerElement.innerHTML = footerSnippet.getSnippet()
       this.eventStore.push(footerSnippet.getEvents())
-    }
-  }
-
-  getColorMode() {
-    const colorModeSnippet = new ColorMode
-    const colorModeElement = document.querySelector("#theme")
-
-    if (colorModeElement.innerHTML === '') {
-      colorModeElement.innerHTML = colorModeSnippet.getSnippet()
-      this.eventStore.push(colorModeSnippet.getEvents())
     }
   }
 
@@ -93,7 +85,6 @@ export default class {
     this.getSidebar(routes, match)
     this.getHeader()
     this.getFooter()
-    this.getColorMode()
 
     this.registerEvents(this.eventStore)
   }

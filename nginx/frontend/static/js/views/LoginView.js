@@ -88,7 +88,6 @@ export default class extends BaseView {
   }
 
   async getContent() {
-    this.getColorMode()
     this.toggleContainer()
     this.viewEventStore.push({
       'load': {

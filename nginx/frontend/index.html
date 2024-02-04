@@ -26,6 +26,7 @@
       }
     </script>
 
+    <script type="module" src="static/js/controllers/PongController.js"></script>
     <script type="module" src="static/js/index.js"></script>
 
     <script>
@@ -36,7 +37,6 @@
   <body>
     <div id="loader"></div>
     <div id="message"></div>
-    <div id="theme"></div>
     <div id="login" class="d-none"></div>
     <div id="logged" class="container-fluid d-none">
       <div class="modals"></div>
@@ -44,8 +44,7 @@
           <aside id="sidebar" class="col-auto px-0 collapse collapse-horizontal show border-end sidebar-transition vh-100"></aside>
           <div class="col ps-md-2 vh-100 overflow-y-scroll">
             <header id="header" class="py-3 mb-3 border-bottom"></header>
-            <div id="game" class="p-3"></div>
-            <main id="content" class="p-3 min-vh-75"></main>
+            <main id="content" class="px-3 min-vh-75"></main>
             <footer id="footer" class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top container"></footer>
           </div>
       </div>

@@ -153,3 +153,74 @@ var Components = (() => {
 
   return self
 })()
+
+
+var ChatComponents = (() => {
+  var self = {}
+
+  // Private
+  var foo = () => {}
+
+  self.sidebarMessage = ({active = false, messageText = '', username = '', sentDate = ''}) => {
+    return `
+    <a class="list-group-item list-group-item-action list-group-item-light ${active ? 'active' : ''}" role="button">
+      <div class="d-flex align-items-center">
+        <img src="/auth/api/avatar" alt="user" width="40" heigth="40" class="rounded-circle">
+        <div class="ms-3 w-100">
+          <div class="d-flex align-items-center justify-content-between mb-1">
+            <h6 class="mb-0">
+              ${username}
+            </h6>
+            <small class="small font-weight-bold">
+              ${sentDate}
+            </small>
+          </div>
+          <p class="font-italic mb-0 text-small chat-sidebar-message">
+            ${messageText}
+          </p>
+        </div>
+      </div>
+    </a>
+    `
+  }
+
+  self.senderMessage = ({messageText = '', sentDateTime = ''}) => {
+    return `
+    <div class="d-flex mb-2">
+      <div class="ms-2 chat-message-mw">
+        <div class="bg-success rounded-top-5 rounded-end-5 py-2 px-3 mb-0">
+          <p class="text-small mb-0 text-white">
+            ${messageText}
+          </p>
+        </div>
+        <p class="small text-muted mb-0">
+          <small>
+            ${sentDateTime}
+          </small>
+        </p>
+      </div>
+    </div>
+    `
+  }
+
+  self.recieverMessage = ({messageText = '', sentDateTime = ''}) => {
+    return `
+    <div class="d-flex justify-content-end mb-2">
+      <div class="me-1 chat-message-mw">
+        <div class="bg-primary rounded-top-5 rounded-start-5 py-2 px-3 mb-0">
+          <p class="text-small mb-0 text-white">
+            ${messageText}
+          </p>
+        </div>
+        <p class="small text-muted mb-0 text-end mb-0">
+          <small>
+            ${sentDateTime}
+          </small>
+        </p>
+      </div>
+    </div>
+    `
+  }
+
+  return self
+})()

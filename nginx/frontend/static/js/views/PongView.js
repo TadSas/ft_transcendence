@@ -10,9 +10,14 @@ export default class extends BaseView {
   async getContent(routes, match) {
     this.getBase(routes, match)
 
+    const onclick = `
+    import('./static/js/controllers/PongController.js').then(module => module.PongController.initPong())
+    `
+
     return `
-      <h1>Pong</h1>
-      <p>You are viewing the Pong game!</p>
+    <button type="button" class="btn btn-outline-secondary" onclick="${onclick}">
+      Start pong
+    </button>
     `
   }
 }

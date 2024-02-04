@@ -192,3 +192,47 @@
 .otp-field input::-webkit-outer-spin-button {
   display: none;
 }
+
+/*
+*
+* ==========================================
+* FOR DEMO PURPOSES
+* ==========================================
+*
+*/
+
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  width: 1em;
+  outline: 1px solid slategrey;
+  border-radius: 1rem;
+}
+
+.text-small {
+  font-size: 0.9rem;
+}
+
+.messages-box {
+  height: 85vh;
+  overflow-y: scroll;
+}
+
+.chat-box {
+  height: 82vh;
+  overflow-y: scroll;
+}
+
+.chat-sidebar-message {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.chat-message-mw {
+  max-width: 40%;
+}

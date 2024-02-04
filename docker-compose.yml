@@ -18,6 +18,7 @@ services:
     build: ./nginx
     depends_on:
       - auth
+      - game
       - postgres
     restart: always
     networks:
@@ -26,7 +27,6 @@ services:
       - ./nginx/frontend/:/usr/share/nginx/html
     ports:
       - 443:443
-    env_file: .env
 
   auth:
     container_name: auth
@@ -40,6 +40,20 @@ services:
       - ft_transcendence
     volumes:
       - ./backend/auth:/var/www/auth
+    env_file: .env
+
+  game:
+    container_name: game
+    build: ./backend/game
+    depends_on:
+      - postgres
+    restart: always
+    expose:
+      - 8080
+    networks:
+      - ft_transcendence
+    volumes:
+      - ./backend/game:/var/www/game
     env_file: .env
 
   # Remove everything related to pgadmin before finishing the project
