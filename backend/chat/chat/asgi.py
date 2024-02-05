@@ -1,5 +1,5 @@
 """
-ASGI config for game project.
+ASGI config for chat project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -15,7 +15,7 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from app.routing import websocket_urlpatterns
 
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'game.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'chat.settings')
 
 django_asgi_app = get_asgi_application()
 

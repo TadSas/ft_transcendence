@@ -19,6 +19,7 @@ services:
     depends_on:
       - auth
       - game
+      - chat
       - postgres
     restart: always
     networks:
@@ -54,6 +55,20 @@ services:
       - ft_transcendence
     volumes:
       - ./backend/game:/var/www/game
+    env_file: .env
+
+  chat:
+    container_name: chat
+    build: ./backend/chat
+    depends_on:
+      - postgres
+    restart: always
+    expose:
+      - 8082
+    networks:
+      - ft_transcendence
+    volumes:
+      - ./backend/chat:/var/www/chat
     env_file: .env
 
   # Remove everything related to pgadmin before finishing the project

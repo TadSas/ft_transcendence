@@ -31,7 +31,7 @@ SECRET_KEY = os.environ['AUTH_PROJECT_SECRET']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['auth']
 
 
 # Application definition
@@ -164,8 +164,6 @@ TOTP_COOKIE_PREFIX = 'you_shall'
 TOTP_COOKIE_SUFFIX = 'not_pass'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-ALLOWED_HOSTS = ['auth']
 
 CSRF_COOKIE_SAMESITE = 'Strict'
 
