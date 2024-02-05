@@ -15,4 +15,4 @@ RUN apt-get -y update --no-install-recommends && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf ~/.cache/pip/*
 
-CMD ["uvicorn", "game.asgi:application", "--reload", "--port", "8080"]
+CMD ["uvicorn", "game.asgi:application", "--reload", "--host", "0.0.0.0", "--port", "8081"]

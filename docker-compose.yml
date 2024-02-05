@@ -49,7 +49,7 @@ services:
       - postgres
     restart: always
     expose:
-      - 8080
+      - 8081
     networks:
       - ft_transcendence
     volumes:

@@ -129,4 +129,4 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-ALLOWED_HOSTS = ['game', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['game']

@@ -1,4 +1,5 @@
 django
-uvicorn
+channels
 psycopg[binary]
+uvicorn[standard]
 djangorestframework
