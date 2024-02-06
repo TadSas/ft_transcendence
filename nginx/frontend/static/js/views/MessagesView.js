@@ -13,7 +13,7 @@ export default class extends BaseView {
     document.getElementById('footer').classList.add('d-none')
 
     const content = `
-    <div class="row overflow-hidden">
+    <div class="row overflow-hidden px-3">
       <div class="col-2 px-0">
         <div class="px-3 py-2 bg-body-tertiary bg-opacity-50 border border-bottom-0 rounded me-1">
           <p class="h5 mb-0 py-1">Chats</p>

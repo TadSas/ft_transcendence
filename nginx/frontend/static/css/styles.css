@@ -193,14 +193,7 @@
   display: none;
 }
 
-/*
-*
-* ==========================================
-* FOR DEMO PURPOSES
-* ==========================================
-*
-*/
-
+/* ------------------------------Chat interface------------------------------ */
 
 ::-webkit-scrollbar {
   width: 5px;
@@ -235,4 +228,13 @@
 
 .chat-message-mw {
   max-width: 40%;
+}
+
+/* ---------------------------------Carousel--------------------------------- */
+
+.carousel-page {
+  opacity: 0.3;
+  height: 400px;
+  background-position: center;
+  background-image: url(/static/images/carouselPage.svg);
 }
