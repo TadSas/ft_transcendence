@@ -5,6 +5,7 @@ from .views import (
     LoginView,
     LogoutView,
     CallbackView,
+    JWTVerifyView,
     UserAvatarView,
     DashboardUsersView,
     TwoFactorVerifyView,
@@ -22,5 +23,6 @@ urlpatterns = [
     path('callback', CallbackView.as_view(), name='api-callback'),
     path('dashboard/users', DashboardUsersView.as_view(), name='api-dashboard-users'),
     path('twofactor/verify', TwoFactorVerifyView.as_view(), name='api-twofactor-verify'),
+    path('jwt/verify', JWTVerifyView.as_view(), name='api-jwt-verify'),
     path('authentication/check', AuthenticationCheckView.as_view(), name='api-authentication-check')
 ]

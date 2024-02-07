@@ -19,7 +19,7 @@ from .exceptions import AuthException
 from .config import FTTRANSCENDENCE, FTAPI
 from .serializers import UsersSerializer, AuthTokenSerializer
 
-from auth.settings import MEDIA_ROOT, TOTP_COOKIE_PREFIX, TOTP_COOKIE_SUFFIX
+from auth.settings import MEDIA_ROOT, TOTP_COOKIE_PREFIX, TOTP_COOKIE_SUFFIX, SECRET_KEY
 
 
 class AuthController:
@@ -246,6 +246,29 @@ class AuthController:
 
         return QRCodeController().verify_otp(user, otp), user
 
+    def verify_jwt(self, jwt_token: str) -> dict:
+        """ Verifies the jwt token from the requests of other microservices
+
+        Parameters
+        ----------
+        jwt_token : str
+
+        Returns
+        -------
+        dict
+
+        """
+        user = {}
+        authenticated = True
+
+        try:
+            payload = jwt.decode(jwt_token, SECRET_KEY, algorithms=['HS256'])
+            user = Users.objects.filter(id=payload.get('id')).values().first()
+        except Exception:
+            authenticated = False
+
+        return {'authenticated': authenticated, 'user': user}
+
 
 class UserController:
 
@@ -275,7 +298,7 @@ class UserController:
         return user_data
 
     def get_user_by_username(self, username: str) -> Users | None:
-        """
+        """ Get user by login name
 
         Parameters
         ----------
@@ -288,15 +311,19 @@ class UserController:
         """
         return Users.objects.filter(login=username).first()
 
-    def get_dashboard_users(self) -> list:
+    def get_dashboard_users(self, current_user: Users) -> list:
         """ Returns all users for representing in dashboard tabs
+
+        Parameters
+        ----------
+        current_user : Users
 
         Returns
         -------
         list
 
         """
-        return list(Users.objects.values('login', 'status'))
+        return list(Users.objects.exclude(login=current_user.login).values('login', 'status'))
 
     def update_user_information(self, user: Users, user_data: dict) -> dict:
         """ Updates user information using form data

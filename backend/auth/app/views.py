@@ -64,6 +64,13 @@ class CallbackView(APIView):
         return response
 
 
+class JWTVerifyView(APIView):
+    authentication_classes = []
+
+    def post(self, request):
+        return JsonResponse({'message': 0, **AuthController().verify_jwt(request.data.get('jwt') or '')})
+
+
 class TwoFactorVerifyView(APIView):
     authentication_classes = []
 
@@ -180,4 +187,4 @@ class DashboardUsersView(APIView):
     authentication_classes = [JWTAuthentication]
 
     def get(self, request):
-        return JsonResponse({'status': 0, 'data': UserController().get_dashboard_users()})
+        return JsonResponse({'status': 0, 'data': UserController().get_dashboard_users(request.user)})

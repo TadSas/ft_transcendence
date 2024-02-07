@@ -27,7 +27,7 @@ SECRET_KEY = os.environ['CHAT_PROJECT_SECRET']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['chat']
+ALLOWED_HOSTS = ['chat', '192.168.0.106']
 
 
 # Application definition
@@ -135,3 +135,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+JWT_COOKIE_NAME = 'ft_transcendence_jwt'
+
+AUTHORIZATION_SERVER = 'http://auth:8080'
