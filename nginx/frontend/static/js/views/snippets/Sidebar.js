@@ -25,10 +25,9 @@ export default class extends BaseSnippet {
         },
         'document.getElementById("userAvatarDropdown")': e => {
           document.getElementById("navigation-list").getElementsByClassName("active")[0].setAttribute("class", "nav-link link-body-emphasis")
-          const a = document.getElementById('navigation-list').querySelectorAll(`[href='/${e.target.href.split('/').at(-1)}']`)[0]
+          const navigationList = document.getElementById('navigation-list').querySelectorAll(`[href='/${e.target.href.split('/').at(-1)}']`)[0]
 
-          if (a)
-            a.setAttribute("class", "nav-link active")
+          navigationList && navigationList.setAttribute("class", "nav-link active")
         },
         'document.getElementById("sidebarTitle")': e => {
           document.getElementById("navigation-list").getElementsByClassName("active")[0].setAttribute("class", "nav-link link-body-emphasis")

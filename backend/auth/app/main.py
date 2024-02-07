@@ -274,6 +274,30 @@ class UserController:
 
         return user_data
 
+    def get_user_by_username(self, username: str) -> Users | None:
+        """
+
+        Parameters
+        ----------
+        username : str
+
+        Returns
+        -------
+        Users | None
+
+        """
+        return Users.objects.filter(login=username).first()
+
+    def get_dashboard_users(self) -> list:
+        """ Returns all users for representing in dashboard tabs
+
+        Returns
+        -------
+        list
+
+        """
+        return list(Users.objects.values('login', 'status'))
+
     def update_user_information(self, user: Users, user_data: dict) -> dict:
         """ Updates user information using form data
 
@@ -346,7 +370,10 @@ class UserController:
         new_avatar_path : str
 
         """
-        if (old_avatar_path := Path(f'{MEDIA_ROOT}/{user.avatar_path}')).is_file():
+        if (
+            (old_avatar_path := Path(f'{MEDIA_ROOT}/{user.avatar_path}')).is_file() and
+            old_avatar_path.name != 'default_avatar.jpg'
+        ):
             old_avatar_path.unlink()
 
         serializer = UsersSerializer(data={'login': user.login, 'avatar_path': new_avatar_path}, partial=True)

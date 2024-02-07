@@ -17,7 +17,7 @@ export default class extends BaseView {
       'two_factor_enabled': {'label': 'Two factor authentication', 'type': Components.checkbox}
     }
 
-    const user = await new httpRequest({resource: 'auth/api/user', method: 'GET', successCallback: response => {return response}}).send()
+    const user = await new httpRequest({resource: '/auth/api/user', method: 'GET', successCallback: response => {return response}}).send()
     const userInformation = user['data']
 
     const generalInformation = `

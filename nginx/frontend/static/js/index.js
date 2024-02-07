@@ -16,6 +16,7 @@ const routes = [
   {path: "/pong", view: Pong, name: "Pong", icon: "rocket-takeoff", sideBar: true},
   {path: "/messages", view: Messages, name: "Messages", icon: "chat", sideBar: true},
   {path: "/profile", view: Profile, name: "Profile", icon: "person-circle", sideBar: true},
+  {path: "/profile/:username", view: Profile, name: "Profile", sideBar: false},
   {path: "/settings", view: Settings, name: "Settings", icon: "speedometer2", sideBar: true},
 ]
 

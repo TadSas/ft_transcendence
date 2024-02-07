@@ -4,6 +4,8 @@ import BaseView from "./BaseView.js"
 export default class extends BaseView {
   constructor(params) {
     super(params)
+    this.username = params.username
+
     this.setTitle("Profile")
   }
 
@@ -18,7 +20,8 @@ export default class extends BaseView {
       'created_at': 'Join date'
     }
 
-    const user = await new httpRequest({resource: 'auth/api/user', method: 'GET', successCallback: response => {return response}}).send()
+    const resource = this.username ? `/auth/api/user/${this.username}` : '/auth/api/user'
+    const user = await new httpRequest({resource: resource, method: 'GET', successCallback: response => {return response}}).send()
     const userInformation = user['data']
 
     const generalInformation = `
@@ -137,6 +140,8 @@ export default class extends BaseView {
       'in-game': 'warning'
     }
     const status = userInformation['status'] || ''
+    const login = userInformation['login'] || ''
+    const avatarSrc = this.username ? `/auth/api/avatar/${login}`: '/auth/api/avatar'
 
     return `
     <div class="container">
@@ -144,12 +149,22 @@ export default class extends BaseView {
 
         <div class="col-lg-4">
           <div class="position-relative p-5 text-center bg-body border border-dashed rounded-4">
-            <img src="/auth/api/avatar" width="256px" height="256px" class="rounded-circle border object-fit-cover">
-            <h1>${userInformation['login'] || ''}</h1>
-            <span class="badge rounded-pill text-bg-${statuses[status || 'offline']}">
-              <span class="align-middle">Status: ${status}</span>
-              ${['online', 'in-game'].includes(status) ? '<span class="spinner-grow spinner-grow-sm align-middle"></span>': ''}
-            </span>
+            <div class="avatar-container">
+              <img src="${avatarSrc}" width="256px" height="256px" class="rounded-circle border object-fit-cover">
+            </div>
+            <h1>${login}</h1>
+            <div class="pb-3">
+              <span class="badge rounded-pill text-bg-${statuses[status || 'offline']}">
+                <span class="align-middle">Status: ${status}</span>
+                ${['online', 'in-game'].includes(status) ? '<span class="spinner-grow spinner-grow-sm align-middle"></span>': ''}
+              </span>
+            </div>
+            ${
+              this.username ? `
+              <a type="button" class="btn btn-outline-success me-3" data-link>Chat</a>
+              <a type="button" class="btn btn-outline-success" data-link>Play Pong</a>
+              ` : ''
+            }
           </div>
         </div>
 

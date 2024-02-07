@@ -6,7 +6,7 @@ var LoginController = (() => {
 
   // Public
   self.submit = () => {
-    new httpRequest({resource: 'auth/api/login', method: 'GET', successCallback: response => {
+    new httpRequest({resource: '/auth/api/login', method: 'GET', successCallback: response => {
       if ('redirect_uri' in response)
         location.href = response.redirect_uri
       else
@@ -26,7 +26,7 @@ var LoginController = (() => {
       return
     }
 
-    new httpRequest({resource: 'auth/api/twofactor/verify', method: 'POST', body: JSON.stringify({'otp': otp}), successCallback: response => {
+    new httpRequest({resource: '/auth/api/twofactor/verify', method: 'POST', body: JSON.stringify({'otp': otp}), successCallback: response => {
       if (!('status' in response) || response['status'] !== 0)
         return
 
@@ -41,7 +41,7 @@ var LoginController = (() => {
         })
       } else {
         const loginCont = document.getElementById("login")
-        
+
         document.getElementById('hiddenVerify').click()
 
         if (!loginCont.classList.contains("d-none"))
@@ -51,7 +51,7 @@ var LoginController = (() => {
   }
 
   self.authenticationCheck = () => {
-    return new httpRequest({resource: 'auth/api/authentication/check', method: 'GET', sync: true, successCallback: () => {}}).send()
+    return new httpRequest({resource: '/auth/api/authentication/check', method: 'GET', sync: true, successCallback: () => {}}).send()
   }
 
   return self

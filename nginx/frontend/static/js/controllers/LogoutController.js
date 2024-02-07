@@ -6,7 +6,7 @@ var LogoutController = (() => {
 
   // Public
   self.logout = () => {
-    new httpRequest({resource: 'auth/api/logout', method: 'GET', successCallback: response => {
+    new httpRequest({resource: '/auth/api/logout', method: 'GET', successCallback: response => {
       history.pushState(null, null, '/login')
     }}).send()
   }

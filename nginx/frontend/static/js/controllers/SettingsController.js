@@ -15,7 +15,7 @@ var SettingsController = (() => {
     formData.append("avatar", document.getElementById(avatarImageInputId).files[0])
 
     new httpRequest({
-      resource: 'auth/api/avatar',
+      resource: '/auth/api/avatar',
       method: 'PUT',
       headers: {},
       body: formData,
@@ -56,7 +56,7 @@ var SettingsController = (() => {
         body[element.id] = element.value
     })
 
-    new httpRequest({resource: 'auth/api/user', method: 'POST', body: JSON.stringify(body), successCallback: response => {
+    new httpRequest({resource: '/auth/api/user', method: 'POST', body: JSON.stringify(body), successCallback: response => {
       if ('message' in response) {
         if ('errors' in response) {
           for (const [key, value] of Object.entries(response['errors'])) {

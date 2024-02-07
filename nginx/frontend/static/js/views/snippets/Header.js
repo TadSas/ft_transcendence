@@ -44,7 +44,7 @@ export default class extends BaseSnippet {
       </div>
     </div>
     `
-  
+
     return `
       <div class="container-fluid d-grid gap-3 align-items-center" style="grid-template-columns: 1fr 2fr;">
         <div class="dropdown">
@@ -58,7 +58,7 @@ export default class extends BaseSnippet {
           </form>
           ${theme}
           <div class="flex-shrink-0 dropdown">
-            <a href="/" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <a class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
               <img id="headerUserAvatar" src="/auth/api/avatar" alt="mdo" width="32" height="32" class="rounded-circle object-fit-cover">
             </a>
             <ul id="userAvatarDropdown" class="dropdown-menu shadow" style="">

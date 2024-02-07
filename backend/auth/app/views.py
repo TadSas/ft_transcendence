@@ -125,14 +125,20 @@ class UserAvatarView(APIView):
     parser_classes = [MultiPartParser]
     authentication_classes = [JWTAuthentication]
 
-    def get(self, request):
-        response = HttpResponse(UserController().get_user_avatar(request.user))
+    def get(self, request, username=''):
+        user = request.user
+        userCont = UserController()
+
+        if username:
+            user = userCont.get_user_by_username(username)
+
+        response = HttpResponse(userCont.get_user_avatar(user))
         response['Content-Type'] = "image/png"
         response['Cache-Control'] = "max-age=0"
 
         return response
 
-    def put(self, request):
+    def put(self, request, username=''):
         if not (request_files := request.FILES) or 'avatar' not in request_files:
             return JsonResponse({'status': 1, 'message': 'No avatar found to upload'})
 
@@ -157,8 +163,21 @@ class UserAvatarView(APIView):
 class UserView(APIView):
     authentication_classes = [JWTAuthentication]
 
-    def get(self, request):
-        return JsonResponse({'status': 0, 'data': UserController().get_user_information(request.user)})
+    def get(self, request, username=''):
+        user = request.user
+        userCont = UserController()
 
-    def post(self, request):
+        if username:
+            user = userCont.get_user_by_username(username)
+
+        return JsonResponse({'status': 0, 'data': userCont.get_user_information(user)})
+
+    def post(self, request, username=''):
         return JsonResponse({'status': 0, **UserController().update_user_information(request.user, request.data)})
+
+
+class DashboardUsersView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request):
+        return JsonResponse({'status': 0, 'data': UserController().get_dashboard_users()})

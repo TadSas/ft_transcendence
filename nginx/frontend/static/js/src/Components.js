@@ -165,7 +165,9 @@ var ChatComponents = (() => {
     return `
     <a class="list-group-item list-group-item-action list-group-item-light ${active ? 'active' : ''}" role="button">
       <div class="d-flex align-items-center">
-        <img src="/auth/api/avatar" alt="user" width="40" heigth="40" class="rounded-circle">
+        <div>
+          <img src="/auth/api/avatar" alt="user" width="40" height="40" class="rounded-circle object-fit-cover">
+        </div>
         <div class="ms-3 w-100">
           <div class="d-flex align-items-center justify-content-between mb-1">
             <h6 class="mb-0">
