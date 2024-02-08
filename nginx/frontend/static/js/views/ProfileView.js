@@ -11,6 +11,13 @@ export default class extends BaseView {
 
   async getContent(routes, match) {
     this.getBase(routes, match)
+    this.viewEventStore.push({
+      'click': {
+        'document.getElementById("startUserChat")': e => {
+          MessagesController.createRoom(this.username)
+        }
+      }
+    })
 
     const userInformationHeaders = {
       'login': 'Username',
@@ -161,8 +168,8 @@ export default class extends BaseView {
             </div>
             ${
               this.username ? `
-              <a type="button" class="btn btn-outline-success me-3" data-link>Chat</a>
-              <a type="button" class="btn btn-outline-success" data-link>Play Pong</a>
+              <a id="startUserChat" type="button" class="btn btn-outline-success me-3" data-link>Chat</a>
+              <a id="startUserPong" type="button" class="btn btn-outline-success" data-link>Play Pong</a>
               ` : ''
             }
           </div>

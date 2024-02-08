@@ -69,6 +69,7 @@ class httpRequest {
 
       return this.successCallback(responseData)
     }).catch((error) => {
+      // TODO: Change to generic error message after finishing the project
       showMessage(`${('Error message: ')}${error}`, 'danger')
       console.error(error)
       hideLoader()

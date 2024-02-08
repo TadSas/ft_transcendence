@@ -34,7 +34,8 @@ export default class {
     eventStore.forEach(events => {
       Object.entries(events).forEach(([eventType, eventList]) => {
         Object.entries(eventList).forEach(([element, event]) => {
-          eval(element).addEventListener(eventType, event)
+          const domElement = eval(element)
+          domElement && domElement.addEventListener(eventType, event)
         })
       })
     })

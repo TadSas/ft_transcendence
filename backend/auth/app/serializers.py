@@ -1,10 +1,8 @@
-import uuid
-
 from django.utils import timezone
 
 from rest_framework import serializers
 
-from .models import Users, StatusChoices, AuthToken, QRMeta
+from .models import Users, StatusChoices, AuthToken
 
 
 class UsersSerializer(serializers.Serializer):

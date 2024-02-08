@@ -161,12 +161,12 @@ var ChatComponents = (() => {
   // Private
   var foo = () => {}
 
-  self.sidebarMessage = ({active = false, messageText = '', username = '', sentDate = ''}) => {
+  self.sidebarMessage = ({id = '', active = false, messageText = '', username = '', sentDate = ''}) => {
     return `
-    <a class="list-group-item list-group-item-action list-group-item-light ${active ? 'active' : ''}" role="button">
+    <a id=${id} class="list-group-item list-group-item-action list-group-item-light ${active ? 'active' : ''}" role="button">
       <div class="d-flex align-items-center">
         <div>
-          <img src="/auth/api/avatar" alt="user" width="40" height="40" class="rounded-circle object-fit-cover">
+          <img src="/auth/api/avatar/${username}" alt="user" width="40" height="40" class="rounded-circle object-fit-cover">
         </div>
         <div class="ms-3 w-100">
           <div class="d-flex align-items-center justify-content-between mb-1">

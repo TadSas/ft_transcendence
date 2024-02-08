@@ -7,8 +7,8 @@ from django.contrib.postgres.fields import ArrayField
 class Rooms(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    participants = ArrayField(models.UUIDField(), default=list)
-    created_at = models.DateTimeField()
+    participants = ArrayField(models.CharField(max_length=32), default=list)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = 'rooms'
