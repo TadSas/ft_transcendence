@@ -25,6 +25,12 @@ var MessagesController = (() => {
     }).send()
   }
 
+  self.startChatting = (roomId) => {
+    // const ws = new WebSocket(`wss://${location.host}/chat/room`)
+    // ws.onmessage = event => console.log(event.data)
+    // ws.send("ping")
+  }
+
   self.getRooms = () => {
   }
 
