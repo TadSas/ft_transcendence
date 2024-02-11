@@ -73,7 +73,7 @@ export default class extends BaseView {
         <div class="col-lg-4">
           <div class="position-relative p-5 text-center bg-body border border-dashed rounded-4">
             <div class="avatar-container">
-              <img id="userAvatar" src="/auth/api/avatar" width="256px" height="256px" class="rounded-circle border object-fit-cover" onclick="SettingsController.triggerAvatarUpload('userAvatarInput')">
+              <img id="userAvatar" src="/auth/api/avatar" class="rounded-circle border object-fit-cover w-100 h-100" onclick="SettingsController.triggerAvatarUpload('userAvatarInput')">
               <div class="overlay d-flex justify-content-center align-items-center pe-none">
                 <i class="bi bi-pencil-square h3 pe-none"></i>
               </div>

@@ -157,7 +157,7 @@ export default class extends BaseView {
         <div class="col-lg-4">
           <div class="position-relative p-5 text-center bg-body border border-dashed rounded-4">
             <div class="avatar-container">
-              <img src="${avatarSrc}" width="256px" height="256px" class="rounded-circle border object-fit-cover">
+              <img src="${avatarSrc}" class="rounded-circle border object-fit-cover w-100 h-100">
             </div>
             <h1>${login}</h1>
             <div class="pb-3">
@@ -168,8 +168,8 @@ export default class extends BaseView {
             </div>
             ${
               this.username ? `
-              <a id="startUserChat" type="button" class="btn btn-outline-success me-3" data-link>Chat</a>
-              <a id="startUserPong" type="button" class="btn btn-outline-success" data-link>Play Pong</a>
+              <a href="/messages" id="startUserChat" type="button" class="btn btn-outline-success me-3 mb-2" data-link>Chat</a>
+              <a href="/pong" id="startUserPong" type="button" class="btn btn-outline-success mb-2" data-link>Play Pong</a>
               ` : ''
             }
           </div>

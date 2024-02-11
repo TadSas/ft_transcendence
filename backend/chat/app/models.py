@@ -13,12 +13,15 @@ class Rooms(models.Model):
     class Meta:
         verbose_name = 'rooms'
 
+    def __str__(self):
+        return self.participants
+
 
 class Messages(models.Model):
 
     room = models.ForeignKey(Rooms, on_delete=models.CASCADE)
     message = models.TextField()
-    sender_id = models.UUIDField()
+    sender = models.CharField(max_length=32)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

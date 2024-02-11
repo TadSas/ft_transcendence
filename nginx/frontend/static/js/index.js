@@ -67,8 +67,10 @@ const router = async () => {
 window.addEventListener("popstate", router)
 
 document.addEventListener("DOMContentLoaded", () => {
-  if (LoginController.authenticationCheck().authenticated)
+  if (LoginController.authenticationCheck().authenticated) {
     history.pushState(null, null, '/')
+    NotificationController.initChat()
+  }
   else {
     history.pushState(null, null, `/login`)
   }

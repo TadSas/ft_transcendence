@@ -28,14 +28,6 @@
   --bs-btn-active-border-color: #5a23c8;
 }
 
-.bd-mode-toggle {
-  z-index: 1500;
-}
-
-.bd-mode-toggle .dropdown-menu .active .bi {
-  display: block !important;
-}
-
 .dropdown-toggle:not(:focus) {
   outline: 0;
 }
@@ -145,12 +137,6 @@
   border-radius: 50%;
 }
 
-.avatar-container img {
-  display: block;
-  width: 256px;
-  height: 256px;
-}
-
 .overlay {
   position: absolute;
   top: 0;
@@ -219,7 +205,7 @@
   overflow-y: scroll;
 }
 
-.chat-sidebar-message {
+.chat-short-message {
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 1;

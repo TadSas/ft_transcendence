@@ -5,6 +5,8 @@ export default class extends BaseView {
   constructor(params) {
     super(params)
     this.setTitle("Messages")
+
+    document.querySelector('#nav-messages a').click()
   }
 
   async gerRoomCards(rooms) {
@@ -12,9 +14,17 @@ export default class extends BaseView {
 
     for (const room of rooms) {
       const roomId = room.id || ''
+      const activity = room['activity'] || {}
 
       content += ChatComponents.sidebarMessage(
-        {'id': roomId,'active': false, 'messageText': '', 'username': room.participants[0], 'sentDate': '', 'onclick': `MessagesController.startChatting("${roomId}")`}
+        {
+          'id': roomId,
+          'active': false,
+          'messageText': activity['message'],
+          'username': room.participants.join(''),
+          'sentDate': activity['sent_date'],
+          'onclick': `MessagesController.startChatting('${roomId}','${room.participants}')`
+        }
       )
     }
 
@@ -30,8 +40,6 @@ export default class extends BaseView {
         return response
     }}).send()
 
-    // ${ChatComponents.senderMessage({'messageText': 'Lorem ipsum dolor sit amet, consectetur. incididunt ut labore.', 'sentDateTime': '09:12 AM | Fab 2'})}
-    // ${ChatComponents.recieverMessage({'messageText': 'Lorem ipsum dolor sit amet, consectetur. incididunt ut labore.', 'sentDateTime': '09:12 AM | Fab 2'})}
     const content = `
     <div class="row overflow-hidden px-3">
       <div class="col-2 px-0">
@@ -39,7 +47,7 @@ export default class extends BaseView {
           <p class="h5 mb-0 py-1">Chats</p>
         </div>
         <div class="messages-box rounded">
-          <div class="list-group">
+          <div id="side-message-cards" class="list-group">
             ${await this.gerRoomCards(rooms['data'] || [])}
           </div>
         </div>
@@ -58,11 +66,11 @@ export default class extends BaseView {
           </div>
         </div>
 
-        <form action="#" class="bg-body-tertiary bg-opacity-50 rounded">
+        <form id="messageForm" action="#" class="bg-body-tertiary bg-opacity-50 rounded" onsubmit="MessagesController.sendMessage(event); return false">
           <div class="input-group">
-            <input id="messageInputArea" type="text" placeholder="Type a message" class="form-control rounded" disabled>
+            <input id="messageInputArea" type="text" placeholder="Type a message" class="form-control rounded d-none">
             <div class="input-group-append">
-              <button id="messageInputButton" type="submit" class="btn btn-link border" disabled>
+              <button id="messageInputButton" type="submit" class="btn btn-link border d-none">
                 <i class="bi bi-send"></i>
               </button>
             </div>
@@ -71,6 +79,8 @@ export default class extends BaseView {
       </div>
     </div>
     `
+
+    history.pushState(null, null, '/messages')
 
     return content
   }

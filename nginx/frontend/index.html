@@ -16,6 +16,7 @@
     <script src="/static/js/controllers/LogoutController.js"></script>
     <script src="/static/js/controllers/MessagesController.js"></script>
     <script src="/static/js/controllers/SettingsController.js"></script>
+    <script src="/static/js/controllers/NotificationController.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@latest/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 
     <script type="importmap">
@@ -37,6 +38,7 @@
 
   <body>
     <div id="loader"></div>
+    <div id="toast" class="toast-container position-fixed top-0 end-0 p-3"></div>
     <div id="message"></div>
     <div id="login" class="d-none"></div>
     <div id="logged" class="container-fluid d-none">

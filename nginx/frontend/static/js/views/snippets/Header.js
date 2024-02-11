@@ -13,7 +13,7 @@ export default class extends BaseSnippet {
   getSnippet() {
     const theme = `
     <div id="theme">
-      <div class="dropdown me-3 bd-mode-toggle">
+      <div class="dropdown me-3">
         <button class="btn btn-bd-primary dropdown-toggle d-flex align-items-center" id="bd-theme" type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme (dark)">
           <i class="bi bi-moon-stars-fill theme-icon-active"></i>
           <span class="visually-hidden" id="bd-theme-text">Toggle theme</span>

@@ -170,14 +170,14 @@ var ChatComponents = (() => {
         </div>
         <div class="ms-3 w-100">
           <div class="d-flex align-items-center justify-content-between mb-1">
-            <h6 class="mb-0">
+            <h6 class="mb-0" id="${id}_sender">
               ${username}
             </h6>
-            <small class="small font-weight-bold">
+            <small class="fw-lighter" id="${id}_sentDate">
               ${sentDate}
             </small>
           </div>
-          <p class="font-italic mb-0 text-small chat-sidebar-message">
+          <p class="font-italic mb-0 text-small chat-short-message" id="${id}_message">
             ${messageText}
           </p>
         </div>
@@ -222,6 +222,41 @@ var ChatComponents = (() => {
       </div>
     </div>
     `
+  }
+
+  return self
+})()
+
+
+var ToastComponents = (() => {
+  var self = {}
+
+  // Private
+  var foo = () => {}
+
+  self.createToast = ({id = '', icon = '', title = '', dateTime = '', body = ''}) => {
+    const toastContainer = document.getElementById('toast')
+
+    while (toastContainer.getElementsByClassName('toast').length > 9) {
+      toastContainer.removeChild(toastContainer.lastChild)
+    }
+
+    document.getElementById('toast').insertAdjacentHTML(
+      'afterbegin',
+      `
+      <div id="${id}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+          <i class="bi bi-${icon} me-2"></i>
+          <strong class="me-auto chat-short-message">${title}</strong>
+          <small>${dateTime}</small>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+          ${body}
+        </div>
+      </div>
+      `
+    )
   }
 
   return self
