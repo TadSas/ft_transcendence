@@ -21,9 +21,12 @@ var MessagesController = (() => {
   }
 
   self.startChatting = (roomId, participants) => {
-    participants = participants.split(',')
-
     Array.from(document.querySelectorAll('#side-message-cards .active')).forEach(el => el.classList.remove('active'))
+
+    const chatBoxTitle = document.getElementById('chatBoxTitle')
+    chatBoxTitle.innerText = participants
+
+    participants = participants.split(',')
 
     const messageCard = document.getElementById(roomId)
     messageCard && messageCard.classList.add('active')

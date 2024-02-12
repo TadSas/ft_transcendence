@@ -7,6 +7,7 @@ export default class extends BaseView {
     this.setTitle("Messages")
 
     document.querySelector('#nav-messages a').click()
+    document.getElementById('nav-messages').querySelector('.sidebar-icon-notification').classList.add('d-none')
   }
 
   async gerRoomCards(rooms) {
@@ -48,14 +49,29 @@ export default class extends BaseView {
         </div>
         <div class="messages-box rounded">
           <div id="side-message-cards" class="list-group">
-            ${await this.gerRoomCards(rooms['data'] || [])}
+            ${await this.gerRoomCards((rooms || {})['data'] || [])}
           </div>
         </div>
       </div>
 
       <div class="col-10 px-0">
-        <div class="px-4 py-2 bg-body-tertiary bg-opacity-50 border border-bottom-0 rounded">
-          <p class="h5 mb-0 py-1">Username</p>
+        <div class="px-4 py-2 d-flex align-items-center bg-body-tertiary bg-opacity-50 border border-bottom-0 rounded">
+          <div class="d-flex align-items-center">
+
+            <a href="/profile/syeghiaz" class="d-flex align-items-center link-body-emphasis text-decoration-none w-100 h-100 stretched-link" data-link>
+              <i class="bi bi-person-circle me-2 mb-0 h5"></i>
+              <p id="chatBoxTitle" class="h5 mb-0 py-1 me-4"></p>
+            </a>
+          </div>
+
+          <div class="d-flex align-items-center d-block">
+            <i class="bi bi-ban me-2 mb-0 h5"></i>
+            <p class="h5 mb-0 py-1 me-4">Block</p>
+          </div>
+          <div class="d-flex align-items-center d-block">
+            <i class="bi bi-rocket-takeoff me-2 mb-0 h5"></i>
+            <p class="h5 mb-0 py-1 me-4">Play Pong</p>
+          </div>
         </div>
 
         <div id="messageContainer" class="px-2 py-4 chat-box bg-body-tertiary bg-opacity-50 border border-bottom-0 rounded">

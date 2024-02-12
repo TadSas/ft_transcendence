@@ -162,6 +162,8 @@ var ChatComponents = (() => {
   var foo = () => {}
 
   self.sidebarMessage = ({id = '', active = false, messageText = '', username = '', sentDate = '', onclick = ''}) => {
+    const dateTime = sentDate.split(' ')
+
     return `
     <a id=${id} class="list-group-item list-group-item-action list-group-item-light ${active ? 'active' : ''}" role="button" onclick=${onclick}>
       <div class="d-flex align-items-center">
@@ -171,14 +173,14 @@ var ChatComponents = (() => {
         <div class="ms-3 w-100">
           <div class="d-flex align-items-center justify-content-between mb-1">
             <h6 class="mb-0" id="${id}_sender">
-              ${username}
+              ${username || ''}
             </h6>
-            <small class="fw-lighter" id="${id}_sentDate">
-              ${sentDate}
-            </small>
+            <p class="fw-lighter text-end mb-0 text-small-date" id="${id}_sentDate">
+              ${dateTime[0] || ''}<br>${dateTime[1] || ''}
+            </p>
           </div>
           <p class="font-italic mb-0 text-small chat-short-message" id="${id}_message">
-            ${messageText}
+            ${messageText || ''}
           </p>
         </div>
       </div>

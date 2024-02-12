@@ -27,7 +27,7 @@ SECRET_KEY = os.environ['CHAT_PROJECT_SECRET']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['chat', '192.168.0.106', 'localhost']
+ALLOWED_HOSTS = ['chat', '192.168.0.106', 'localhost', '192.168.1.16']
 
 
 # Application definition

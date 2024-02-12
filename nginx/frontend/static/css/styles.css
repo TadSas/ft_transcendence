@@ -195,6 +195,10 @@
   font-size: 0.9rem;
 }
 
+.text-small-date {
+  font-size: 0.7rem;
+}
+
 .messages-box {
   height: 85vh;
   overflow-y: scroll;

@@ -72,12 +72,13 @@ class RoomController:
 
         for room in rooms:
             last_message = messagesCont.get_room_last_message(room.get('id'))
+            created_at = last_message.get('created_at') or ''
 
             room['participants'].remove(user)
             room['activity'] = {
-                'sender': last_message.sender,
-                'message': last_message.message,
-                'sent_date': timezone.localtime(last_message.created_at).strftime("%d-%m-%Y %H:%M")
+                'sender': last_message.get('sender') or '',
+                'message': last_message.get('message') or '',
+                'sent_date': created_at and timezone.localtime(created_at).strftime("%d-%m-%Y %H:%M") or ''
             }
 
         return {'data': rooms}
@@ -183,4 +184,6 @@ class MessagesController:
         Messages
 
         """
-        return Messages.objects.filter(room=room_id).order_by('-created_at')[0]
+        last_message = Messages.objects.filter(room=room_id).order_by('-created_at').values()
+
+        return last_message[0] if last_message.count() > 0 else {}
