@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 from urllib.request import Request, urlopen
 
 from django.utils import timezone
+from django.utils.html import escape
 
 from .models import Users, QRMeta
 from .exceptions import AuthException
@@ -341,6 +342,8 @@ class UserController:
         data = {}
         user_login = user.login
 
+        self.__validate_user_information(user_data)
+
         if not (user_data := dict(filter(lambda item: item[1] != '', user_data.items()))):
             return {'message': 'Nothing to update'}
 
@@ -369,6 +372,17 @@ class UserController:
             data['qr'] = QRCodeController().create_user_qr(user)
 
         return {'message': 'User data successfully updated', 'data': data}
+
+    def __validate_user_information(self, user_data: dict) -> None:
+        """ Escapes all user input values
+
+        Parameters
+        ----------
+        user_data : dict
+
+        """
+        for key in user_data:
+            user_data[key] = escape(user_data[key])
 
     def get_user_avatar(self, user: Users) -> BytesIO:
         """ Get user avatar as a bytes

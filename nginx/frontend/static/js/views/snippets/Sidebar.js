@@ -18,20 +18,6 @@ export default class extends BaseSnippet {
           Array.from(document.getElementsByClassName("sidebar-title-transition")).forEach(element => {
               element.classList.toggle("d-none")
           })
-        },
-        'document.getElementById("navigation-list")': e => {
-          document.getElementById("navigation-list").getElementsByClassName("active")[0].setAttribute("class", "nav-link link-body-emphasis")
-          e.target.setAttribute("class", "nav-link active")
-        },
-        'document.getElementById("userAvatarDropdown")': e => {
-          document.getElementById("navigation-list").getElementsByClassName("active")[0].setAttribute("class", "nav-link link-body-emphasis")
-          const navigationList = document.getElementById('navigation-list').querySelectorAll(`[href='/${e.target.href.split('/').at(-1)}']`)[0]
-
-          navigationList && navigationList.setAttribute("class", "nav-link active")
-        },
-        'document.getElementById("sidebarTitle")': e => {
-          document.getElementById("navigation-list").getElementsByClassName("active")[0].setAttribute("class", "nav-link link-body-emphasis")
-          document.getElementById('navigation-list').querySelectorAll(`[href='/${e.target.href.split('/').at(-1)}']`)[0].setAttribute("class", "nav-link active")
         }
       }
     }

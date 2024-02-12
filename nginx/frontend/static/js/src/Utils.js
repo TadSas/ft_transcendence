@@ -59,3 +59,12 @@ const getCookie = (name) => {
 
   return decodeURI(dc.substring(begin + prefix.length, end))
 }
+
+const escapeHtml = (unsafe) => {
+  return unsafe
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;')
+}

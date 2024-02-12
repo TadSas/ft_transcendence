@@ -8,6 +8,31 @@ export default class {
     this.eventStore = []
     this.viewEventStore = []
     this.params = params
+
+    this.configureSideBar()
+  }
+
+  configureSideBar() {
+
+    const navigationList = document.getElementById('navigation-list')
+
+    if (!navigationList)
+      return
+
+    const navigationAnchors = navigationList.querySelectorAll('a')
+
+    if (navigationAnchors.length === 0)
+      return
+
+    Array.from(navigationList.querySelectorAll('a')).forEach(element => {
+      if (element.getAttribute('href') == `/${location.pathname.substring(1).split('/')[0]}`) {
+          element.classList = ''
+          element.classList.add('nav-link', 'active')
+      } else {
+          element.classList = ''
+          element.classList.add('nav-link', 'link-body-emphasis')
+      }
+    })
   }
 
   setTitle(title) {

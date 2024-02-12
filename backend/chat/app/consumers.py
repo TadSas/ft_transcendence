@@ -2,6 +2,7 @@ import json
 import uuid
 
 from django.utils import timezone
+from django.utils.html import escape
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 
@@ -45,7 +46,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        message = text_data_json['message']
+        message = escape(text_data_json['message'])
+
+        if not message:
+            return
 
         saved_message = await database_sync_to_async(MessagesController().save_message)(
             self.scope['user'].get('login'),

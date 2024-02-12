@@ -14,8 +14,6 @@ var MessagesController = (() => {
       successCallback: response => {
         if (Object.keys(response.data).length === 0)
           return showMessage("Can't create/retrieve room for this user", "danger")
-        else
-          history.pushState(null, null, '/messages')
       }
     }).send()
   }
@@ -24,7 +22,13 @@ var MessagesController = (() => {
     Array.from(document.querySelectorAll('#side-message-cards .active')).forEach(el => el.classList.remove('active'))
 
     const chatBoxTitle = document.getElementById('chatBoxTitle')
-    chatBoxTitle.innerText = participants
+    if (chatBoxTitle) {
+      chatBoxTitle.classList.remove('invisible')
+      chatBoxTitle.querySelector('p').innerText = participants
+    }
+
+    const chatBoxBlockUser = document.getElementById('chatBoxBlockUser')
+    chatBoxBlockUser && chatBoxBlockUser.classList.remove('invisible')
 
     participants = participants.split(',')
 
@@ -56,7 +60,7 @@ var MessagesController = (() => {
         ChatComponents.senderMessage({'messageText': message, 'sentDateTime': sentDate})
       )
 
-      document.getElementById(`${data['room_id']}_message`).innerText = message
+      document.getElementById(`${data['room_id']}_message`).innerHTML = message
       document.getElementById(`${data['room_id']}_sentDate`).innerText = sentDate
 
       messageContainer.scrollTop = messageContainer.scrollHeight
@@ -102,6 +106,10 @@ var MessagesController = (() => {
 
     if (chatWebSocket && chatWebSocket.readyState !== WebSocket.CLOSED) {
       const message = messageInputArea.value
+
+      if (!message)
+        return
+
       const sentDate = self.getCurrentDateTime()
 
       chatWebSocket.send(JSON.stringify({
@@ -110,7 +118,7 @@ var MessagesController = (() => {
 
       messageContainer.insertAdjacentHTML(
         'beforeend',
-        ChatComponents.recieverMessage({'messageText': message, 'sentDateTime': sentDate})
+        ChatComponents.recieverMessage({'messageText': escapeHtml(message), 'sentDateTime': sentDate})
       )
 
       const activeMessageCardId = document.querySelector('#side-message-cards .active').id
