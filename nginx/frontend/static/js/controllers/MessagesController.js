@@ -26,21 +26,24 @@ var MessagesController = (() => {
     }).send()
   }
 
-  self.startChatting = (roomId, participants) => {
-    self.getRoom(roomId).then(room => {
+  self.startChatting = (room) => {
+    room = JSON.parse(decodeURIComponent(room))
+    const user = room.user
+    const roomId = room.id
+    const blocked = room.blocked
+    const participants = room.participants
 
-      self.resetSideBarNotifications()
+    self.resetSideBarNotifications()
 
-      self.configureMessageCard(roomId)
+    self.configureMessageCard(roomId)
 
-      self.configureChatHeader(roomId, participants)
+    self.configureChatHeader(roomId, participants, blocked, user)
 
-      self.configureChatBody(roomId, participants)
+    self.configureChatBody(roomId, participants)
 
-      self.configureChatInput()
+    self.configureChatInput()
 
-      self.initWebSocketConnection(roomId)
-    })
+    self.initWebSocketConnection(roomId)
   }
 
   self.resetSideBarNotifications = () => {
@@ -52,19 +55,27 @@ var MessagesController = (() => {
     messageCard && messageCard.classList.add('active')
   }
 
-  self.configureChatHeader = (roomId, participants) => {
+  self.configureChatHeader = (roomId, participants, blocked, user) => {
     const chatHeader = document.getElementById('chatHeader')
     if (chatHeader) {
       chatHeader.classList.remove('invisible')
-      chatHeader.setAttribute('href', `/profile/${participants}`)
       chatHeader.querySelector('p').innerText = participants
+      chatHeader.setAttribute('href', `/profile/${participants}`)
     }
 
     const chatUserBlockToggle = document.getElementById('chatUserBlockToggle')
     if (chatUserBlockToggle) {
-      chatUserBlockToggle.dataset.participants = participants
       chatUserBlockToggle.dataset.roomId = roomId
+      chatUserBlockToggle.dataset.participants = participants
       chatUserBlockToggle.classList.remove('invisible')
+
+      if (participants[0] in blocked && blocked[participants[0]]['from'] === user) {
+        chatUserBlockToggle.querySelector('p').innerText = 'Unblock'
+        chatUserBlockToggle.onclick = MessagesController.unBlockUser
+      } else {
+        chatUserBlockToggle.querySelector('p').innerText = 'Block'
+        chatUserBlockToggle.onclick = MessagesController.blockUser
+      }
     }
   }
 
@@ -72,7 +83,7 @@ var MessagesController = (() => {
     const messageContainer = document.getElementById('messageContainer')
     messageContainer && (messageContainer.innerHTML = '')
 
-    self.fetchMessages(messageContainer, roomId, participants.split(','))
+    self.fetchMessages(messageContainer, roomId, participants)
   }
 
   self.configureChatInput = () => {
@@ -184,7 +195,8 @@ var MessagesController = (() => {
     return day + '-' + month + '-' + year + ' ' + today.getHours() + ':' + today.getMinutes()
   }
 
-  self.blockUser = (data) => {
+  self.blockUser = (e) => {
+    const data = e.target.dataset
     const participants = data['participants']
     const roomId = data['roomId']
 
@@ -196,8 +208,28 @@ var MessagesController = (() => {
 
       const chatUserBlockToggle = document.getElementById('chatUserBlockToggle')
       if (chatUserBlockToggle) {
-        chatUserBlockToggle.setAttribute('href', '')
-        chatUserBlockToggle.querySelector('p').innerText = Unblock
+        chatUserBlockToggle.querySelector('p').innerText = 'Unblock'
+        chatUserBlockToggle.onclick = MessagesController.unBlockUser
+      }
+
+    }}).send()
+  }
+
+  self.unBlockUser = (e) => {
+    const data = e.target.dataset
+    const participants = data['participants']
+    const roomId = data['roomId']
+
+    new httpRequest({resource: `/chat/api/room/${roomId}/participants/${participants}/unblock`, method: 'GET', successCallback: response => {
+      if (!('data' in response) || !('blocked' in response['data']))
+        return showMessage('User unblocking failed', 'danger')
+
+      showMessage('User unblocked successfully')
+
+      const chatUserBlockToggle = document.getElementById('chatUserBlockToggle')
+      if (chatUserBlockToggle) {
+        chatUserBlockToggle.querySelector('p').innerText = 'Block'
+        chatUserBlockToggle.onclick = MessagesController.blockUser
       }
 
     }}).send()

@@ -23,7 +23,7 @@ export default class extends BaseView {
           'messageText': activity['message'],
           'username': room.participants.join(''),
           'sentDate': activity['sent_date'],
-          'onclick': `MessagesController.startChatting('${roomId}','${room.participants}')`
+          'onclick': `MessagesController.startChatting('${encodeURIComponent(JSON.stringify(room))}')`
         }
       )
     }

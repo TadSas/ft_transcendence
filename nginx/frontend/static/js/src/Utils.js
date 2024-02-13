@@ -28,9 +28,11 @@ const showMessage = (message, type = 'primary', duration = 5000) => {
   
   setTimeout(() => {
     const messageDiv = document.querySelector('#message div')
+    if (messageDiv) {
+      messageDiv.classList.toggle('show')
+      messageDiv.remove()
+    }
 
-    messageDiv && messageDiv.classList.toggle('show')
-    messageDiv.remove()
   }, duration)
 }
 
