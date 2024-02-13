@@ -1,4 +1,5 @@
 from django.utils import timezone
+from django.forms.models import model_to_dict
 
 from .utils import is_valid_uuid
 from .models import Rooms, Messages
@@ -54,6 +55,29 @@ class RoomController:
 
         """
         return Rooms.objects.filter(id=room_id).first()
+
+    def get_user_room(self, room_id: str, user: str) -> dict:
+        """
+
+        Parameters
+        ----------
+        room_id : str
+        user : str
+
+        Returns
+        -------
+        dict
+
+        """
+        room = self.get_room(room_id)
+
+        if not room:
+            return {'status': 1, 'message': "Room not found"}
+
+        if user not in room.participants:
+            return {'status': 1, 'message': "You don't have access to this room"}
+
+        return {'data': {'room': model_to_dict(room)}}
 
     def get_user_rooms(self, user: str) -> list:
         """ Returns rooms and last message of that room that the user acts as a participant
@@ -128,6 +152,58 @@ class RoomController:
             return {'data': []}
 
         return {'data': MessagesController().get_room_messages(room_id)}
+
+    def block_user(self, room_id: str, username: str, logged_username: str) -> dict:
+        """
+
+        Parameters
+        ----------
+        room_id : str
+        username : str
+        logged_username : str
+
+        Returns
+        -------
+        dict
+
+        """
+        error_response = {'status': 1, 'message': ''}
+
+        if not is_valid_uuid(room_id):
+            error_response['message'] = 'Invalid room identifier'
+
+            return error_response
+
+        if not (room := self.get_room(room_id)):
+            error_response['message'] = 'Room not found'
+
+            return error_response
+
+        if not (room_participants := room.participants):
+            error_response['message'] = 'Room participants not found'
+
+            return error_response
+
+        if logged_username not in room_participants:
+            error_response['message'] = "You don't have access to this room"
+
+            return error_response
+
+        if username not in room_participants:
+            error_response['message'] = 'User not found in the room participant list'
+
+            return error_response
+
+        serializer = RoomsSerializer(
+            room,
+            data={'blocked': {username: {'from': logged_username}}},
+            partial=True
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+
+        return {'data': serializer.validated_data}
 
 
 class MessagesController:

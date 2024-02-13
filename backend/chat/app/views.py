@@ -15,6 +15,15 @@ class CreateRoomView(APIView):
         })
 
 
+class GetRoomView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, requset, room_id=''):
+        return JsonResponse({
+            'status': 0, **RoomController().get_user_room(room_id, requset.user.get('login'))
+        })
+
+
 class GetRoomsView(APIView):
     authentication_classes = [JWTAuthentication]
 
@@ -32,4 +41,14 @@ class GetRoomMessagesView(APIView):
         return JsonResponse({
             'status': 0,
             **RoomController().get_room_messages(room_id, request.user.get('login'))
+        })
+
+
+class BlockUserView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request, room_id='', username=''):
+        return JsonResponse({
+            'status': 0,
+            **RoomController().block_user(room_id, username, request.user.get('login'))
         })

@@ -55,17 +55,17 @@ export default class extends BaseView {
 
       <div class="col-10 px-0">
         <div class="px-4 py-2 d-flex align-items-center bg-body-tertiary bg-opacity-50 border border-bottom-0 rounded">
-          <a href="/profile/syeghiaz" id="chatBoxTitle" class="d-flex align-items-center link-body-emphasis text-decoration-none invisible" data-link>
+          <a href="" id="chatHeader" class="d-flex align-items-center link-body-emphasis text-decoration-none invisible" data-link>
             <i class="bi bi-person-circle pe-none me-2 mb-0 h6"></i>
             <p class="h5 mb-0 py-1 me-4 pe-none"></p>
           </a>
 
-          <a id="chatBoxBlockUser" class="d-flex align-items-center link-body-emphasis text-decoration-none invisible">
+          <div id="chatUserBlockToggle" role="button" class="d-flex align-items-center link-body-emphasis text-decoration-none invisible">
             <i class="bi bi-ban pe-none me-2 mb-0 h6"></i>
-            <p class="h5 mb-0 py-1 me-4 pe-none">Block</p>
-          </a>
+            <p class="h5 mb-0 py-1 me-4 pe-none"></p>
+          </div>
 
-          <a href="/pong" id="chatBoxPongInvite" class="d-flex align-items-center link-body-emphasis text-decoration-none invisible" data-link>
+          <a href="/pong" id="chatPongInvite" class="d-flex align-items-center link-body-emphasis text-decoration-none invisible" data-link>
             <i class="bi bi-rocket-takeoff pe-none me-2 mb-0 h6"></i>
             <p class="h5 mb-0 py-1 me-4 pe-none">Play Pong</p>
           </a>

@@ -18,34 +18,72 @@ var MessagesController = (() => {
     }).send()
   }
 
+  self.getRoom = (roomId) => {
+    return new httpRequest({
+      resource: `/chat/api/room/${roomId}/get`,
+      method: 'GET',
+      successCallback: response => response['data']['room']
+    }).send()
+  }
+
   self.startChatting = (roomId, participants) => {
+    self.getRoom(roomId).then(room => {
+
+      self.resetSideBarNotifications()
+
+      self.configureMessageCard(roomId)
+
+      self.configureChatHeader(roomId, participants)
+
+      self.configureChatBody(roomId, participants)
+
+      self.configureChatInput()
+
+      self.initWebSocketConnection(roomId)
+    })
+  }
+
+  self.resetSideBarNotifications = () => {
     Array.from(document.querySelectorAll('#side-message-cards .active')).forEach(el => el.classList.remove('active'))
+  }
 
-    const chatBoxTitle = document.getElementById('chatBoxTitle')
-    if (chatBoxTitle) {
-      chatBoxTitle.classList.remove('invisible')
-      chatBoxTitle.querySelector('p').innerText = participants
-    }
-
-    const chatBoxBlockUser = document.getElementById('chatBoxBlockUser')
-    chatBoxBlockUser && chatBoxBlockUser.classList.remove('invisible')
-
-    participants = participants.split(',')
-
+  self.configureMessageCard = (roomId) => {
     const messageCard = document.getElementById(roomId)
     messageCard && messageCard.classList.add('active')
+  }
 
+  self.configureChatHeader = (roomId, participants) => {
+    const chatHeader = document.getElementById('chatHeader')
+    if (chatHeader) {
+      chatHeader.classList.remove('invisible')
+      chatHeader.setAttribute('href', `/profile/${participants}`)
+      chatHeader.querySelector('p').innerText = participants
+    }
+
+    const chatUserBlockToggle = document.getElementById('chatUserBlockToggle')
+    if (chatUserBlockToggle) {
+      chatUserBlockToggle.dataset.participants = participants
+      chatUserBlockToggle.dataset.roomId = roomId
+      chatUserBlockToggle.classList.remove('invisible')
+    }
+  }
+
+  self.configureChatBody = (roomId, participants) => {
     const messageContainer = document.getElementById('messageContainer')
     messageContainer && (messageContainer.innerHTML = '')
 
-    self.fetchMessages(messageContainer, roomId, participants)
+    self.fetchMessages(messageContainer, roomId, participants.split(','))
+  }
 
+  self.configureChatInput = () => {
     const messageInputArea = document.getElementById('messageInputArea')
     messageInputArea && messageInputArea.classList.remove('d-none')
 
     const messageInputButton = document.getElementById('messageInputButton')
     messageInputButton && messageInputButton.classList.remove('d-none')
+  }
 
+  self.initWebSocketConnection = (roomId) => {
     if (chatWebSocket && chatWebSocket.readyState !== WebSocket.CLOSED)
       chatWebSocket.close()
 
@@ -144,6 +182,25 @@ var MessagesController = (() => {
       month = '0' + month
 
     return day + '-' + month + '-' + year + ' ' + today.getHours() + ':' + today.getMinutes()
+  }
+
+  self.blockUser = (data) => {
+    const participants = data['participants']
+    const roomId = data['roomId']
+
+    new httpRequest({resource: `/chat/api/room/${roomId}/participants/${participants}/block`, method: 'GET', successCallback: response => {
+      if (!('data' in response) || !('blocked' in response['data']))
+        return showMessage('User blocking failed', 'danger')
+
+      showMessage('User blocked successfully')
+
+      const chatUserBlockToggle = document.getElementById('chatUserBlockToggle')
+      if (chatUserBlockToggle) {
+        chatUserBlockToggle.setAttribute('href', '')
+        chatUserBlockToggle.querySelector('p').innerText = Unblock
+      }
+
+    }}).send()
   }
 
   return self
