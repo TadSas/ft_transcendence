@@ -114,6 +114,12 @@ var MessagesController = (() => {
 
       messageContainer.scrollTop = messageContainer.scrollHeight
     }
+    chatWebSocket.onerror = (e) => {
+      console.log('chatWebSocket.onerror:', e)
+    }
+    chatWebSocket.onclose = (e) => {
+      console.log('chatWebSocket.onclose:', e)
+    }
   }
 
   self.fetchMessages = (messageContainer, roomId, participants) => {
@@ -205,6 +211,12 @@ var MessagesController = (() => {
         return showMessage('User blocking failed', 'danger')
 
       showMessage('User blocked successfully')
+
+      chatWebSocket.send(JSON.stringify({
+        'type': 'block',
+        'room_id': roomId,
+        'username': participants
+      }))
 
       const chatUserBlockToggle = document.getElementById('chatUserBlockToggle')
       if (chatUserBlockToggle) {

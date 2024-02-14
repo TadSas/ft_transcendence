@@ -14,21 +14,39 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if 'user' not in self.scope:
             return await self.close()
 
-        user = self.scope['user']
-        room_id = self.scope['url_route']['kwargs']['room_id']
+        try:
+            username = self.scope['user'].get('login')
+            room_id = self.scope['url_route']['kwargs']['room_id']
+        except Exception:
+            return await self.close()
+
 
         if room_id == 'notifications':
-            self.room_group_name = f"{user.get('login')}_{room_id}"
+            self.room_group_name = f"{username}_notifications"
         else:
             try:
-                self.room_participants = await database_sync_to_async(RoomController().get_room_participants)(room_id)
+                room = await database_sync_to_async(RoomController().get_room)(room_id)
+                room_participants = room.participants
             except Exception:
                 return await self.close()
 
-            if not self.room_participants or user.get('login') not in self.room_participants:
+            if not room_participants or username not in room_participants:
+                return await self.close()
+
+            if username in room.blocked:
                 return await self.close()
 
             self.room_group_name = room_id
+
+            self.room_participants = room_participants
+
+        if hasattr(self.channel_layer, 'user_channels'):
+            if self.room_group_name in self.channel_layer.user_channels:
+                self.channel_layer.user_channels[self.room_group_name].update({username: self.channel_name})
+            else:
+                self.channel_layer.user_channels[self.room_group_name] = {username: self.channel_name}
+        else:
+            self.channel_layer.user_channels = {self.room_group_name: {username: self.channel_name}}
 
         await self.channel_layer.group_add(
             self.room_group_name,
@@ -46,9 +64,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        message = escape(text_data_json['message'])
+        receive_type = text_data_json.get('type')
 
-        if not message:
+        if (
+            receive_type == 'block' and
+            (room_id := text_data_json.get('room_id')) and
+            (username := text_data_json.get('username')) and
+            (block_group := self.channel_layer.user_channels.get(room_id)) and
+            (block_channel_name := block_group.get(username))
+        ):
+            return await self.channel_layer.group_discard(
+                room_id,
+                block_channel_name
+            )
+
+        if not (message := escape(text_data_json.get('message'))):
             return
 
         saved_message = await database_sync_to_async(MessagesController().save_message)(
