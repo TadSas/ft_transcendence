@@ -151,7 +151,7 @@ class RoomController:
             return error_response
 
         blocked = room.blocked
-        blocked[username] = {'from': logged_username}
+        blocked[username] = logged_username
 
         serializer = RoomsSerializer(
             room,
@@ -185,7 +185,7 @@ class RoomController:
 
         blocked = room.blocked
 
-        if username not in blocked or blocked[username].get('from') != logged_username:
+        if username not in blocked or blocked[username] != logged_username:
             return {'status': 1, 'message': 'Provided user is not blocked'}
 
         blocked.pop(username)

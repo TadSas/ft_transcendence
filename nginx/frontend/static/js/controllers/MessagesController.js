@@ -31,15 +31,15 @@ var MessagesController = (() => {
     const user = room.user
     const roomId = room.id
     const blocked = room.blocked
-    const participants = room.participants
+    const participant = room.participants[0]
 
     self.resetSideBarNotifications()
 
     self.configureMessageCard(roomId)
 
-    self.configureChatHeader(roomId, participants, blocked, user)
+    self.configureChatHeader(roomId, participant, blocked, user)
 
-    self.configureChatBody(roomId, participants)
+    self.configureChatBody(roomId, participant, blocked, user)
 
     self.configureChatInput()
 
@@ -55,21 +55,23 @@ var MessagesController = (() => {
     messageCard && messageCard.classList.add('active')
   }
 
-  self.configureChatHeader = (roomId, participants, blocked, user) => {
+  self.configureChatHeader = (roomId, participant, blocked, user) => {
     const chatHeader = document.getElementById('chatHeader')
     if (chatHeader) {
       chatHeader.classList.remove('invisible')
-      chatHeader.querySelector('p').innerText = participants
-      chatHeader.setAttribute('href', `/profile/${participants}`)
+      chatHeader.querySelector('p').innerText = participant
+      chatHeader.setAttribute('href', `/profile/${participant}`)
     }
 
     const chatUserBlockToggle = document.getElementById('chatUserBlockToggle')
     if (chatUserBlockToggle) {
       chatUserBlockToggle.dataset.roomId = roomId
-      chatUserBlockToggle.dataset.participants = participants
+      chatUserBlockToggle.dataset.user = user
+      chatUserBlockToggle.dataset.blocked = JSON.stringify(blocked)
+      chatUserBlockToggle.dataset.participant = participant
       chatUserBlockToggle.classList.remove('invisible')
 
-      if (participants[0] in blocked && blocked[participants[0]]['from'] === user) {
+      if (participant in blocked && blocked[participant] === user) {
         chatUserBlockToggle.querySelector('p').innerText = 'Unblock'
         chatUserBlockToggle.onclick = MessagesController.unBlockUser
       } else {
@@ -79,11 +81,11 @@ var MessagesController = (() => {
     }
   }
 
-  self.configureChatBody = (roomId, participants) => {
+  self.configureChatBody = (roomId, participant, blocked, user) => {
     const messageContainer = document.getElementById('messageContainer')
     messageContainer && (messageContainer.innerHTML = '')
 
-    self.fetchMessages(messageContainer, roomId, participants)
+    self.fetchMessages(messageContainer, roomId, participant, blocked, user)
   }
 
   self.configureChatInput = () => {
@@ -101,18 +103,30 @@ var MessagesController = (() => {
     chatWebSocket = new WebSocket(`wss://${location.host}/chat/room/${roomId}`)
     chatWebSocket.onmessage = (e) => {
       const data = JSON.parse(e.data)
-      const message = data.message
-      const sentDate = data.created_at
 
-      messageContainer.insertAdjacentHTML(
-        'beforeend',
-        ChatComponents.senderMessage({'messageText': message, 'sentDateTime': sentDate})
-      )
+      switch (data['type']) {
+        case 'chat':
+          const message = data.message
+          const sentDate = data.created_at
+          const roomId = data.room_id
 
-      document.getElementById(`${data['room_id']}_message`).innerHTML = message
-      document.getElementById(`${data['room_id']}_sentDate`).innerText = sentDate
+          messageContainer.insertAdjacentHTML(
+            'beforeend',
+            ChatComponents.senderMessage({'messageText': message, 'sentDateTime': sentDate})
+          )
 
-      messageContainer.scrollTop = messageContainer.scrollHeight
+          if (message) {
+            document.getElementById(`${roomId}_message`).innerHTML = message
+            document.getElementById(`${roomId}_sentDate`).innerText = sentDate
+          }
+
+          messageContainer.scrollTop = messageContainer.scrollHeight
+
+          break
+        case 'block':
+          self.blockChatView({'blocked_from': Object.values(data['blocked_from'])})
+          break
+      }
     }
     chatWebSocket.onerror = (e) => {
       console.log('chatWebSocket.onerror:', e)
@@ -122,13 +136,13 @@ var MessagesController = (() => {
     }
   }
 
-  self.fetchMessages = (messageContainer, roomId, participants) => {
+  self.fetchMessages = (messageContainer, roomId, participant, blocked, user) => {
     self.getMessages(roomId).then(messages => {
       if (!messages)
         return
 
       for (const message of messages) {
-        if (participants.includes(message['sender']))
+        if (participant === message['sender'])
           messageContainer.insertAdjacentHTML(
             'beforeend',
             ChatComponents.senderMessage({'messageText': message['message'], 'sentDateTime': message['created_at']})
@@ -139,6 +153,11 @@ var MessagesController = (() => {
             ChatComponents.recieverMessage({'messageText': message['message'], 'sentDateTime': message['created_at']})
           )
       }
+
+      if (Object.keys(blocked).length !== 0)
+        self.blockChatView({'blocked_from': Object.values(blocked)})
+      // else
+      //   self.unBlockChatView()
 
       messageContainer.scrollTop = messageContainer.scrollHeight
     })
@@ -201,12 +220,48 @@ var MessagesController = (() => {
     return day + '-' + month + '-' + year + ' ' + today.getHours() + ':' + today.getMinutes()
   }
 
+  self.blockChatView = (data) => {
+    const blockedFrom = data['blocked_from']
+    const blockedChatMessageContainer = document.getElementById('blockedChatMessageContainer')
+    blockedChatMessageContainer && blockedChatMessageContainer.remove()
+
+    const messageContainer = document.getElementById('messageContainer')
+    messageContainer && messageContainer.insertAdjacentHTML(
+      'beforeend',
+      `
+      <div id="blockedChatMessageContainer" class="d-flex justify-content-center mb-2">
+        <span class="badge border border-danger rounded-pill text-danger">
+            This chat was blocked by <span> ${blockedFrom.join(', ')} <span>
+        </span>
+      </div>
+      `
+    )
+
+    const messageInputArea = document.getElementById('messageInputArea')
+    messageInputArea && messageInputArea.setAttribute('disabled', true)
+
+    const messageInputButton = document.getElementById('messageInputButton')
+    messageInputButton && messageInputButton.setAttribute('disabled', true)
+  }
+
+  self.unBlockChatView = () => {
+    const blockedChatMessageContainer = document.getElementById('blockedChatMessageContainer')
+    blockedChatMessageContainer && blockedChatMessageContainer.remove()
+
+    const messageInputArea = document.getElementById('messageInputArea')
+    messageInputArea && messageInputArea.removeAttribute('disabled')
+
+    const messageInputButton = document.getElementById('messageInputButton')
+    messageInputButton && messageInputButton.removeAttribute('disabled')
+  }
+
   self.blockUser = (e) => {
     const data = e.target.dataset
-    const participants = data['participants']
     const roomId = data['roomId']
+    const participant = data['participant']
+    const blocked = JSON.parse(data['blocked'] || '{}')
 
-    new httpRequest({resource: `/chat/api/room/${roomId}/participants/${participants}/block`, method: 'GET', successCallback: response => {
+    new httpRequest({resource: `/chat/api/room/${roomId}/participants/${participant}/block`, method: 'GET', successCallback: response => {
       if (!('data' in response) || !('blocked' in response['data']))
         return showMessage('User blocking failed', 'danger')
 
@@ -215,7 +270,7 @@ var MessagesController = (() => {
       chatWebSocket.send(JSON.stringify({
         'type': 'block',
         'room_id': roomId,
-        'username': participants
+        'username': participant
       }))
 
       const chatUserBlockToggle = document.getElementById('chatUserBlockToggle')
@@ -224,15 +279,17 @@ var MessagesController = (() => {
         chatUserBlockToggle.onclick = MessagesController.unBlockUser
       }
 
+      // self.blockChatView({'blocked_from': Object.values(blocked)})
+
     }}).send()
   }
 
   self.unBlockUser = (e) => {
     const data = e.target.dataset
-    const participants = data['participants']
+    const participant = data['participant']
     const roomId = data['roomId']
 
-    new httpRequest({resource: `/chat/api/room/${roomId}/participants/${participants}/unblock`, method: 'GET', successCallback: response => {
+    new httpRequest({resource: `/chat/api/room/${roomId}/participants/${participant}/unblock`, method: 'GET', successCallback: response => {
       if (!('data' in response) || !('blocked' in response['data']))
         return showMessage('User unblocking failed', 'danger')
 
@@ -243,6 +300,8 @@ var MessagesController = (() => {
         chatUserBlockToggle.querySelector('p').innerText = 'Block'
         chatUserBlockToggle.onclick = MessagesController.blockUser
       }
+
+      self.unBlockChatView()
 
     }}).send()
   }
