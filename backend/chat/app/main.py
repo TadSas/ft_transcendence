@@ -151,6 +151,10 @@ class RoomController:
             return error_response
 
         blocked = room.blocked
+
+        if username in blocked and blocked[username] == logged_username:
+            return {'status': 1, 'message': 'Provided user is already blocked'}
+
         blocked[username] = logged_username
 
         serializer = RoomsSerializer(

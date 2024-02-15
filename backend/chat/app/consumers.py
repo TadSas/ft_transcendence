@@ -54,10 +54,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         receive_type = text_data_json.get('type')
+        connected_user  = self.scope['user'].get('login')
 
-        if receive_type == 'block':
+        try:
+            room = await database_sync_to_async(RoomController().get_room)(self.room_group_name)
+        except Exception:
+            return await self.close()
+
+        if receive_type in ['block', 'unblock']:
             room_id = text_data_json.get('room_id')
-            logged_user = self.scope['user'].get('login')
             blocking_user = text_data_json.get('username')
 
             if (
@@ -65,28 +70,26 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 not blocking_user or
                 room_id != self.room_group_name or
                 blocking_user not in self.room_participants or
-                logged_user not in self.room_participants
+                connected_user  not in self.room_participants
             ):
-                return await self.close()
-
-            try:
-                room = await database_sync_to_async(RoomController().get_room)(room_id)
-            except Exception:
                 return await self.close()
 
             return await self.channel_layer.group_send(
                 self.room_group_name,
                 {
-                    'type': 'chat_block',
-                    'blocked_from': list(room.blocked.values())
+                    'type': f'chat_{receive_type}',
+                    'blocked_users': list(room.blocked.values())
                 }
             )
+
+        if connected_user in room.blocked or connected_user in room.blocked.values():
+            return
 
         if not (message := escape(text_data_json.get('message'))):
             return
 
         saved_message = await database_sync_to_async(MessagesController().save_message)(
-            self.scope['user'].get('login'),
+            connected_user,
             message,
             self.room_group_name
         )
@@ -152,5 +155,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def chat_block(self, event):
         await self.send(text_data=json.dumps({
             'type': 'block',
-            'blocked_from': event['blocked_from']
+            'blocked_users': event['blocked_users']
+        }))
+
+    async def chat_unblock(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'unblock',
+            'blocked_users': event['blocked_users']
         }))

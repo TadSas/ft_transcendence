@@ -66,8 +66,6 @@ var MessagesController = (() => {
     const chatUserBlockToggle = document.getElementById('chatUserBlockToggle')
     if (chatUserBlockToggle) {
       chatUserBlockToggle.dataset.roomId = roomId
-      chatUserBlockToggle.dataset.user = user
-      chatUserBlockToggle.dataset.blocked = JSON.stringify(blocked)
       chatUserBlockToggle.dataset.participant = participant
       chatUserBlockToggle.classList.remove('invisible')
 
@@ -123,16 +121,12 @@ var MessagesController = (() => {
           messageContainer.scrollTop = messageContainer.scrollHeight
 
           break
+
         case 'block':
-          self.blockChatView({'blocked_from': Object.values(data['blocked_from'])})
+        case 'unblock':
+          self.toggleBlockedChatView({'blocked_users': Object.values(data['blocked_users'])})
           break
       }
-    }
-    chatWebSocket.onerror = (e) => {
-      console.log('chatWebSocket.onerror:', e)
-    }
-    chatWebSocket.onclose = (e) => {
-      console.log('chatWebSocket.onclose:', e)
     }
   }
 
@@ -155,9 +149,7 @@ var MessagesController = (() => {
       }
 
       if (Object.keys(blocked).length !== 0)
-        self.blockChatView({'blocked_from': Object.values(blocked)})
-      // else
-      //   self.unBlockChatView()
+        self.toggleBlockedChatView({'blocked_users': Object.values(blocked)})
 
       messageContainer.scrollTop = messageContainer.scrollHeight
     })
@@ -177,6 +169,7 @@ var MessagesController = (() => {
     const messageForm = document.getElementById('messageForm')
     const messageInputArea = document.getElementById('messageInputArea')
     const messageContainer = document.getElementById('messageContainer')
+    const blockedChatMessageContainer = document.getElementById('blockedChatMessageContainer')
 
     if (chatWebSocket && chatWebSocket.readyState !== WebSocket.CLOSED) {
       const message = messageInputArea.value
@@ -192,7 +185,11 @@ var MessagesController = (() => {
 
       messageContainer.insertAdjacentHTML(
         'beforeend',
-        ChatComponents.recieverMessage({'messageText': escapeHtml(message), 'sentDateTime': sentDate})
+        ChatComponents.recieverMessage({
+          'messageText': escapeHtml(message),
+          'sentDateTime': blockedChatMessageContainer ? 'Not delivered' : sentDate,
+          'failed': Boolean(blockedChatMessageContainer)
+        })
       )
 
       const activeMessageCardId = document.querySelector('#side-message-cards .active').id
@@ -220,10 +217,20 @@ var MessagesController = (() => {
     return day + '-' + month + '-' + year + ' ' + today.getHours() + ':' + today.getMinutes()
   }
 
-  self.blockChatView = (data) => {
-    const blockedFrom = data['blocked_from']
+  self.toggleBlockedChatView = (data) => {
+    const blockedUsers = data['blocked_users']
     const blockedChatMessageContainer = document.getElementById('blockedChatMessageContainer')
     blockedChatMessageContainer && blockedChatMessageContainer.remove()
+
+    if (blockedUsers.length === 0) {
+      const messageInputArea = document.getElementById('messageInputArea')
+      messageInputArea && messageInputArea.removeAttribute('disabled')
+
+      const messageInputButton = document.getElementById('messageInputButton')
+      messageInputButton && messageInputButton.removeAttribute('disabled')
+
+      return
+    }
 
     const messageContainer = document.getElementById('messageContainer')
     messageContainer && messageContainer.insertAdjacentHTML(
@@ -231,7 +238,7 @@ var MessagesController = (() => {
       `
       <div id="blockedChatMessageContainer" class="d-flex justify-content-center mb-2">
         <span class="badge border border-danger rounded-pill text-danger">
-            This chat was blocked by <span> ${blockedFrom.join(', ')} <span>
+            This chat was blocked by <span> ${blockedUsers.join(', ')} <span>
         </span>
       </div>
       `
@@ -242,24 +249,14 @@ var MessagesController = (() => {
 
     const messageInputButton = document.getElementById('messageInputButton')
     messageInputButton && messageInputButton.setAttribute('disabled', true)
-  }
 
-  self.unBlockChatView = () => {
-    const blockedChatMessageContainer = document.getElementById('blockedChatMessageContainer')
-    blockedChatMessageContainer && blockedChatMessageContainer.remove()
-
-    const messageInputArea = document.getElementById('messageInputArea')
-    messageInputArea && messageInputArea.removeAttribute('disabled')
-
-    const messageInputButton = document.getElementById('messageInputButton')
-    messageInputButton && messageInputButton.removeAttribute('disabled')
+    messageContainer.scrollTop = messageContainer.scrollHeight
   }
 
   self.blockUser = (e) => {
     const data = e.target.dataset
     const roomId = data['roomId']
     const participant = data['participant']
-    const blocked = JSON.parse(data['blocked'] || '{}')
 
     new httpRequest({resource: `/chat/api/room/${roomId}/participants/${participant}/block`, method: 'GET', successCallback: response => {
       if (!('data' in response) || !('blocked' in response['data']))
@@ -279,15 +276,13 @@ var MessagesController = (() => {
         chatUserBlockToggle.onclick = MessagesController.unBlockUser
       }
 
-      // self.blockChatView({'blocked_from': Object.values(blocked)})
-
     }}).send()
   }
 
   self.unBlockUser = (e) => {
     const data = e.target.dataset
-    const participant = data['participant']
     const roomId = data['roomId']
+    const participant = data['participant']
 
     new httpRequest({resource: `/chat/api/room/${roomId}/participants/${participant}/unblock`, method: 'GET', successCallback: response => {
       if (!('data' in response) || !('blocked' in response['data']))
@@ -295,13 +290,17 @@ var MessagesController = (() => {
 
       showMessage('User unblocked successfully')
 
+      chatWebSocket.send(JSON.stringify({
+        'type': 'unblock',
+        'room_id': roomId,
+        'username': participant
+      }))
+
       const chatUserBlockToggle = document.getElementById('chatUserBlockToggle')
       if (chatUserBlockToggle) {
         chatUserBlockToggle.querySelector('p').innerText = 'Block'
         chatUserBlockToggle.onclick = MessagesController.blockUser
       }
-
-      self.unBlockChatView()
 
     }}).send()
   }

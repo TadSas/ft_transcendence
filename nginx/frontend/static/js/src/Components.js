@@ -188,11 +188,11 @@ var ChatComponents = (() => {
     `
   }
 
-  self.senderMessage = ({messageText = '', sentDateTime = ''}) => {
+  self.senderMessage = ({messageText = '', sentDateTime = '', failed = false}) => {
     return `
     <div class="d-flex mb-2">
       <div class="ms-2 chat-message-mw">
-        <div class="bg-success rounded-top-5 rounded-end-5 py-2 px-3 mb-0">
+        <div class="d-inline-flex ${failed ? 'bg-danger' : 'bg-success'} rounded-top-5 rounded-end-5 py-2 px-3 mb-0">
           <p class="text-small mb-0 text-white">
             ${messageText}
           </p>
@@ -207,11 +207,11 @@ var ChatComponents = (() => {
     `
   }
 
-  self.recieverMessage = ({messageText = '', sentDateTime = ''}) => {
+  self.recieverMessage = ({messageText = '', sentDateTime = '', failed = false}) => {
     return `
     <div class="d-flex justify-content-end mb-2">
-      <div class="me-1 chat-message-mw">
-        <div class="bg-primary rounded-top-5 rounded-start-5 py-2 px-3 mb-0">
+      <div class="d-flex flex-column me-1 chat-message-mw">
+        <div class="align-self-end ${failed ? 'bg-danger' : 'bg-primary'} rounded-top-5 rounded-start-5 py-2 px-3 mb-0">
           <p class="text-small mb-0 text-white">
             ${messageText}
           </p>
