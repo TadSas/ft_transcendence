@@ -101,6 +101,7 @@ var MessagesController = (() => {
     chatWebSocket = new WebSocket(`wss://${location.host}/chat/room/${roomId}`)
     chatWebSocket.onmessage = (e) => {
       const data = JSON.parse(e.data)
+      const messageContainer = document.getElementById('messageContainer')
 
       switch (data['type']) {
         case 'chat':
@@ -108,7 +109,7 @@ var MessagesController = (() => {
           const sentDate = data.created_at
           const roomId = data.room_id
 
-          messageContainer.insertAdjacentHTML(
+          messageContainer && messageContainer.insertAdjacentHTML(
             'beforeend',
             ChatComponents.senderMessage({'messageText': message, 'sentDateTime': sentDate})
           )

@@ -5,11 +5,11 @@ import base64
 import qrcode
 import random
 import secrets
+import datetime
 
 from io import BytesIO
 from pathlib import Path
 from urllib.parse import urlencode
-from datetime import datetime, timedelta
 from urllib.request import Request, urlopen
 
 from django.utils import timezone
@@ -110,8 +110,8 @@ class AuthController:
                     'expires_in': response_data.get('expires_in', ''),
                     'refresh_token': response_data.get('refresh_token', ''),
                     'scope': response_data.get('scope', ''),
-                    'created_at': datetime.fromtimestamp(response_data.get('created_at', '')),
-                    'secret_valid_until': datetime.fromtimestamp(response_data.get('secret_valid_until', '')),
+                    'created_at': datetime.datetime.fromtimestamp(response_data.get('created_at', '')),
+                    'secret_valid_until': datetime.datetime.fromtimestamp(response_data.get('secret_valid_until', '')),
                 })
 
                 if serializer.is_valid():
@@ -185,8 +185,8 @@ class AuthController:
         return jwt.encode(
             {
                 'id': str(user.id),
-                'exp': datetime.utcnow() + timedelta(days=1),
-                'iat': datetime.utcnow()
+                'exp': datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1),
+                'iat': datetime.datetime.now(datetime.UTC)
             },
             secret_key,
             algorithm='HS256'
@@ -208,8 +208,8 @@ class AuthController:
         return jwt.encode(
             {
                 'id': f"{TOTP_COOKIE_PREFIX}{str(user.id)}{TOTP_COOKIE_SUFFIX}",
-                'exp': datetime.utcnow() + timedelta(days=1),
-                'iat': datetime.utcnow()
+                'exp': datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1),
+                'iat': datetime.datetime.now(datetime.UTC)
             },
             secret_key,
             algorithm='HS256'
