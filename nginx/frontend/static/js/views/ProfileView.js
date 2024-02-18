@@ -32,7 +32,7 @@ export default class extends BaseView {
     const userInformation = user['data']
 
     const generalInformation = `
-    <div class="position-relative p-5 text-start bg-body border border-dashed rounded-4 mb-5">
+    <div class="position-relative p-5 text-start bg-body border rounded-4 mb-5">
       <h3 class="text-body-emphasis border-bottom pb-2">General information</h3>
       <div class="d-flex align-items-end flex-row mt-4">
         <div class="container text-center">
@@ -68,7 +68,7 @@ export default class extends BaseView {
     `
 
     const stats = `
-    <div class="position-relative p-5 text-start bg-body border border-dashed rounded-4 mb-5">
+    <div class="position-relative p-5 text-start bg-body border rounded-4 mb-5">
       <h3 class="border-bottom pb-2">Stats</h3>
       <div class="d-flex align-items-end flex-row mt-4">
         <div class="container text-center">
@@ -102,7 +102,7 @@ export default class extends BaseView {
     `
 
     const tournaments = `
-    <div class="position-relative p-5 text-start bg-body border border-dashed rounded-4 mb-5">
+    <div class="position-relative p-5 text-start bg-body border rounded-4 mb-5">
       <h3 class="border-bottom pb-2">Tournaments</h3>
       <div class="d-flex align-items-end flex-row mt-4">
         <div class="container text-center">
@@ -122,7 +122,7 @@ export default class extends BaseView {
     `
 
     const friends = `
-    <div class="position-relative p-5 text-start bg-body border border-dashed rounded-4 mb-5">
+    <div class="position-relative p-5 text-start bg-body border rounded-4 mb-5">
       <h3 class="border-bottom pb-2">Friends</h3>
       <div class="d-flex align-items-end flex-row mt-4">
         <div class="container text-center">
@@ -155,7 +155,7 @@ export default class extends BaseView {
       <div class="row flex-lg-row align-items-start g-5 py-5">
 
         <div class="col-lg-4">
-          <div class="position-relative p-5 text-center bg-body border border-dashed rounded-4">
+          <div class="position-relative p-5 text-center bg-body border rounded-4">
             <div class="avatar-container">
               <img src="${avatarSrc}" class="rounded-circle border object-fit-cover w-100 h-100">
             </div>
@@ -168,8 +168,14 @@ export default class extends BaseView {
             </div>
             ${
               this.username ? `
-              <a href="/messages" id="startUserChat" type="button" class="btn btn-outline-success me-3 mb-2" data-link>Chat</a>
-              <a href="/pong" id="startUserPong" type="button" class="btn btn-outline-success mb-2" data-link>Play Pong</a>
+              <div id="startUserChat" role="button" class="btn btn-success me-2 mb-2">
+                Chat
+                <a href="/messages" type="button" class="pe-none d-none" data-link></a>
+              </div>
+              <div id="startUserPong" role="button" class="btn btn-success ms-2 mb-2">
+                Pong
+                <a href="/pong" type="button" class="pe-none d-none" data-link></a>
+              </div>
               ` : ''
             }
           </div>

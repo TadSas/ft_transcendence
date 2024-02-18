@@ -5,6 +5,7 @@ import Profile from "./views/ProfileView.js"
 import Messages from "./views/MessagesView.js"
 import Settings from "./views/SettingsView.js"
 import Dashboard from "./views/DashboardView.js"
+import Tournaments from "./views/TournamentsView.js"
 
 import setupColorMode from "./src/ColorMode.js"
 
@@ -15,6 +16,7 @@ const routes = [
   {path: "/logout", view: Logout, name: "Login", container: "login", sideBar: false},
   {path: "/pong", view: Pong, name: "Pong", icon: "rocket-takeoff", sideBar: true},
   {path: "/messages", view: Messages, name: "Messages", icon: "chat", sideBar: true},
+  {path: "/tournaments", view: Tournaments, name: "Tournaments", icon: "trophy", sideBar: true},
   {path: "/profile", view: Profile, name: "Profile", icon: "person-circle", sideBar: true},
   {path: "/profile/:username", view: Profile, name: "Profile", sideBar: false},
   {path: "/settings", view: Settings, name: "Settings", icon: "speedometer2", sideBar: true},

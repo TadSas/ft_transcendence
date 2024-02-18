@@ -200,16 +200,16 @@
 }
 
 .messages-box {
-  height: 85vh;
+  height: 83vh;
   overflow-y: scroll;
 }
 
 .chat-box {
-  height: 82vh;
+  height: 80vh;
   overflow-y: scroll;
 }
 
-.chat-short-message {
+.short-text {
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 1;

@@ -27,7 +27,7 @@ SECRET_KEY = os.environ['GAME_PROJECT_SECRET']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['game']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -51,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'app.middlewares.TimezoneMiddleware',
 ]
 
 ROOT_URLCONF = 'game.urls'
@@ -119,7 +120,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = os.environ['TIME_ZONE']
 
 USE_I18N = True
 
@@ -135,3 +136,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+JWT_COOKIE_NAME = 'ft_transcendence_jwt'
+
+AUTHORIZATION_SERVER = 'http://auth:8080'

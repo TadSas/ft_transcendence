@@ -21,7 +21,7 @@ export default class extends BaseView {
     const userInformation = user['data']
 
     const generalInformation = `
-    <div class="position-relative p-5 text-start bg-body border border-dashed rounded-4 mb-5">
+    <div class="position-relative p-5 text-start bg-body border rounded-4 mb-5">
       <h3 class="text-body-emphasis border-bottom pb-2">General information</h3>
       <div class="d-flex align-items-end flex-row mt-4">
         <div id="userSettings" class="container text-center">
@@ -71,7 +71,7 @@ export default class extends BaseView {
       <div class="row flex-lg-row align-items-start g-5 py-5">
 
         <div class="col-lg-4">
-          <div class="position-relative p-5 text-center bg-body border border-dashed rounded-4">
+          <div class="position-relative p-5 text-center bg-body border rounded-4">
             <div class="avatar-container">
               <img id="userAvatar" src="/auth/api/avatar" class="rounded-circle border object-fit-cover w-100 h-100" onclick="SettingsController.triggerAvatarUpload('userAvatarInput')">
               <div class="overlay d-flex justify-content-center align-items-center pe-none">

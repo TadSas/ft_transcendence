@@ -1,5 +1,4 @@
 from django.utils import timezone
-from django.forms.models import model_to_dict
 
 from .utils import is_valid_uuid
 from .models import Rooms, Messages
@@ -132,7 +131,7 @@ class RoomController:
         return {'data': MessagesController().get_room_messages(room_id)}
 
     def block_user(self, room_id: str, username: str, logged_username: str) -> dict:
-        """
+        """ Blocks the user and adds to the blocked column
 
         Parameters
         ----------
@@ -169,7 +168,7 @@ class RoomController:
         return {'data': serializer.validated_data}
 
     def unblock_user(self, room_id: str, username: str, logged_username: str) -> dict:
-        """
+        """ Unblocks the user and removes from the blocked column
 
         Parameters
         ----------
@@ -206,7 +205,7 @@ class RoomController:
         return {'data': serializer.validated_data}
 
     def __block_unblock_validations(self, room_id: str, username: str, logged_username: str) -> tuple:
-        """
+        """ Performs the basic validations before blocking or unblocking the user
 
         Parameters
         ----------

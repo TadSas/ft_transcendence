@@ -4,5 +4,5 @@ from .consumers import GameConsumer
 
 
 websocket_urlpatterns = [
-    path("game/room", GameConsumer.as_asgi(), name='ws-room'),
+    path("game/room", GameConsumer.as_asgi(), name='ws-game-room'),
 ]

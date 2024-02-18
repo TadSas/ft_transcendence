@@ -53,9 +53,44 @@ var Components = (() => {
 
   self.label = ({labelText = '', labelFor = '', hide = false}) => {
     return `
-    <label class="${hide ? 'visually-hidden' : 'form-check-label'}" for="${labelFor}">
+    <label class="${hide ? 'visually-hidden' : 'form-label'}" for="${labelFor}">
       ${labelText}
     </label>
+    `
+  }
+
+  self.input = ({type = 'text', id = '', className = '', placeholder = '', value = '', required = false, label = '', invalidFeedback = ''}) => {
+    return `
+    ${label ? self.label({'labelText': label, 'labelFor': id}) : ''}
+    <input
+      type="${type}"
+      class="form-control ${className}"
+      ${id ? `id="${id}"` : ''}
+      ${value ? `value="${value}"` : ''}
+      ${placeholder ? `placeholder="${placeholder}"`: ''}
+      ${required ? 'required' : ''}
+    >
+    <div class="invalid-feedback" ${id ? `id="${id}_invalid_feedback"` : ''}>${invalidFeedback}</div>
+    `
+  }
+
+  self.selector = ({id = '', className = '', options = [], label = '', invalidFeedback = ''}) => {
+    return `
+    ${label ? self.label({'labelText': label, 'labelFor': id}) : ''}
+    <select ${id ? `id="${id}"` : ''} class="form-select ${className}">
+      ${
+        (() => {
+          let content = ''
+
+          for (const option of options) {
+            content += `<option value="${option.value}">${option.title}</option>`
+          }
+
+          return content
+        })()
+      }
+    </select>
+    <div class="invalid-feedback" ${id ? `id="${id}_invalid_feedback"` : ''}>${invalidFeedback}</div>
     `
   }
 
@@ -179,7 +214,7 @@ var ChatComponents = (() => {
               ${dateTime[0] || ''}<br>${dateTime[1] || ''}
             </p>
           </div>
-          <p class="font-italic mb-0 text-small chat-short-message" id="${id}_message">
+          <p class="font-italic mb-0 text-small short-text" id="${id}_message">
             ${messageText || ''}
           </p>
         </div>
@@ -249,7 +284,7 @@ var ToastComponents = (() => {
       <div id="${id}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header">
           <i class="bi bi-${icon} me-2"></i>
-          <strong class="me-auto chat-short-message">${title}</strong>
+          <strong class="me-auto short-text">${title}</strong>
           <small>${dateTime}</small>
           <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>

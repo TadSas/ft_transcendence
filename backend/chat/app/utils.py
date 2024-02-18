@@ -2,7 +2,7 @@ import uuid
 
 
 def is_valid_uuid(uuid_to_test: str, version=4) -> bool:
-    """
+    """ Checks if the provided string is valid uuid
 
     Parameters
     ----------

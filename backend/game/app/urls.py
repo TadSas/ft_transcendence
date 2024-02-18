@@ -1,8 +1,10 @@
 from django.urls import path
 
-from .views import index
+from .views import (
+    CreateTournamentView,
+)
 
 
 urlpatterns = [
-    path('', index, name='api-index')
+    path('tournament/create', CreateTournamentView.as_view(), name='api-tournament-create'),
 ]

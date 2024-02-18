@@ -14,6 +14,9 @@ var MessagesController = (() => {
       successCallback: response => {
         if (Object.keys(response.data).length === 0)
           return showMessage("Can't create/retrieve room for this user", "danger")
+
+        const startUserChat = document.getElementById('startUserChat')
+        startUserChat && startUserChat.lastElementChild.click()
       }
     }).send()
   }
