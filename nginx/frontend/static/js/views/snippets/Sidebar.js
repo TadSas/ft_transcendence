@@ -25,7 +25,7 @@ export default class extends BaseSnippet {
 
   getSnippet(routes, match) {
     return `
-      <div class="d-flex flex-column flex-shrink-0 p-3 bg-body-tertiary vh-100">
+      <div class="d-flex flex-column flex-shrink-0 py-3 ps-3 pe-4 bg-body-tertiary vh-100">
         <a href="/" id="sidebarTitle" class="d-flex mx-3 align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none" data-link>
           <i class="bi bi-asterisk pe-none me-2 margin-13px"></i>
           <span class="fs-4 sidebar-title-transition">Squeeze</span>

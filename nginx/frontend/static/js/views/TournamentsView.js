@@ -17,7 +17,7 @@ export default class extends BaseView {
           <th scope="col">Name</th>
           <th scope="col">Game</th>
           <th scope="col">Size</th>
-          <th scope="col">Registered</th>
+          <th scope="col">Participants</th>
           <th scope="col">Host</th>
           <th scope="col">Created</th>
           <th scope="col">Status</th>
