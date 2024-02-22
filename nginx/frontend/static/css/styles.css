@@ -228,3 +228,126 @@
   background-position: center;
   background-image: url(/static/images/carouselPage.svg);
 }
+
+
+/* ----------------------------Tournament bracket---------------------------- */
+
+.bracket {
+  padding: 40px;
+  margin: 5px;
+  display: flex;
+  flex-direction: row;
+  position: relative;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  justify-content: space-around;
+  align-content: center;
+}
+
+.match {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 240px;
+  max-width: 240px;
+  height: 62px;
+  margin: 12px 24px 12px 0;
+}
+
+.match .team {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.match .team:first-child {
+  margin-bottom: -1px;
+}
+
+.match .seed {
+  font-size: 12px;
+  min-width: 10px;
+}
+
+.match .score {
+  font-size: 14px;
+}
+
+.match-lines {
+  display: block;
+  position: absolute;
+  top: 49%;
+  bottom: 0;
+  margin-top: 0px;
+  right: 0px;
+}
+
+.match-lines .line.one {
+  height: 1px;
+  width: 12px;
+}
+
+.match-lines .line.two {
+  height: 43px;
+  width: 1px;
+  left: 11px;
+}
+
+.match-lines.alt {
+  left: -12px;
+}
+
+.match:nth-child(even) .match-lines .line.two {
+  transform: translate(0, -100%);
+}
+
+.team {
+  --bs-text-opacity: 1;
+  background: var(--bs-gray-900);
+  color: rgba(var(--bs-secondary-rgb), var(--bs-text-opacity)) !important;
+}
+
+.column:first-child .match-lines.alt {
+  display: none;
+}
+
+.column:last-child .match-lines {
+  display: none;
+}
+.column:last-child .match-lines.alt {
+  display: block;
+}
+
+.column:nth-child(2) .match-lines .line.two {
+  height: 86px;
+}
+
+.column:nth-child(3) .match-lines .line.two {
+  height: 172px;
+}
+
+.column:nth-child(4) .match-lines .line.two {
+  height: 344px;
+}
+
+.column:nth-child(5) .match-lines .line.two {
+  height: 688px;
+}
+
+.winner-top .match-top, .winner-bottom .match-bottom {
+  --bs-text-opacity: 1;
+  background: var(--bs-gray-800);
+  color: rgba(var(--bs-light-rgb), var(--bs-text-opacity)) !important;
+  z-index: 1;
+}
+
+.winner-top .match-top .score, .winner-bottom .match-bottom .score {
+  --bs-text-opacity: 1;
+  color: rgba(var(--bs-primary-rgb), var(--bs-text-opacity)) !important;
+}

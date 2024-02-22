@@ -82,6 +82,7 @@ export default class extends BaseView {
           <div>
             ${tournaments}
           </div>
+          ${TournamentBracketComponent.init({})}
         </div>
       </div>
     </div>

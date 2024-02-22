@@ -298,3 +298,160 @@ var ToastComponents = (() => {
 
   return self
 })()
+
+
+var TournamentBracketComponent = (() => {
+  var self = {}
+
+  // Private
+  var foo = () => {}
+
+  self.createTeam = ({top = false, name = '', score = '-'}) => {
+    return `
+    <div class="match-${top ? 'top rounded-3 rounded-bottom-0' : 'bottom rounded-3 rounded-top-0'} team border border-dark-subtle">
+      <span class="image ps-2"></span>
+      <span class="seed ps-2"></span>
+      <span class="name ps-2">${name || '-'}</span>
+      <span class="score ps-2 pe-2 ms-auto">${score || '-'}</span>
+    </div>
+    `
+  }
+
+  self.createMatch = (matchObject) => {
+    const leftScore = matchObject['leftScore']
+    const rightScore = matchObject['rightScore']
+
+    return `
+    <div class="match winner-${leftScore > rightScore ? 'top' : 'bottom'}">
+      ${self.createTeam({'top': true, 'name': matchObject['leftUser'], 'score': leftScore})}
+      ${self.createTeam({'name': matchObject['rightUser'], 'score': rightScore})}
+
+      <div class="match-lines">
+        <div class="line one position-absolute bg-secondary"></div>
+        <div class="line two position-absolute bg-secondary"></div>
+      </div>
+
+      <div class="match-lines alt">
+        <div class="line one position-absolute bg-secondary"></div>
+      </div>
+    </div>
+    `
+  }
+
+  self.createColumn = (column) => {
+    return `
+    <div class="column">
+      ${
+        (() => {
+          let match = ''
+
+          for (const matchObject in column) {
+            match += self.createMatch(column[matchObject])
+          }
+
+          return match
+        })()
+      }
+    </div>
+    `
+  }
+
+  self.createBracket = (data) => {
+    let bracket = ''
+    const queue = []
+    const temp = [data]
+
+    while (temp.length > 0) {
+      queue.push(temp[0])
+
+      let node = temp.shift()
+
+      if ("left" in node)
+        temp.push(node["left"])
+
+      if ("right" in node)
+        temp.push(node["right"])
+    }
+
+    if ((Math.log(queue.length + 1)/Math.log(2)) % 1 !== 0)
+      return ''
+
+    let start = 0
+    let end = 1
+
+    while (end < queue.length) {
+      bracket = `${self.createColumn(queue.slice(start, end * 2 - 1))}${bracket}`
+      start = end * 2 - 1
+      end *= 2
+    }
+
+    return `
+    <div class="bracket disable-image">
+      ${bracket}
+    </div>
+    `
+  }
+
+  self.init = ({data = {}}) => {
+    data = {
+      "matchId": "final",
+      "leftUser": "",
+      "leftScore": "",
+      "rightUser": "",
+      "rightScore": "",
+      "left": {
+          "matchId": "first semifinal",
+          "leftUser": "a",
+          "leftScore": 11,
+          "rightUser": "b",
+          "rightScore": 8,
+          "left": {
+              "matchId": "first quarterfinals",
+              "leftUser": "e",
+              "leftScore": 9,
+              "rightUser": "a",
+              "rightScore": 11,
+              "nextRound": {}
+          },
+          "right": {
+              "matchId": "second quarterfinals",
+              "leftUser": "f",
+              "leftScore": 10,
+              "rightUser": "b",
+              "rightScore": 11,
+              "nextRound": {}
+          }
+      },
+      "right": {
+          "matchId": "second semifinal",
+          "leftUser": "c",
+          "leftScore": 6,
+          "rightUser": "d",
+          "rightScore": 11,
+          "left": {
+              "matchId": "third quarterfinals",
+              "leftUser": "g",
+              "leftScore": 7,
+              "rightUser": "c",
+              "rightScore": 11,
+              "nextRound": {}
+          },
+          "right": {
+              "matchId": "fourth quarterfinals",
+              "leftUser": "h",
+              "leftScore": 8,
+              "rightUser": "d",
+              "rightScore": 11,
+              "nextRound": {}
+          }
+      }
+    }
+
+    if (!data)
+      return ''
+
+    return self.createBracket(data)
+  }
+
+  return self
+})()
