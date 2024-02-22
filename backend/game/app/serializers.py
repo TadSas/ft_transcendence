@@ -1,29 +1,18 @@
 from rest_framework import serializers
 
-from .models import Tournaments
+from .models import Tournaments, StatusChoices
 
 
 class TournamentsSerializer(serializers.Serializer):
-    """
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=32)
-    game = models.CharField(max_length=16)
-    size = models.PositiveSmallIntegerField(default=4)
-    participants = models.JSONField(default=dict)
-    host = models.CharField(max_length=32)
-    created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=32, choices=StatusChoices.choices, default=StatusChoices.REGISTRATION)
-    draw = models.JSONField(default=dict)
-    """
     id = serializers.UUIDField(read_only=True)
-    name = ''
-    game = ''
-    size = ''
-    participants = ''
-    host = ''
-    created_at = ''
-    status = ''
-    draw = ''
+    name = serializers.CharField(max_length=32)
+    game = serializers.CharField(max_length=16)
+    size = serializers.IntegerField(min_value=4, max_value=2048, required=False)
+    participants = serializers.JSONField(required=False)
+    host = serializers.CharField(max_length=32)
+    created_at = serializers.DateTimeField(required=False)
+    status = serializers.ChoiceField(StatusChoices, default='registration')
+    draw = serializers.JSONField(required=False)
 
     def create(self, validated_data):
         return Tournaments.objects.create(**validated_data)

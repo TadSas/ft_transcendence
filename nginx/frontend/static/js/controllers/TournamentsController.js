@@ -28,12 +28,42 @@ var TournamentsController = (() => {
       return
     }
 
+    const body = {'name': nameValue, 'game': gameValue, 'size': sizeValue}
+
     new httpRequest({
       resource: `/game/api/tournament/create`,
       method: 'POST',
-      body: JSON.stringify({'name': nameValue, 'game': gameValue, 'size': sizeValue}),
+      body: JSON.stringify(body),
       successCallback: response => {
-        console.log('/game/api/tournament/create:', response)
+        if (!('message' in response))
+          return
+
+        if ('errors' in response) {
+          for (const [key, value] of Object.entries(response['errors'])) {
+            if (value.constructor === Array && value.length > 0)
+              document.getElementById(`${key}_invalid_feedback`).innerText = value[0]
+
+            document.getElementById(key).classList.add('is-invalid')
+          }
+
+          showMessage(response['message'], 'danger')
+        }
+        else {
+          for (const field in body) {
+            const element = document.getElementById(field)
+
+            if (element.classList.contains('is-invalid'))
+              element.classList.remove('is-invalid')
+
+            element.classList.add('is-valid')
+            if (element.tagName === 'SELECT')
+              element.selectedIndex = 0
+            else
+              element.value = ''
+          }
+
+          showMessage(response['message'], 'success')
+        }
       }
     }).send()
   }

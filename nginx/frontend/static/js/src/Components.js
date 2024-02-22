@@ -340,7 +340,7 @@ var TournamentBracketComponent = (() => {
 
   self.createColumn = (column) => {
     return `
-    <div class="column">
+    <div class="bracket-column">
       ${
         (() => {
           let match = ''
