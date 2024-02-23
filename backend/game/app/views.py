@@ -13,3 +13,12 @@ class CreateTournamentView(APIView):
         return JsonResponse({
             'status': 0, **TournamentsController().create_tournament(request.user.get('login'), request.data)
         })
+
+
+class GetTournamentsView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get(sel, request):
+        return JsonResponse({
+            'status': 0,  **TournamentsController().get_tournaments(request.user.get('login'))
+        })

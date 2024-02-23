@@ -9,33 +9,13 @@ export default class extends BaseView {
 
   async getContent(routes, match) {
     this.getBase(routes, match)
-
-    const tournaments = `
-    <table class="table table-striped table-hover">
-      <thead>
-        <tr>
-          <th scope="col">Name</th>
-          <th scope="col">Game</th>
-          <th scope="col">Size</th>
-          <th scope="col">Participants</th>
-          <th scope="col">Host</th>
-          <th scope="col">Created</th>
-          <th scope="col">Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Fujini</td>
-          <td>pong</td>
-          <td>4x</td>
-          <td>0/4</td>
-          <td>@stadevos</td>
-          <td>18.02.2024</td>
-          <td>registration</td>
-        </tr>
-      </tbody>
-    </table>
-    `
+    this.viewEventStore.push({
+      'click': {
+        'document.getElementById("reloadListing")': e => {
+          TournamentsController.reloadListing()
+        }
+      }
+    })
 
     return `
     <div class="row overflow-hidden mx-0">
@@ -75,14 +55,16 @@ export default class extends BaseView {
         </div>
       </div>
       <div class="col-10 px-0">
-        <div class="px-3 py-2 bg-body-tertiary bg-opacity-50 border border-bottom-0 rounded me-1">
-          <p class="h5 mb-0 py-1 short-text">Tournaments</p>
+        <div class="px-4 py-2 d-flex align-items-center bg-body-tertiary bg-opacity-50 border border-bottom-0 rounded">
+          <p class="h5 mb-0 py-1 me-2 pe-none">Tournaments</p>
+          <div id="reloadListing" role="button" class="d-flex align-items-center link-body-emphasis text-decoration-none">
+            <i class="bi bi-arrow-clockwise pe-none me-2 mb-0 mt-1 h5"></i>
+          </div>
         </div>
         <div class="p-3 chat-box bg-opacity-50 border rounded me-1">
-          <div>
-            ${tournaments}
+          <div id="tournamentListing">
+            ${await TournamentsController.list()}
           </div>
-          ${TournamentBracketComponent.init({})}
         </div>
       </div>
     </div>

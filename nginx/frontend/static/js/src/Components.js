@@ -455,3 +455,56 @@ var TournamentBracketComponent = (() => {
 
   return self
 })()
+
+
+var TableComponent = (() => {
+  var self = {}
+
+  // Private
+  var foo = () => {}
+
+  self.createHeaders = (headers) => {
+    let content = ''
+
+    for (const header in headers) {
+      content += `<th scope="col">${headers[header]}</th>`
+    }
+
+    return `<tr>${content}</tr>`
+  }
+
+  self.createRows = (data, headers) => {
+    let body = ''
+
+    for (const row of data) {
+      body += `<tr>${self.createRow(row, headers)}</tr>`
+    }
+
+    return body
+  }
+
+  self.createRow = (row, headers) => {
+    let data = ''
+
+    for (const header in headers) {
+      data += `<td>${row[header]}</td>`
+    }
+
+    return data
+  }
+
+  self.init = ({headers = {}, data = []}) => {
+    return `
+    <table class="table table-striped table-hover">
+      <thead>
+        ${self.createHeaders(headers)}
+      </thead>
+      <tbody>
+        ${self.createRows(data, headers)}
+      </tbody>
+    </table>
+    `
+  }
+
+  return self
+})()

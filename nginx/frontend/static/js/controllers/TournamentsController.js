@@ -63,9 +63,41 @@ var TournamentsController = (() => {
           }
 
           showMessage(response['message'], 'success')
+
+          self.reloadListing()
         }
       }
     }).send()
+  }
+
+  self.list = async () => {
+    const tournamentData = await new httpRequest({
+      resource: `/game/api/tournaments/get`,
+      method: 'GET',
+      successCallback: response => {
+        return response && response.data
+      }
+    }).send()
+
+    const headers = tournamentData['headers']
+    const tournaments = tournamentData['tournaments']
+
+    if (!tournamentData || !tournaments || !headers)
+      return `
+      <div class="vh-70">
+        <div class="d-flex justify-content-center align-items-center h-100">
+          <span class="badge border border-secondary rounded-pill text-secondary">
+            Could not find any tournaments
+          </span>
+        </div>
+      </div>
+      `
+
+    return TableComponent.init({'headers': headers, 'data': tournaments})
+  }
+
+  self.reloadListing = async () => {
+    document.getElementById('tournamentListing').innerHTML = await self.list()
   }
 
   return self

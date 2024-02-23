@@ -1,3 +1,4 @@
+from .models import Tournaments
 from .serializers import TournamentsSerializer
 
 
@@ -43,3 +44,29 @@ class TournamentsController:
             return {'message': 'Invalid values for tournament fields', 'errors': serializer.errors}
 
         return {'message': 'Tournament successfully created'}
+
+    def get_tournaments(self, logged_user: str) -> dict:
+        """
+
+        Parameters
+        ----------
+        logged_user : str
+
+        Returns
+        -------
+        dict
+
+        """
+        return {'data': {
+            'tournaments': list(
+                Tournaments.objects.filter().order_by('-created_at').values()
+            ),
+            'headers': {
+                'name': 'Name',
+                'game': 'Game',
+                'size': 'Size',
+                'participants': 'Participants',
+                'host': 'Host',
+                'status': 'Status'
+            }
+        }}
