@@ -15,10 +15,28 @@ class CreateTournamentView(APIView):
         })
 
 
-class GetTournamentsView(APIView):
+class GetTournamentListView(APIView):
     authentication_classes = [JWTAuthentication]
 
-    def get(sel, request):
+    def get(self, request):
         return JsonResponse({
-            'status': 0,  **TournamentsController().get_tournaments(request.user.get('login'))
+            'status': 0,  **TournamentsController().get_tournament_list(request.user.get('login'))
+        })
+
+
+class RegisterTournamentView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def post(self, request):
+        return JsonResponse({
+            'status': 0, **TournamentsController().register_tournament(request.user.get('login'), request.data)
+        })
+
+
+class UnregisterTournamentView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def post(self, request):
+        return JsonResponse({
+            'status': 0, **TournamentsController().unregister_tournament(request.user.get('login'), request.data)
         })

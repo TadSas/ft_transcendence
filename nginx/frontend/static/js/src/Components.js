@@ -1,19 +1,6 @@
 var Components = (() => {
   var self = {}
 
-  var buttonClasses = {
-    'primary': 'btn btn-primary',
-    'secondary': 'btn btn-secondary',
-    'success': 'btn btn-success',
-    'danger': 'btn btn-danger',
-    'warning': 'btn btn-warning',
-    'info': 'btn btn-info',
-    'light': 'btn btn-light',
-    'dark': 'btn btn-dark',
-    'link': 'btn btn-link',
-    'close': 'btn-close',
-  }
-
   // Private
   var foo = () => {}
 
@@ -22,7 +9,7 @@ var Components = (() => {
     <button
       id="${buttonId}"
       type="${buttonType}"
-      class="${hide ? 'visually-hidden' : buttonClasses[buttonClass || 'primary']}"
+      class="${hide ? 'visually-hidden' : `btn btn-${buttonClass || 'primary'}`}"
       ${disabled ? 'disabled' : ''}
       ${
         (() => {
@@ -467,7 +454,7 @@ var TableComponent = (() => {
     let content = ''
 
     for (const header in headers) {
-      content += `<th scope="col">${headers[header]}</th>`
+      content += `<th scope="col">${headers[header] || ''}</th>`
     }
 
     return `<tr>${content}</tr>`
@@ -487,7 +474,7 @@ var TableComponent = (() => {
     let data = ''
 
     for (const header in headers) {
-      data += `<td>${row[header]}</td>`
+      data += `<td>${row[header] || ''}</td>`
     }
 
     return data

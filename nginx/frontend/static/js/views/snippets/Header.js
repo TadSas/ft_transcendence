@@ -52,10 +52,7 @@ export default class extends BaseSnippet {
             <i class="bi bi-arrow-left-circle-fill h3"></i>
           </a>
         </div>
-        <div class="d-flex align-items-center">
-          <form class="w-100 me-3" role="search">
-            <input type="search" class="form-control" placeholder="Search..." aria-label="Search">
-          </form>
+        <div class="d-flex align-items-center justify-content-end">
           ${theme}
           <div class="flex-shrink-0 dropdown">
             <a class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">

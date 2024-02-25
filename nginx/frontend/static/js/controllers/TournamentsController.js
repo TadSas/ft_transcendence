@@ -72,7 +72,7 @@ var TournamentsController = (() => {
 
   self.list = async () => {
     const tournamentData = await new httpRequest({
-      resource: `/game/api/tournaments/get`,
+      resource: `/game/api/tournament/list`,
       method: 'GET',
       successCallback: response => {
         return response && response.data
@@ -93,7 +93,73 @@ var TournamentsController = (() => {
       </div>
       `
 
+    for (const tournament of tournaments) {
+      let buttonStyle = ''
+      let buttonEvent = ''
+      const tournamentId = tournament['id']
+      const activity = tournament['activity']
+      const activityTitle =activity['title']
+
+      switch (activityTitle) {
+        case 'register':
+          buttonStyle = 'outline-success'
+          buttonEvent = `TournamentsController.register("${tournamentId}")`
+          break
+        case 'unregister':
+          buttonStyle = 'outline-danger'
+          buttonEvent = `TournamentsController.unRegister("${tournamentId}")`
+          break
+        case 'watch':
+          buttonStyle = 'outline-info'
+          buttonEvent = ''
+          break
+        case 'results':
+          buttonStyle = 'outline-secondary'
+          buttonEvent = ''
+          break
+      }
+
+      tournament['activity'] = Components.button({
+        'buttonId': tournamentId,
+        'buttonClass': buttonStyle,
+        'buttonLabel': activityTitle,
+        'js': {
+          'onclick': buttonEvent
+        }
+      })
+    }
+
     return TableComponent.init({'headers': headers, 'data': tournaments})
+  }
+
+  self.register = (tournamentId) => {
+    new httpRequest({
+      resource: `/game/api/tournament/register`,
+      method: 'POST',
+      body: JSON.stringify({'tournament_id': tournamentId}),
+      successCallback: response => {
+        console.log('register response:', response)
+        if ('message' in response && response['message'])
+          showMessage(response['message'], 'success')
+
+        self.reloadListing()
+      }
+    }).send()
+  }
+
+  self.unRegister = (tournamentId) => {
+    new httpRequest({
+      resource: `/game/api/tournament/unregister`,
+      method: 'POST',
+      body: JSON.stringify({'tournament_id': tournamentId}),
+      successCallback: response => {
+        console.log('register response:', response)
+        if ('message' in response && response['message'])
+          showMessage(response['message'], 'success')
+
+        self.reloadListing()
+      }
+    }).send()
   }
 
   self.reloadListing = async () => {

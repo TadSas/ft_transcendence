@@ -16,3 +16,17 @@ class TournamentsSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         return Tournaments.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.game = validated_data.get('game', instance.game)
+        instance.size = validated_data.get('size', instance.size)
+        instance.participants = validated_data.get('participants', instance.participants)
+        instance.host = validated_data.get('host', instance.host)
+        instance.created_at = validated_data.get('created_at', instance.created_at)
+        instance.status = validated_data.get('status', instance.status)
+        instance.draw = validated_data.get('draw', instance.draw)
+
+        instance.save()
+
+        return instance

@@ -13,6 +13,10 @@
   height: 70vh;
 }
 
+.table td, th {
+  vertical-align: middle;
+}
+
 /* --------------------------------Color mode-------------------------------- */
 
 .btn-bd-primary {
