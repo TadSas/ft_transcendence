@@ -103,7 +103,7 @@ var TournamentsController = (() => {
       switch (activityTitle) {
         case 'register':
           buttonStyle = 'outline-success'
-          buttonEvent = `TournamentsController.register("${tournamentId}")`
+          buttonEvent = `TournamentsController.setAlias("${tournamentId}")`
           break
         case 'unregister':
           buttonStyle = 'outline-danger'
@@ -132,15 +132,54 @@ var TournamentsController = (() => {
     return TableComponent.init({'headers': headers, 'data': tournaments})
   }
 
+  self.setAlias = (tournamentId) => {
+    document.getElementsByClassName('modals')[0].innerHTML += Components.modal({
+      'size': 'default',
+      'modalId': 'nameAliasModalId',
+      'modalTitle': 'Provide an alias name for your username',
+      'modalBody': Components.input({'id': 'newAliasName', 'label': 'You will participate in matches under this new name', 'maxlength': 16}),
+      'approveButtonId': 'registerModalId',
+      'approveButtonTitle': 'Register',
+      'approveButtonClass': 'btn btn-primary',
+      'cancelButtonTitle': 'Cancel',
+      'cancelButtonClass': 'btn btn-secondary',
+    })
+    const nameAliasModalCont = document.getElementById("nameAliasModalId")
+
+    new bootstrap.Modal(nameAliasModalCont, {}).show()
+
+    nameAliasModalCont.addEventListener('shown.bs.modal', () => {
+      document.getElementById('newAliasName').focus()
+      document.getElementById('registerModalId').onclick = () => {TournamentsController.register(tournamentId)}
+    })
+  }
+
   self.register = (tournamentId) => {
+    const newAliasCont = document.getElementById('newAliasName')
+    const newAliasContFeedback = document.getElementById('newAliasName_invalid_feedback')
+    const newAliasName = newAliasCont.value
+
+    if (!tournamentId)
+      return
+
+    if (newAliasName.length > 16) {
+      newAliasCont.classList.add('is-invalid')
+      newAliasContFeedback.innerText = "The length of an alias name cannot be greater than 16"
+    }
+
+    newAliasCont.classList.remove('is-invalid')
+    newAliasContFeedback.innerText = ""
+
     new httpRequest({
       resource: `/game/api/tournament/register`,
       method: 'POST',
-      body: JSON.stringify({'tournament_id': tournamentId}),
+      body: JSON.stringify({'tournament_id': tournamentId, 'alias': newAliasName}),
       successCallback: response => {
-        console.log('register response:', response)
         if ('message' in response && response['message'])
           showMessage(response['message'], 'success')
+
+        const nameAliasModal = bootstrap.Modal.getInstance(document.getElementById("nameAliasModalId"))
+        nameAliasModal && nameAliasModal.hide()
 
         self.reloadListing()
       }
@@ -153,7 +192,6 @@ var TournamentsController = (() => {
       method: 'POST',
       body: JSON.stringify({'tournament_id': tournamentId}),
       successCallback: response => {
-        console.log('register response:', response)
         if ('message' in response && response['message'])
           showMessage(response['message'], 'success')
 

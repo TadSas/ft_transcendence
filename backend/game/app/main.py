@@ -14,7 +14,7 @@ class TournamentsController:
         pass
 
     def get_tournament(self, tournament_id: str) -> Tournaments:
-        """
+        """ Get tournament by id
 
         Parameters
         ----------
@@ -122,6 +122,12 @@ class TournamentsController:
         if not (tournament_id := request_data.get('tournament_id')):
             return {'status': 1, 'message': 'Tournament id not specified'}
 
+        if not (alias := request_data.get('alias')):
+            return {'status': 1, 'message': 'Alias for the username is not specified'}
+
+        if len(alias) > 16:
+            return {'status': 1, 'message': 'The length of an alias name cannot be greater than 16'}
+
         if not (tournament := self.get_tournament(tournament_id)):
             return {'status': 1, 'message': 'Tournament not found by specified id'}
 
@@ -136,7 +142,7 @@ class TournamentsController:
 
         draw = {}
         status = 'registration'
-        tournament_participants[logged_user] = {}
+        tournament_participants[logged_user] = {'alias': alias}
 
         if tournament_size == len(tournament_participants):
             status = 'started'
@@ -222,7 +228,7 @@ class TournamentsController:
         return self.__create_bracket(root, root.copy(), player_names, 1, int(math.log2(len(players))))
 
     def __create_bracket(self, root: dict, root_copy: dict, players: list, current_depth: int, max_depth: int):
-        """
+        """ Returns single elimination bracket tree, also initializing first-level matches
 
         Parameters
         ----------
@@ -256,7 +262,7 @@ class TournamentsController:
         self.__create_bracket(root["right"], root_copy, current_depth + 1, max_depth)
 
     def __get_players_pair(self, players: list) -> tuple:
-        """
+        """ This function provides matchmaking logic (not yet, it's just a random match)
 
         Parameters
         ----------

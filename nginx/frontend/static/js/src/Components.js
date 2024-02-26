@@ -27,6 +27,9 @@ var Components = (() => {
           let events = ''
 
           for (const event in js) {
+            if (!js[event])
+              continue
+
             events += `${event}=${js[event]} `
           }
 
@@ -46,7 +49,7 @@ var Components = (() => {
     `
   }
 
-  self.input = ({type = 'text', id = '', className = '', placeholder = '', value = '', required = false, label = '', invalidFeedback = ''}) => {
+  self.input = ({type = 'text', id = '', className = '', placeholder = '', value = '', required = false, label = '', invalidFeedback = '', maxlength = ''}) => {
     return `
     ${label ? self.label({'labelText': label, 'labelFor': id}) : ''}
     <input
@@ -56,6 +59,7 @@ var Components = (() => {
       ${value ? `value="${value}"` : ''}
       ${placeholder ? `placeholder="${placeholder}"`: ''}
       ${required ? 'required' : ''}
+      ${maxlength ? `maxlength="${maxlength}"`: ''}
     >
     <div class="invalid-feedback" ${id ? `id="${id}_invalid_feedback"` : ''}>${invalidFeedback}</div>
     `
@@ -161,7 +165,7 @@ var Components = (() => {
             ${self.button({'buttonClass': 'close', 'dataAttributes': {'bs-dismiss': 'modal'}})}
           </div>
           <div class="modal-body">
-            <p>${modalBody}</p>
+            ${modalBody}
           </div>
           <div class="modal-footer">
             ${cancelButton}
