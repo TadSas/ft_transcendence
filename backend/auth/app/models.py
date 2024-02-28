@@ -14,10 +14,17 @@ class StatusChoices(models.TextChoices):
     INGAME = ('in-game', 'In-game')
 
     def __iter__():
-        return iter([
-            item[0] for key, item in StatusChoices.__dict__.items()
-            if not key.startswith('__')
-        ])
+        return iter([item[0] for key, item in StatusChoices.__dict__.items()if not key.startswith('__')])
+
+
+class FriendStatusChoices(models.TextChoices):
+    REQUEST = ('request', 'Request')
+    ACCEPT = ('accept', 'Accept')
+    REJECT = ('reject', 'Reject')
+    REMOVED = ('removed', 'Removed')
+
+    def __iter__():
+        return iter([item[0] for key, item in FriendStatusChoices.__dict__.items()if not key.startswith('__')])
 
 
 class Users(AbstractBaseUser):
@@ -57,22 +64,23 @@ class Users(AbstractBaseUser):
         return self.login
 
 
-class AuthToken(models.Model):
+class Friends(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    grant_type = models.CharField(max_length=255)
-    code = models.CharField(max_length=64)
-    state = models.CharField(max_length=64)
-    access_token = models.CharField(max_length=64)
-    token_type = models.CharField(max_length=255)
-    expires_in = models.IntegerField()
-    refresh_token = models.CharField(max_length=64)
-    scope = models.CharField(max_length=255)
-    created_at = models.DateTimeField()
-    secret_valid_until = models.DateTimeField()
+    user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user_friends')
+    friend = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='friend_friends')
+    status = models.CharField(
+        max_length=16,
+        choices=FriendStatusChoices.choices,
+        default=FriendStatusChoices.REQUEST,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = 'AuthToken'
+        verbose_name = 'Friends'
+
+    def __str__(self):
+        return f"{self.user} - {self.friend}"
 
 
 class QRMeta(models.Model):

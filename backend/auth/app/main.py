@@ -17,8 +17,8 @@ from django.utils.html import escape
 
 from .models import Users, QRMeta
 from .exceptions import AuthException
+from .serializers import UsersSerializer
 from .config import FTTRANSCENDENCE, FTAPI
-from .serializers import UsersSerializer, AuthTokenSerializer
 
 from auth.settings import MEDIA_ROOT, TOTP_COOKIE_PREFIX, TOTP_COOKIE_SUFFIX, SECRET_KEY
 
@@ -98,28 +98,7 @@ class AuthController:
 
         try:
             with urlopen(request) as response:
-                response_data = json.loads(response.read().decode())
-                access_token = response_data.get('access_token', '')
-
-                serializer = AuthTokenSerializer(data={
-                    'grant_type': 'authorization_code',
-                    'code': code,
-                    'state': state,
-                    'access_token': access_token,
-                    'token_type': response_data.get('token_type', ''),
-                    'expires_in': response_data.get('expires_in', ''),
-                    'refresh_token': response_data.get('refresh_token', ''),
-                    'scope': response_data.get('scope', ''),
-                    'created_at': datetime.datetime.fromtimestamp(response_data.get('created_at', '')),
-                    'secret_valid_until': datetime.datetime.fromtimestamp(response_data.get('secret_valid_until', '')),
-                })
-
-                if serializer.is_valid():
-                    serializer.save()
-                else:
-                    raise AuthException("Error occurred while storing auth token", serializer.errors)
-
-            return access_token
+                return json.loads(response.read().decode()).get('access_token', '')
         except Exception as ex:
             raise AuthException(str(ex))
 
@@ -185,7 +164,7 @@ class AuthController:
         return jwt.encode(
             {
                 'id': str(user.id),
-                'exp': datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1),
+                'exp': datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=365),
                 'iat': datetime.datetime.now(datetime.UTC)
             },
             secret_key,

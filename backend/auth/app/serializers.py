@@ -2,7 +2,7 @@ from django.utils import timezone
 
 from rest_framework import serializers
 
-from .models import Users, StatusChoices, AuthToken
+from .models import Users, Friends, StatusChoices, FriendStatusChoices
 
 
 class UsersSerializer(serializers.Serializer):
@@ -41,18 +41,25 @@ class UsersSerializer(serializers.Serializer):
         return instance
 
 
-class AuthTokenSerializer(serializers.Serializer):
+class FriendsSerializer(serializers.Serializer):
     id = serializers.UUIDField(read_only=True)
-    grant_type = serializers.CharField(max_length=255)
-    code = serializers.CharField(max_length=64)
-    state = serializers.CharField(max_length=64)
-    access_token = serializers.CharField(max_length=64)
-    token_type = serializers.CharField(max_length=255)
-    expires_in = serializers.IntegerField()
-    refresh_token = serializers.CharField(max_length=64)
-    scope = serializers.CharField(max_length=255)
-    created_at = serializers.DateTimeField()
-    secret_valid_until = serializers.DateTimeField()
+    user_id = serializers.CharField(max_length=32)
+    friend_id = serializers.CharField(max_length=32)
+    status = serializers.ChoiceField(FriendStatusChoices, default='request')
+    created_at = serializers.DateTimeField(required=False)
 
     def create(self, validated_data):
-        return AuthToken.objects.create(**validated_data)
+        validated_data['user'] = Users.objects.filter(login=validated_data.pop('user_id')).first()
+        validated_data['friend'] = Users.objects.filter(login=validated_data.pop('friend_id')).first()
+
+        return Friends.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.id = validated_data.get('id', instance.id)
+        instance.user_id = validated_data.get('user_id', instance.user_id)
+        instance.friend_id = validated_data.get('friend_id', instance.friend_id)
+        instance.status = validated_data.get('status', instance.status)
+        instance.created_at = validated_data.get('created_at', instance.created_at)
+        instance.save()
+
+        return instance
