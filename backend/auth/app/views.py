@@ -10,7 +10,7 @@ from rest_framework.parsers import MultiPartParser
 from auth.settings import SECRET_KEY, ALLOWED_IMAGE_EXTENSIONS, JWT_COOKIE_NAME, TOTP_COOKIE_NAME
 
 from .permissions import JWTAuthentication
-from .main import AuthController, UserController
+from .main import AuthController, UserController, FriendsController
 
 
 class LoginView(APIView):
@@ -188,3 +188,24 @@ class DashboardUsersView(APIView):
 
     def get(self, request):
         return JsonResponse({'status': 0, 'data': UserController().get_dashboard_users(request.user)})
+
+
+class FriendRequestView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def post(self, request):
+        return JsonResponse({'status': 0, **FriendsController().send_request(request.user, request.data)})
+
+
+class FriendStatusView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request, friend):
+        return JsonResponse({'status': 0, **FriendsController().get_friend_status(request.user, friend)})
+
+
+class CancelFriendRequestView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def post(self, request):
+        return JsonResponse({'status': 0, **FriendsController().cancel_request(request.user, request.data)})

@@ -15,6 +15,9 @@ export default class extends BaseView {
       'click': {
         'document.getElementById("startUserChat")': e => {
           MessagesController.createRoom(this.username)
+        },
+        'document.getElementById("friendAction")': e => {
+          FriendsController.friendAction(e, this.username)
         }
       }
     })
@@ -168,11 +171,18 @@ export default class extends BaseView {
             </div>
             ${
               this.username ? `
-              <div id="startUserChat" role="button" class="btn btn-success me-2 mb-2">
-                Chat
-                <a href="/messages" type="button" class="pe-none d-none" data-link></a>
+              <hr class="mt-0">
+              <div id="startUserChat" class="d-inline-block me-2 mb-3">
+                <div role="button" class="btn btn-outline-success">
+                  Chat
+                  <a href="/messages" type="button" class="pe-none d-none" data-link></a>
+                </div>
               </div>
-              <div id="startUserPong" role="button" class="btn btn-success ms-2 mb-2">
+              <div id="friendAction" class="d-inline-block me-2 mb-3">
+                ${await FriendsController.status(this.username)}
+              </div>
+              <hr class="mt-0">
+              <div id="startUserPong" role="button" class="btn btn-outline-light me-2 mb-3">
                 Pong
                 <a href="/pong" type="button" class="pe-none d-none" data-link></a>
               </div>

@@ -78,6 +78,7 @@ class Friends(models.Model):
 
     class Meta:
         verbose_name = 'Friends'
+        unique_together = ('user', 'friend')
 
     def __str__(self):
         return f"{self.user} - {self.friend}"

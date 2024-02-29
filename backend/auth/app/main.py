@@ -12,13 +12,14 @@ from pathlib import Path
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
+from django.db.models import Q
 from django.utils import timezone
 from django.utils.html import escape
 
-from .models import Users, QRMeta
 from .exceptions import AuthException
-from .serializers import UsersSerializer
 from .config import FTTRANSCENDENCE, FTAPI
+from .models import Users, QRMeta, Friends
+from .serializers import UsersSerializer, FriendsSerializer
 
 from auth.settings import MEDIA_ROOT, TOTP_COOKIE_PREFIX, TOTP_COOKIE_SUFFIX, SECRET_KEY
 
@@ -536,3 +537,97 @@ class QRCodeController:
             return False
 
         return pyotp.TOTP(secret).verify(otp)
+
+
+class FriendsController:
+
+    def __init__(self):
+        pass
+
+    def send_request(self, logged_user: Users, request_data: dict) -> dict:
+        """
+
+        Parameters
+        ----------
+        logged_user : Users
+        request_data : dict
+
+        Returns
+        -------
+        dict
+
+        """
+        if (
+            not (friend_username := request_data.get('friend')) or
+            not UserController().get_user_by_username(friend_username)
+        ):
+            return {'status': 1, 'message': 'No user specified for friend request'}
+
+        serializer = FriendsSerializer(data={'user_id': logged_user.login, 'friend_id': friend_username,})
+
+        if serializer.is_valid():
+            serializer.save()
+        else:
+            return {'status': 1, 'message': 'An error occurred while sending a friend request'}
+
+        return {'message': 'Friend request sent successfully'}
+
+    def cancel_request(self, logged_user: Users, request_data: dict) -> dict:
+        """
+
+        Parameters
+        ----------
+        logged_user : Users
+        request_data : dict
+
+        Returns
+        -------
+        dict
+
+        """
+        if (
+            not (friend_username := request_data.get('friend')) or
+            not (friend := UserController().get_user_by_username(friend_username))
+        ):
+            return {'status': 1, 'message': 'No user specified to cancel friend request'}
+
+        if not (friendship := Friends.objects.filter(
+            (Q(user=logged_user) & Q(friend=friend)) | (Q(user=friend) & Q(friend=logged_user))
+        ).first()):
+            return {'status': 1, 'message': 'There is no relation to this user'}
+
+        if friendship.status != 'request':
+            return {'status': 1, 'message': 'Before canceling a friend request, please make a friend reques'}
+
+        friendship.delete()
+
+        return {'message': 'Friend request successfully canceled'}
+
+    def get_friend_status(self, logged_user: Users, friend_username: str) -> dict:
+        """
+
+        Parameters
+        ----------
+        logged_user : Users
+        friend_username : str
+
+        Returns
+        -------
+        dict
+
+        """
+        result = {'data': {'status': ''}}
+
+        if not friend_username or not (friend := UserController().get_user_by_username(friend_username)):
+            return result
+
+        if not (friendship := Friends.objects.filter(
+            (Q(user=logged_user) & Q(friend=friend)) | (Q(user=friend) & Q(friend=logged_user))
+        ).first()):
+            result['data']['status'] = 'not-friends'
+
+            return result
+
+        result['data']['status'] = friendship.status
+
+        return result

@@ -16,7 +16,7 @@ var MessagesController = (() => {
           return showMessage("Can't create/retrieve room for this user", "danger")
 
         const startUserChat = document.getElementById('startUserChat')
-        startUserChat && startUserChat.lastElementChild.click()
+        startUserChat && startUserChat.lastElementChild.lastElementChild.click()
       }
     }).send()
   }

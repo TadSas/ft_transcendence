@@ -44,6 +44,9 @@ class httpRequest {
       return this.#syncSend()
 
     return fetch(this.resource, this.options).then(response => {
+      if (response.status > 500)
+        return showMessage('Internal server error', 'danger')
+
       const contentType = response.headers.get("content-type")
 
       if (contentType && contentType.indexOf("application/json") !== -1) {
@@ -69,9 +72,7 @@ class httpRequest {
 
       return this.successCallback(responseData)
     }).catch((error) => {
-      // TODO: Change to generic error message after finishing the project
-      showMessage(`${('Error message: ')}${error}`, 'danger')
-      console.error(error)
+      showMessage('Internal server error', 'danger')
       hideLoader()
     })
   }

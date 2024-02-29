@@ -7,9 +7,12 @@ from .views import (
     CallbackView,
     JWTVerifyView,
     UserAvatarView,
+    FriendStatusView,
+    FriendRequestView,
     DashboardUsersView,
     TwoFactorVerifyView,
     AuthenticationCheckView,
+    CancelFriendRequestView,
 )
 
 
@@ -24,5 +27,9 @@ urlpatterns = [
     path('dashboard/users', DashboardUsersView.as_view(), name='api-dashboard-users'),
     path('twofactor/verify', TwoFactorVerifyView.as_view(), name='api-twofactor-verify'),
     path('jwt/verify', JWTVerifyView.as_view(), name='api-jwt-verify'),
-    path('authentication/check', AuthenticationCheckView.as_view(), name='api-authentication-check')
+    path('authentication/check', AuthenticationCheckView.as_view(), name='api-authentication-check'),
+
+    path('friends/request', FriendRequestView.as_view(), name='api-friend-request'),
+    path('friends/request/cancel', CancelFriendRequestView.as_view(), name='api-cancel-friend-request'),
+    path('friends/status/<slug:friend>', FriendStatusView.as_view(), name='api-friend-status'),
 ]
