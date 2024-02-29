@@ -67,8 +67,8 @@ class Users(AbstractBaseUser):
 class Friends(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user_friends')
-    friend = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='friend_friends')
+    user = models.ForeignKey(AUTH_USER_MODEL, to_field='login', on_delete=models.CASCADE, related_name='user_friends')
+    friend = models.ForeignKey(AUTH_USER_MODEL, to_field='login', on_delete=models.CASCADE, related_name='friend_friends')
     status = models.CharField(
         max_length=16,
         choices=FriendStatusChoices.choices,

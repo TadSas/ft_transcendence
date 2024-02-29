@@ -124,6 +124,8 @@ export default class extends BaseView {
     </div>
     `
 
+    FriendsController.getFriendRequests()
+
     const friends = `
     <div class="position-relative p-5 text-start bg-body border rounded-4 mb-5">
       <h3 class="border-bottom pb-2">Friends</h3>

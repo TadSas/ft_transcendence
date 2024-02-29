@@ -544,6 +544,22 @@ class FriendsController:
     def __init__(self):
         pass
 
+    def get_friend_requests(self, logged_user: Users) -> dict:
+        """
+
+        Parameters
+        ----------
+        logged_user : Users
+
+        Returns
+        -------
+        dict
+
+        """
+        return {'data': {'requests':
+            list(Friends.objects.filter(friend=logged_user, status='request').values('id', 'user_id', 'friend_id'))
+        }}
+
     def send_request(self, logged_user: Users, request_data: dict) -> dict:
         """
 
@@ -631,3 +647,4 @@ class FriendsController:
         result['data']['status'] = friendship.status
 
         return result
+

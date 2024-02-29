@@ -11,6 +11,7 @@ from .views import (
     FriendRequestView,
     DashboardUsersView,
     TwoFactorVerifyView,
+    GetAllFriendRequestView,
     AuthenticationCheckView,
     CancelFriendRequestView,
 )
@@ -31,5 +32,6 @@ urlpatterns = [
 
     path('friends/request', FriendRequestView.as_view(), name='api-friend-request'),
     path('friends/request/cancel', CancelFriendRequestView.as_view(), name='api-cancel-friend-request'),
+    path('friends/request/all/get', GetAllFriendRequestView.as_view(), name='api-get-all-friend-request'),
     path('friends/status/<slug:friend>', FriendStatusView.as_view(), name='api-friend-status'),
 ]
