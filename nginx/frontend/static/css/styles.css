@@ -17,6 +17,10 @@
   vertical-align: middle;
 }
 
+.aspect-ratio-1-1 {
+  aspect-ratio: 1/1;
+}
+
 /* --------------------------------Color mode-------------------------------- */
 
 .btn-bd-primary {

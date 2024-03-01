@@ -227,7 +227,7 @@ class TournamentsController:
 
         return self.__create_bracket(root, root.copy(), player_names, 1, int(math.log2(len(players))))
 
-    def __create_bracket(self, root: dict, root_copy: dict, players: list, current_depth: int, max_depth: int):
+    def __create_bracket(self, root: dict, root_copy: dict, players: list, current_depth: int, max_depth: int) -> dict:
         """ Returns single elimination bracket tree, also initializing first-level matches
 
         Parameters
@@ -237,6 +237,10 @@ class TournamentsController:
         players : list
         current_depth : int
         max_depth : int
+
+        Returns
+        -------
+        dict
 
         """
         if current_depth == max_depth:
@@ -258,8 +262,10 @@ class TournamentsController:
                 root["right"]["leftUser"] = players_pair[0]
                 root["right"]["rightUser"] = players_pair[1]
 
-        self.__create_bracket(root["left"], root_copy, current_depth + 1, max_depth)
-        self.__create_bracket(root["right"], root_copy, current_depth + 1, max_depth)
+        self.__create_bracket(root["left"], root_copy, players, current_depth + 1, max_depth)
+        self.__create_bracket(root["right"], root_copy, players, current_depth + 1, max_depth)
+
+        return root
 
     def __get_players_pair(self, players: list) -> tuple:
         """ This function provides matchmaking logic (not yet, it's just a random match)

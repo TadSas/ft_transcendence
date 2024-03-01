@@ -140,7 +140,7 @@ export default class extends BaseView {
         <div class="col-4 px-2">
           <div class="position-relative p-5 text-center bg-body border rounded-4">
             <div class="avatar-container">
-              <img src="${avatarSrc}" class="rounded-circle border object-fit-cover w-100 h-100">
+              <img src="${avatarSrc}" class="rounded-circle border object-fit-cover w-100 h-100 aspect-ratio-1-1">
             </div>
             <h1>${login}</h1>
             <div class="pb-3">
@@ -162,7 +162,7 @@ export default class extends BaseView {
                 ${await FriendsController.status(this.username)}
               </div>
               <hr class="mt-0">
-              <div id="startUserPong" role="button" class="btn btn-outline-light me-2 mb-3">
+              <div id="startUserPong" role="button" class="btn btn-outline-secondary me-2 mb-3">
                 Pong
                 <a href="/pong" type="button" class="pe-none d-none" data-link></a>
               </div>
@@ -187,7 +187,7 @@ export default class extends BaseView {
             `
           }
           <div id="friends">
-            ${await FriendsController.getFriendsView()}
+            ${await FriendsController.getFriendsView(this.username)}
           </div>
         </div>
 

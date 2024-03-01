@@ -17,7 +17,7 @@ var FriendsController = (() => {
         self.sendCancelFriendRequest(friend)
         break
       case 'accept':
-        self.sendUnfriendRequest(friend)
+        self.removeFriend(friend)
         break
       case 'reject':
         self.sendFriendRequest(friend)
@@ -44,8 +44,19 @@ var FriendsController = (() => {
     }).send()
   }
 
-  self.sendUnfriendRequest = (friend) => {
-    console.log('unfriend... (')
+  self.removeFriend = (friend) => {
+    new httpRequest({
+      resource: `/auth/api/friends/${friend}/remove`,
+      method: 'GET',
+      successCallback: response => {
+        if (!('status' in response) || response['status'] !== 0)
+          showMessage('An error occurred while removing a friend request', 'danger')
+        else if ('message' in response && response['message'])
+          showMessage(response['message'], 'success')
+
+        self.reloadStatus(friend)
+      }
+    }).send()
   }
 
   self.sendCancelFriendRequest = (friend) => {
@@ -114,9 +125,22 @@ var FriendsController = (() => {
     friendAction && (friendAction.innerHTML = await self.status(friend))
   }
 
-  self.getFriends = async () => {
+  self.getLoggedUserFriends = async () => {
     return new httpRequest({
-      resource: '/auth/api/friends/all/get',
+      resource: `/auth/api/friends/all`,
+      method: 'GET',
+      successCallback: response => {
+        if ('data' in response, 'friends' in response['data'])
+          return response['data']['friends']
+
+        return []
+      }
+    }).send()
+  }
+
+  self.getFriends = async (username) => {
+    return new httpRequest({
+      resource: `/auth/api/friends/${username}/all`,
       method: 'GET',
       successCallback: response => {
         if ('data' in response, 'friends' in response['data'])
@@ -177,9 +201,14 @@ var FriendsController = (() => {
     `
   }
 
-  self.getFriendsView = async () => {
+  self.getFriendsView = async (username) => {
+    let friends = []
     let friendsView = ''
-    const friends = await self.getFriends()
+
+    if (!username)
+      friends = await self.getLoggedUserFriends()
+    else
+      friends = await self.getFriends(username)
 
     if (!friends || friends.constructor !== Array || friends.length === 0)
       friendsView = `
@@ -194,9 +223,12 @@ var FriendsController = (() => {
       for (const friend of friends) {
         friendsView += `
         <div class="col-2 col-sm-2 d-flex justify-content-center">
-          <div class="px-2">
-            <img src="/auth/api/avatar/${friend}" width="64" height="64" class="rounded-circle border">
-            <p class="text-center text-wrap">${friend}</p>
+          <div class="card-body">
+            <div class="px-2 position-relative">
+              <img src="/auth/api/avatar/${friend}" width="64" height="64" class="rounded-circle border object-fit-cover">
+              <p>${friend}</p>
+              <a href="/profile/${friend}" class="stretched-link" data-link></a>
+            </div>
           </div>
         </div>
         `

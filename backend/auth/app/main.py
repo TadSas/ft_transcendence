@@ -557,15 +557,43 @@ class FriendsController:
 
         """
         friends = []
-        # logged_username = logged_user.login
-        # friends_records = list(Friends.objects.filter(
-        #     (Q(user=logged_user) | Q(friend=logged_user)) & Q(status='accept')
-        # ).values('user_id', 'friend_id'))
+        logged_username = logged_user.login
+        friends_records = list(Friends.objects.filter(
+            (Q(user=logged_user) | Q(friend=logged_user)) & Q(status='accept')
+        ).values('user_id', 'friend_id'))
 
-        # for friend in friends_records:
-        #     temp = [friend.pop('user_id'), friend.pop('friend_id')]
-        #     temp.remove(logged_username)
-        #     friends.extend(temp)
+        for friend in friends_records:
+            temp = [friend.pop('user_id'), friend.pop('friend_id')]
+            temp.remove(logged_username)
+            friends.extend(temp)
+
+        return {'data': {'friends': friends}}
+
+    def get_user_all_friends(self, username: str) -> dict:
+        """
+
+        Parameters
+        ----------
+        username : str
+
+        Returns
+        -------
+        dict
+
+        """
+        friends = []
+
+        if not username or not (user := UserController().get_user_by_username(username)):
+            return {'data': {'friends': friends}}
+
+        friends_records = list(Friends.objects.filter(
+            (Q(user=user) | Q(friend=user)) & Q(status='accept')
+        ).values('user_id', 'friend_id'))
+
+        for friend in friends_records:
+            temp = [friend.pop('user_id'), friend.pop('friend_id')]
+            temp.remove(username)
+            friends.extend(temp)
 
         return {'data': {'friends': friends}}
 
@@ -614,6 +642,8 @@ class FriendsController:
                     return {'message': 'You are already friends with this user'}
                 case 'reject' | 'removed':
                     friendship.status = 'request'
+                    friendship.user = logged_user
+                    friendship.friend = friend
                     friendship.save()
 
                     return {'message': 'Friend request sent successfully'}
@@ -745,3 +775,33 @@ class FriendsController:
 
         return result
 
+    def remove_friend(self, logged_user: Users, friend_username: str) -> dict:
+        """
+
+        Parameters
+        ----------
+        logged_user : Users
+        friend_username : str
+
+        Returns
+        -------
+        dict
+
+        """
+        if (
+            not friend_username or not (friend := UserController().get_user_by_username(friend_username))
+        ):
+            return {'status': 1, 'message': 'No user specified to remove friend'}
+
+        if not (friendship := Friends.objects.filter(
+            (Q(user=logged_user) & Q(friend=friend)) | (Q(user=friend) & Q(friend=logged_user))
+        ).first()):
+            return {'status': 1, 'message': 'There is no relation to this user'}
+
+        if friendship.status != 'accept':
+            return {'status': 1, 'message': 'Before removing a friend request, please make a friend request'}
+
+        friendship.status = 'removed'
+        friendship.save()
+
+        return {'message': 'Friend removed successfully'}

@@ -82,7 +82,7 @@ class RoomController:
                 'sent_date': created_at and timezone.localtime(created_at).strftime("%d-%m-%Y %H:%M") or ''
             }
 
-        return {'data': rooms}
+        return {'data': sorted(rooms, key=lambda x: x['activity']['sent_date'])[::-1]}
 
     def get_unfiltered_rooms(self, user: str) -> list:
         """ Returns all rooms for specified user

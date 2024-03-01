@@ -211,6 +211,13 @@ class GetAllFriendsView(APIView):
         return JsonResponse({'status': 0, **FriendsController().get_all_friends(request.user)})
 
 
+class GetUserAllFriendsView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request, username):
+        return JsonResponse({'status': 0, **FriendsController().get_user_all_friends(username)})
+
+
 class FriendRequestView(APIView):
     authentication_classes = [JWTAuthentication]
 
@@ -237,3 +244,10 @@ class CancelFriendRequestView(APIView):
 
     def post(self, request):
         return JsonResponse({'status': 0, **FriendsController().cancel_friend_request(request.user, request.data)})
+
+
+class RemoveFriendView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request, username):
+        return JsonResponse({'status': 0, **FriendsController().remove_friend(request.user, username)})
