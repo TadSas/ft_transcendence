@@ -544,6 +544,31 @@ class FriendsController:
     def __init__(self):
         pass
 
+    def get_all_friends(self, logged_user: Users) -> dict:
+        """
+
+        Parameters
+        ----------
+        logged_user : Users
+
+        Returns
+        -------
+        dict
+
+        """
+        friends = []
+        # logged_username = logged_user.login
+        # friends_records = list(Friends.objects.filter(
+        #     (Q(user=logged_user) | Q(friend=logged_user)) & Q(status='accept')
+        # ).values('user_id', 'friend_id'))
+
+        # for friend in friends_records:
+        #     temp = [friend.pop('user_id'), friend.pop('friend_id')]
+        #     temp.remove(logged_username)
+        #     friends.extend(temp)
+
+        return {'data': {'friends': friends}}
+
     def get_friend_requests(self, logged_user: Users) -> dict:
         """
 
@@ -557,7 +582,7 @@ class FriendsController:
 
         """
         return {'data': {'requests':
-            list(Friends.objects.filter(friend=logged_user, status='request').values('id', 'user_id', 'friend_id'))
+            list(Friends.objects.filter(friend=logged_user, status='request').values('user_id', 'friend_id'))
         }}
 
     def send_request(self, logged_user: Users, request_data: dict) -> dict:
@@ -575,9 +600,23 @@ class FriendsController:
         """
         if (
             not (friend_username := request_data.get('friend')) or
-            not UserController().get_user_by_username(friend_username)
+            not (friend := UserController().get_user_by_username(friend_username))
         ):
             return {'status': 1, 'message': 'No user specified for friend request'}
+
+        if friendship := Friends.objects.filter(
+            (Q(user=logged_user) & Q(friend=friend)) | (Q(user=friend) & Q(friend=logged_user))
+        ).first():
+            match (friendship.status):
+                case 'request':
+                    return {'message': 'Friend request has already been sent'}
+                case 'accept':
+                    return {'message': 'You are already friends with this user'}
+                case 'reject' | 'removed':
+                    friendship.status = 'request'
+                    friendship.save()
+
+                    return {'message': 'Friend request sent successfully'}
 
         serializer = FriendsSerializer(data={'user_id': logged_user.login, 'friend_id': friend_username,})
 
@@ -588,7 +627,7 @@ class FriendsController:
 
         return {'message': 'Friend request sent successfully'}
 
-    def cancel_request(self, logged_user: Users, request_data: dict) -> dict:
+    def cancel_friend_request(self, logged_user: Users, request_data: dict) -> dict:
         """
 
         Parameters
@@ -607,17 +646,75 @@ class FriendsController:
         ):
             return {'status': 1, 'message': 'No user specified to cancel friend request'}
 
-        if not (friendship := Friends.objects.filter(
-            (Q(user=logged_user) & Q(friend=friend)) | (Q(user=friend) & Q(friend=logged_user))
-        ).first()):
+        if not (friendship := Friends.objects.filter(user=logged_user, friend=friend).first()):
             return {'status': 1, 'message': 'There is no relation to this user'}
 
         if friendship.status != 'request':
-            return {'status': 1, 'message': 'Before canceling a friend request, please make a friend reques'}
+            return {'status': 1, 'message': 'Before canceling a friend request, please make a friend request'}
 
         friendship.delete()
 
         return {'message': 'Friend request successfully canceled'}
+
+    def accept_friend_request(self, logged_user: Users, request_data: dict) -> dict:
+        """
+
+        Parameters
+        ----------
+        logged_user : Users
+        request_data : dict
+
+        Returns
+        -------
+        dict
+
+        """
+        if (
+            not (friend_username := request_data.get('username')) or
+            not (friend := UserController().get_user_by_username(friend_username))
+        ):
+            return {'status': 1, 'message': 'No user specified to accept friend request'}
+
+        if not (friendship := Friends.objects.filter(user=friend, friend=logged_user).first()):
+            return {'status': 1, 'message': 'There is no relation to this user'}
+
+        if friendship.status != 'request':
+            return {'status': 1, 'message': 'Before accepting a friend request, please make a friend request'}
+
+        friendship.status = 'accept'
+        friendship.save()
+
+        return {'message': 'Friend request successfully accepted'}
+
+    def reject_friend_request(self, logged_user: Users, request_data: dict) -> dict:
+        """
+
+        Parameters
+        ----------
+        logged_user : Users
+        request_data : dict
+
+        Returns
+        -------
+        dict
+
+        """
+        if (
+            not (friend_username := request_data.get('username')) or
+            not (friend := UserController().get_user_by_username(friend_username))
+        ):
+            return {'status': 1, 'message': 'No user specified to reject friend request'}
+
+        if not (friendship := Friends.objects.filter(user=friend, friend=logged_user).first()):
+            return {'status': 1, 'message': 'There is no relation to this user'}
+
+        if friendship.status != 'request':
+            return {'status': 1, 'message': 'Before rejecting a friend request, please make a friend request'}
+
+        friendship.status = 'reject'
+        friendship.save()
+
+        return {'message': 'Friend request successfully rejected'}
 
     def get_friend_status(self, logged_user: Users, friend_username: str) -> dict:
         """

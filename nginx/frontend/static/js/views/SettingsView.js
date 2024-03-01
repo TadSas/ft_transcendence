@@ -21,7 +21,7 @@ export default class extends BaseView {
     const userInformation = user['data']
 
     const generalInformation = `
-    <div class="position-relative p-5 text-start bg-body border rounded-4 mb-5">
+    <div class="position-relative p-5 text-start bg-body border rounded-4 mb-3">
       <h3 class="text-body-emphasis border-bottom pb-2">General information</h3>
       <div class="d-flex align-items-end flex-row mt-4">
         <div id="userSettings" class="container text-center">
@@ -70,7 +70,7 @@ export default class extends BaseView {
     <div class="container">
       <div class="row flex-lg-row align-items-start g-5 py-5">
 
-        <div class="col-lg-4">
+        <div class="col-4 px-2">
           <div class="position-relative p-5 text-center bg-body border rounded-4">
             <div class="avatar-container">
               <img id="userAvatar" src="/auth/api/avatar" class="rounded-circle border object-fit-cover w-100 h-100" onclick="SettingsController.triggerAvatarUpload('userAvatarInput')">
@@ -80,14 +80,16 @@ export default class extends BaseView {
             </div>
             ${Components.file({'id': 'userAvatarInput', 'hide': true, 'js': {'onchange': `SettingsController.uploadAvatar('userAvatarInput','userAvatar')`}})}
             <h1>${userInformation['login'] || ''}</h1>
-            <span class="badge rounded-pill text-bg-${statuses[status || 'offline']}">
-              <span class="align-middle">Status: ${status}</span>
-              ${['online', 'in-game'].includes(status) ? '<span class="spinner-grow spinner-grow-sm align-middle"></span>': ''}
-            </span>
+            <div class="pb-3">
+              <span class="badge rounded-pill text-bg-${statuses[status || 'offline']}">
+                <span class="align-middle">Status: ${status}</span>
+                ${['online', 'in-game'].includes(status) ? '<span class="spinner-grow spinner-grow-sm align-middle"></span>': ''}
+              </span>
+            </div>
           </div>
         </div>
 
-        <div class="col-lg-8">
+        <div class="col-8 px-1">
           ${generalInformation}
         </div>
 

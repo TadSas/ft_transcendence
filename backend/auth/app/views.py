@@ -190,13 +190,6 @@ class DashboardUsersView(APIView):
         return JsonResponse({'status': 0, 'data': UserController().get_dashboard_users(request.user)})
 
 
-class FriendRequestView(APIView):
-    authentication_classes = [JWTAuthentication]
-
-    def post(self, request):
-        return JsonResponse({'status': 0, **FriendsController().send_request(request.user, request.data)})
-
-
 class FriendStatusView(APIView):
     authentication_classes = [JWTAuthentication]
 
@@ -204,15 +197,43 @@ class FriendStatusView(APIView):
         return JsonResponse({'status': 0, **FriendsController().get_friend_status(request.user, friend)})
 
 
-class CancelFriendRequestView(APIView):
-    authentication_classes = [JWTAuthentication]
-
-    def post(self, request):
-        return JsonResponse({'status': 0, **FriendsController().cancel_request(request.user, request.data)})
-
-
 class GetAllFriendRequestView(APIView):
     authentication_classes = [JWTAuthentication]
 
     def get(self, request):
         return JsonResponse({'status': 0, **FriendsController().get_friend_requests(request.user)})
+
+
+class GetAllFriendsView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request):
+        return JsonResponse({'status': 0, **FriendsController().get_all_friends(request.user)})
+
+
+class FriendRequestView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def post(self, request):
+        return JsonResponse({'status': 0, **FriendsController().send_request(request.user, request.data)})
+
+
+class AcceptFriendRequestView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def post(self, request):
+        return JsonResponse({'status': 0, **FriendsController().accept_friend_request(request.user, request.data)})
+
+
+class RejectFriendRequestView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def post(self, request):
+        return JsonResponse({'status': 0, **FriendsController().reject_friend_request(request.user, request.data)})
+
+
+class CancelFriendRequestView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def post(self, request):
+        return JsonResponse({'status': 0, **FriendsController().cancel_friend_request(request.user, request.data)})

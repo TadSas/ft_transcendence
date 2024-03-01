@@ -9,11 +9,14 @@ from .views import (
     UserAvatarView,
     FriendStatusView,
     FriendRequestView,
+    GetAllFriendsView,
     DashboardUsersView,
     TwoFactorVerifyView,
     GetAllFriendRequestView,
+    AcceptFriendRequestView,
     AuthenticationCheckView,
     CancelFriendRequestView,
+    RejectFriendRequestView,
 )
 
 
@@ -30,8 +33,11 @@ urlpatterns = [
     path('jwt/verify', JWTVerifyView.as_view(), name='api-jwt-verify'),
     path('authentication/check', AuthenticationCheckView.as_view(), name='api-authentication-check'),
 
+    path('friends/all/get', GetAllFriendsView.as_view(), name='api-get-all-friends'),
     path('friends/request', FriendRequestView.as_view(), name='api-friend-request'),
     path('friends/request/cancel', CancelFriendRequestView.as_view(), name='api-cancel-friend-request'),
+    path('friends/request/accept', AcceptFriendRequestView.as_view(), name='api-accept-friend-request'),
+    path('friends/request/reject', RejectFriendRequestView.as_view(), name='api-reject-friend-request'),
     path('friends/request/all/get', GetAllFriendRequestView.as_view(), name='api-get-all-friend-request'),
     path('friends/status/<slug:friend>', FriendStatusView.as_view(), name='api-friend-status'),
 ]
