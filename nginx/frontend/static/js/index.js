@@ -7,14 +7,18 @@ import Settings from "./views/SettingsView.js"
 import Dashboard from "./views/DashboardView.js"
 import Tournaments from "./views/TournamentsView.js"
 
+import PongGame from "./src/PongGame.js"
 import setupColorMode from "./src/ColorMode.js"
 
+
+window.PongGame = PongGame
 
 const routes = [
   {path: "/", view: Dashboard, name: "Dashboard", icon: "house-door", sideBar: true},
   {path: "/login", view: Login, name: "Login", container: "login", sideBar: false},
   {path: "/logout", view: Logout, name: "Login", container: "login", sideBar: false},
   {path: "/pong", view: Pong, name: "Pong", icon: "rocket-takeoff", sideBar: true},
+  {path: "/pong/:matchId", view: Pong, name: "Pong", sideBar: false},
   {path: "/messages", view: Messages, name: "Messages", icon: "chat", sideBar: true},
   {path: "/tournaments", view: Tournaments, name: "Tournaments", icon: "trophy", sideBar: true},
   {path: "/profile", view: Profile, name: "Profile", icon: "person-circle", sideBar: true},
@@ -71,7 +75,7 @@ window.addEventListener("popstate", router)
 document.addEventListener("DOMContentLoaded", () => {
   if (LoginController.authenticationCheck().authenticated) {
     history.pushState(null, null, '/')
-    NotificationController.initChat()
+    NotificationController.init()
   }
   else {
     history.pushState(null, null, `/login`)

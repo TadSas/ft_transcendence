@@ -71,7 +71,7 @@ export default class extends BaseView {
           </a>
         </div>
 
-        <div id="messageContainer" class="px-2 py-4 chat-box bg-body-tertiary bg-opacity-50 border border-bottom-0 rounded">
+        <div id="messageContainer" class="px-2 py-4 vh-80 overflow-x-scroll bg-body-tertiary bg-opacity-50 border border-bottom-0 rounded">
           <div class="d-flex justify-content-center align-items-center h-100">
             <span class="badge border border-secondary rounded-pill text-secondary">
               Select a chat to start messaging

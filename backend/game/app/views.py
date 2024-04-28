@@ -2,8 +2,8 @@ from django.http import JsonResponse
 
 from rest_framework.views import APIView
 
-from .main import TournamentsController
 from .permissions import JWTAuthentication
+from .main import TournamentsController, MatchesController
 
 
 class CreateTournamentView(APIView):
@@ -39,4 +39,22 @@ class UnregisterTournamentView(APIView):
     def post(self, request):
         return JsonResponse({
             'status': 0, **TournamentsController().unregister_tournament(request.user.get('login'), request.data)
+        })
+
+
+class GetUpcomingGamesView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request):
+        return JsonResponse({
+            'status': 0, **MatchesController().get_user_upcoming_games(request.user.get('login'))
+        })
+
+
+class GetMatchView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request, match_id = ''):
+        return JsonResponse({
+            'status': 0, **MatchesController().get_match(request.user.get('login'), match_id)
         })

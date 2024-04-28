@@ -20,7 +20,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         except Exception:
             return await self.close(code=4005)
 
-
         if room_id == 'notifications':
             self.room_group_name = f"{username}_notifications"
         else:
@@ -55,6 +54,37 @@ class ChatConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         receive_type = text_data_json.get('type')
         connected_user  = self.scope['user'].get('login')
+
+        if receive_type == 'notifications':
+            del text_data_json['type']
+
+            match text_data_json.get('subtype'):
+                case 'game_invite':
+                    text_data_json['opponent'] = connected_user
+
+                    for player in text_data_json.get('players') or []:
+                        if connected_user == player:
+                            continue
+
+                        await self.channel_layer.group_send(
+                            f'{player}_notifications',
+                            {
+                                'type': 'game_notifications',
+                                **text_data_json
+                            }
+                        )
+
+                    return
+                case 'game_accept' | 'game_decline':
+                    await self.channel_layer.group_send(
+                        f'{text_data_json['opponent']}_notifications',
+                        {
+                            'type': 'game_notifications',
+                            **text_data_json
+                        }
+                    )
+
+                    return
 
         try:
             room = await database_sync_to_async(RoomController().get_room)(self.room_group_name)
@@ -94,20 +124,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.room_group_name
         )
 
+        created_at = timezone.localtime(saved_message.created_at).strftime("%d-%m-%Y %H:%M")
+
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 'type': 'chat_message',
                 'message': message,
-                'created_at': timezone.localtime(saved_message.created_at).strftime("%d-%m-%Y %H:%M"),
+                'created_at': created_at,
                 'sender_channel_name': self.channel_name
             }
         )
 
-        current_user = self.scope['user']['login']
+        current_user = self.scope['user']
 
         for participant in self.room_participants:
-            if participant == current_user:
+            if participant == connected_user:
                 continue
 
             await self.channel_layer.group_send(
@@ -115,8 +147,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 {
                     'type': 'chat_notifications',
                     'message': message,
-                    'created_at': timezone.localtime(saved_message.created_at).strftime("%d-%m-%Y %H:%M"),
-                    'sender': self.scope['user'],
+                    'created_at': created_at,
+                    'sender': current_user,
                     'sender_channel_name': self.channel_name
                 }
             )
@@ -151,6 +183,27 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'last_name': sender['last_name']
             }
         }))
+
+    async def game_notifications(self, event):
+        subtype = event['subtype']
+
+        if subtype == 'game_invite':
+            await self.send(text_data=json.dumps({
+                'type': 'notifications',
+                'subtype': subtype,
+                'id': event['id'],
+                'game': event['game'],
+                'opponent': event['opponent'],
+                'players': event['players'],
+                'tournament': event['tournament']
+            }))
+        elif subtype in ('game_accept', 'game_decline'):
+            await self.send(text_data=json.dumps({
+                'type': 'notifications',
+                'subtype': subtype,
+                'id': event['match_id'],
+                'opponent': event['opponent'],
+            }))
 
     async def chat_block(self, event):
         await self.send(text_data=json.dumps({

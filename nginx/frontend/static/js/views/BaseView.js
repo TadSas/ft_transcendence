@@ -44,18 +44,6 @@ export default class {
   }
 
   registerEvents(eventStore = []) {
-    switch (document.readyState) {
-      case "loading":
-        console.log("The document is loading.")
-        break
-      case "interactive": {
-        console.log("The document has finished loading and we can access DOM elements.")
-        break
-      }
-      case "complete":
-        console.log("The page is fully loaded.")
-        break
-    }
     eventStore.forEach(events => {
       Object.entries(events).forEach(([eventType, eventList]) => {
         Object.entries(eventList).forEach(([element, event]) => {

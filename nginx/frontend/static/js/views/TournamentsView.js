@@ -23,7 +23,7 @@ export default class extends BaseView {
         <div class="px-3 py-2 bg-body-tertiary bg-opacity-50 border border-bottom-0 rounded me-1">
           <p class="h5 mb-0 py-1 short-text">Create a tournament</p>
         </div>
-        <div class="p-3 chat-box bg-opacity-50 border rounded me-1">
+        <div class="p-3 vh-80 overflow-x-scroll bg-opacity-50 border rounded me-1">
           <div id="tournamentForm">
             <div class="mb-4">
               ${Components.input({'id': 'name', 'label': 'Name of the tournament'})}
@@ -54,16 +54,29 @@ export default class extends BaseView {
           </div>
         </div>
       </div>
-      <div class="col-10 px-0">
-        <div class="px-4 py-2 d-flex align-items-center bg-body-tertiary bg-opacity-50 border border-bottom-0 rounded">
+
+      <div class="col-8 px-0">
+        <div class="px-4 py-2 d-flex align-items-center bg-body-tertiary bg-opacity-50 border border-bottom-0 rounded me-1">
           <p class="h5 mb-0 py-1 me-2 pe-none">Tournaments</p>
           <div id="reloadListing" role="button" class="d-flex align-items-center link-body-emphasis text-decoration-none">
             <i class="bi bi-arrow-clockwise pe-none me-2 mb-0 mt-1 h5"></i>
           </div>
         </div>
-        <div class="p-3 chat-box bg-opacity-50 border rounded me-1">
+        <div class="p-3 vh-80 overflow-x-scroll bg-opacity-50 border rounded me-1">
           <div id="tournamentListing">
             ${await TournamentsController.list()}
+          </div>
+        </div>
+      </div>
+
+
+      <div class="col-2 px-0">
+        <div class="px-3 py-2 bg-body-tertiary bg-opacity-50 border border-bottom-0 rounded me-1">
+          <p class="h5 mb-0 py-1 short-text">Upcoming games</p>
+        </div>
+        <div class="p-3 vh-80 overflow-x-scroll bg-opacity-50 border rounded me-1">
+          <div id="upcomingGamesCont">
+            ${await TournamentsController.initUpcomingGames()}
           </div>
         </div>
       </div>

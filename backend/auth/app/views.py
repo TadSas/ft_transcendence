@@ -115,17 +115,25 @@ class AuthenticationCheckView(APIView):
     authentication_classes = []
 
     def get(self, request):
+        user = None
         authenticated = True
 
         if not (token := request.COOKIES.get(JWT_COOKIE_NAME)):
             authenticated = False
 
         try:
-            jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+            payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+            user_record = UserController().get_user_by_id(payload.get('id'))
+            user = {
+                'login': user_record.get('login') or '',
+                'email': user_record.get('email') or '',
+                'first_name': user_record.get('first_name') or '',
+                'last_name': user_record.get('last_name') or '',
+            }
         except Exception:
             authenticated = False
 
-        return JsonResponse({'status': 0, 'authenticated': authenticated})
+        return JsonResponse({'status': 0, 'authenticated': authenticated, 'user': user})
 
 
 class UserAvatarView(APIView):

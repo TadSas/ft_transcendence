@@ -6,7 +6,6 @@ import argparse
 import datetime
 
 
-
 def create_user(user_data: dict):
     db = None
 

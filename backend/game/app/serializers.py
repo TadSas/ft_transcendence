@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Tournaments, StatusChoices
+from .models import Tournaments, Matches, StatusChoices, MatchStatusChoices
 
 
 class TournamentsSerializer(serializers.Serializer):
@@ -26,6 +26,33 @@ class TournamentsSerializer(serializers.Serializer):
         instance.created_at = validated_data.get('created_at', instance.created_at)
         instance.status = validated_data.get('status', instance.status)
         instance.draw = validated_data.get('draw', instance.draw)
+
+        instance.save()
+
+        return instance
+
+
+class MatchesSerializer(serializers.Serializer):
+    id = serializers.UUIDField(read_only=True)
+    game = serializers.CharField(max_length=16)
+    players = serializers.JSONField(required=False)
+    stats = serializers.JSONField(required=False)
+    score = serializers.JSONField(required=False)
+    tournament = serializers.JSONField(required=False)
+    created_at = serializers.DateTimeField(required=False)
+    status = serializers.ChoiceField(MatchStatusChoices, default='created')
+
+    def create(self, validated_data):
+        return Matches.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.game = validated_data.get('game', instance.game)
+        instance.players = validated_data.get('players', instance.players)
+        instance.stats = validated_data.get('stats', instance.stats)
+        instance.score = validated_data.get('score', instance.score)
+        instance.tournament = validated_data.get('tournament', instance.tournament)
+        instance.created_at = validated_data.get('created_at', instance.created_at)
+        instance.status = validated_data.get('status', instance.status)
 
         instance.save()
 

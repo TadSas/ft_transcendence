@@ -5,6 +5,18 @@
 
 /* -----------------------------------Main----------------------------------- */
 
+.vh-10 {
+  height: 10vh;
+}
+
+.vh-60 {
+  height: 60vh;
+}
+
+.vh-80 {
+  height: 80vh;
+}
+
 .min-vh-75 {
   min-height: 75vh;
 }
@@ -195,12 +207,17 @@
 
 ::-webkit-scrollbar {
   width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-thumb {
   width: 1em;
   outline: 1px solid slategrey;
   border-radius: 1rem;
+}
+
+::-webkit-scrollbar-corner {
+  background: --bs-gray-900;
 }
 
 .text-small {
@@ -213,11 +230,6 @@
 
 .messages-box {
   height: 83vh;
-  overflow-y: scroll;
-}
-
-.chat-box {
-  height: 80vh;
   overflow-y: scroll;
 }
 

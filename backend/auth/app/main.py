@@ -270,13 +270,28 @@ class UserController:
         """
         user_data = UsersSerializer(user).data
 
-        user_data.pop('id')
-        user_data.pop('updated_at')
-        user_data.pop('avatar_path')
+        for prop in ('id', 'updated_at', 'avatar_path'):
+            if prop in user_data:
+                user_data.pop(prop)
 
-        user_data['created_at'] = timezone.localtime(user.created_at).strftime("%d-%m-%Y %H:%M")
+        if user:
+            user_data['created_at'] = timezone.localtime(user.created_at).strftime("%d-%m-%Y %H:%M")
 
         return user_data
+
+    def get_user_by_id(self, user_id: str) -> Users | None:
+        """ Get user by id
+
+        Parameters
+        ----------
+        user_id : str
+
+        Returns
+        -------
+        Users | None
+
+        """
+        return Users.objects.filter(id=user_id).values().first()
 
     def get_user_by_username(self, username: str) -> Users | None:
         """ Get user by login name
@@ -304,6 +319,9 @@ class UserController:
         list
 
         """
+        if not current_user:
+            return []
+
         return list(Users.objects.exclude(login=current_user.login).values('login', 'status'))
 
     def update_user_information(self, user: Users, user_data: dict) -> dict:
@@ -376,7 +394,7 @@ class UserController:
         BytesIO
 
         """
-        if not (avatar_path := Path(f'{MEDIA_ROOT}/{user.avatar_path}')).is_file():
+        if not user or not (avatar_path := Path(f'{MEDIA_ROOT}/{user.avatar_path}')).is_file():
             return BytesIO(b'')
 
         with open(avatar_path, 'rb') as fd:
@@ -557,6 +575,10 @@ class FriendsController:
 
         """
         friends = []
+
+        if not logged_user:
+            return {'data': {'friends': friends}}
+
         logged_username = logged_user.login
         friends_records = list(Friends.objects.filter(
             (Q(user=logged_user) | Q(friend=logged_user)) & Q(status='accept')

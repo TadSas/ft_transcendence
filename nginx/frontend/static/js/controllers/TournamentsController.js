@@ -97,6 +97,7 @@ var TournamentsController = (() => {
       let buttonStyle = ''
       let buttonEvent = ''
       const tournamentId = tournament['id']
+      const tournamentDraw = tournament['draw']
       const activity = tournament['activity']
       const activityTitle =activity['title']
 
@@ -111,7 +112,7 @@ var TournamentsController = (() => {
           break
         case 'watch':
           buttonStyle = 'outline-info'
-          buttonEvent = ''
+          buttonEvent = `TournamentsController.watch("${encodeURIComponent(JSON.stringify(tournamentDraw))}")`
           break
         case 'results':
           buttonStyle = 'outline-secondary'
@@ -129,11 +130,13 @@ var TournamentsController = (() => {
       })
     }
 
+    await self.initUpcomingGames()
+
     return TableComponent.init({'headers': headers, 'data': tournaments})
   }
 
   self.setAlias = (tournamentId) => {
-    document.getElementsByClassName('modals')[0].innerHTML += Components.modal({
+    document.getElementsByClassName('modals')[0].innerHTML = Components.modal({
       'size': 'default',
       'modalId': 'nameAliasModalId',
       'modalTitle': 'Provide an alias name for your username',
@@ -196,6 +199,84 @@ var TournamentsController = (() => {
           showMessage(response['message'], 'success')
 
         self.reloadListing()
+      }
+    }).send()
+  }
+
+  self.watch = (tournamentDraw) => {
+    document.getElementsByClassName('modals')[0].innerHTML = Components.modal({
+      'size': 'extraLarge',
+      'centered': true,
+      'modalId': 'watchTournamentModalId',
+      'modalTitle': 'Current matches of the tournament',
+      'modalBody': TournamentBracketComponent.init({'data': JSON.parse(decodeURIComponent(tournamentDraw))}),
+      'cancelButtonTitle': 'Close',
+      'cancelButtonClass': 'btn btn-secondary',
+    })
+    new bootstrap.Modal(document.getElementById("watchTournamentModalId"), {}).show()
+  }
+
+  self.initUpcomingGames = async () => {
+    const upcomingGamesCont = document.getElementById('upcomingGamesCont')
+
+    return await new httpRequest({
+      resource: `/game/api/tournament/games/upcoming`,
+      method: 'GET',
+      successCallback: response => {
+        if ((!response) || !('data' in response) || !('matches' in response['data']) || !('tournaments' in response['data']))
+          return ''
+
+        let upcomingGames = ''
+        const data = response['data']
+        const matches = data['matches']
+        const tournaments = data['tournaments']
+
+        for (const match of matches) {
+          let playerNames = []
+          let playerImages = []
+          const game = match['game']
+          const players = match['players']
+          const tournament = tournaments[(match['tournament'] || {})['id']]
+          const tournamentName = tournament['name']
+          const tournamentParticipants = tournament['participants']
+
+          for (const player of players) {
+            playerNames.push(`<u>${tournamentParticipants[player]['alias']} (${player})</u>`)
+            playerImages.push(`<img src="/auth/api/avatar/${player}" width="32" height="32" class="rounded-circle border object-fit-cover">`)
+          }
+
+          playerNames = playerNames.join(', ')
+
+          upcomingGames += `
+          <div class="list-group-item list-group-item-action">
+            <div class="card card-cover h-100 overflow-hidden bg-body-tertiary rounded-4">
+              <div class="d-flex flex-column px-4 text-shadow-1">
+                <h3 class="pt-5 mb-4 display-7 lh-1 fw-bold">
+                  ${game && `Game: <u>${game}</u>`}
+                  ${tournamentName && `Tournament: <u>${tournamentName}</u>`}
+                  ${playerNames && `Players: ${playerNames}`}
+                </h3>
+                <ul class="d-flex list-unstyled mt-auto">
+                  <li class="me-auto">
+                    ${playerImages.join(`<span class="px-1 fw-bold"> VS </span>`)}
+                  </li>
+                  ${
+                    match['id'] && `<li class="d-flex align-items-center">
+                      <a href="/${game}/${match['id']}" type="button" class="btn btn-success" data-link>Play now</a>
+                    </li>`
+                  }
+                </ul>
+              </div>
+            </div>
+          </div>
+          `
+        }
+
+        return `
+        <div class="row g-3">
+          ${upcomingGames}
+        </div>
+        `
       }
     }).send()
   }

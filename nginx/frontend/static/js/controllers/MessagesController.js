@@ -98,7 +98,7 @@ var MessagesController = (() => {
   }
 
   self.initWebSocketConnection = (roomId) => {
-    if (chatWebSocket && chatWebSocket.readyState !== WebSocket.CLOSED)
+    if (chatWebSocket && chatWebSocket.readyState === WebSocket.OPEN)
       chatWebSocket.close()
 
     chatWebSocket = new WebSocket(`wss://${location.host}/chat/room/${roomId}`)
@@ -175,7 +175,7 @@ var MessagesController = (() => {
     const messageContainer = document.getElementById('messageContainer')
     const blockedChatMessageContainer = document.getElementById('blockedChatMessageContainer')
 
-    if (chatWebSocket && chatWebSocket.readyState !== WebSocket.CLOSED) {
+    if (chatWebSocket && chatWebSocket.readyState === WebSocket.OPEN) {
       const message = messageInputArea.value
 
       if (!message)

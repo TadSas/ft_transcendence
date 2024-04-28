@@ -133,7 +133,7 @@ var Components = (() => {
   }
 
   self.modal = ({
-    size = '',
+    size = '', centered = false,
     modalId = '',  buttonId = '', cancelButtonId = '', approveButtonId = '',
     modalTitle = '', buttonTitle = '', cancelButtonTitle = '', approveButtonTitle = '',
     modalBody = '', buttonClass = '', cancelButtonClass = '', approveButtonClass = '',
@@ -153,18 +153,18 @@ var Components = (() => {
       'small': 'modal-sm',
       'default': '',
       'large': 'modal-lg',
-      'extra_large': 'modal-xl',
+      'extraLarge': 'modal-xl',
     }
 
     return `
     <div class="modal fade" style="display: none;" id="${modalId}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog">
-      <div class="${modalSizes[size || 'default']} modal-dialog modal-dialog-centered">
+      <div class="${modalSizes[size || 'default']} modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
           <div class="modal-header">
             <h1 class="modal-title fs-5">${modalTitle}</h1>
             ${self.button({'buttonClass': 'close', 'dataAttributes': {'bs-dismiss': 'modal'}})}
           </div>
-          <div class="modal-body">
+          <div class="modal-body ${centered ? 'm-auto' : ''}">
             ${modalBody}
           </div>
           <div class="modal-footer">
@@ -262,17 +262,18 @@ var ToastComponents = (() => {
   // Private
   var foo = () => {}
 
-  self.createToast = ({id = '', icon = '', title = '', dateTime = '', body = ''}) => {
+  self.createToast = ({id = '', icon = '', title = '', dateTime = '', body = '', autohide = true}) => {
     const toastContainer = document.getElementById('toast')
 
     while (toastContainer.getElementsByClassName('toast').length > 9) {
       toastContainer.removeChild(toastContainer.lastChild)
     }
 
+    document.querySelectorAll(`#${id}`).forEach(element => element.remove())
     document.getElementById('toast').insertAdjacentHTML(
       'afterbegin',
       `
-      <div id="${id}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div id="${id}" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="${autohide}">
         <div class="toast-header">
           <i class="bi bi-${icon} me-2"></i>
           <strong class="me-auto short-text">${title}</strong>
@@ -287,6 +288,10 @@ var ToastComponents = (() => {
     )
   }
 
+  self.show = (toastId) => bootstrap.Toast.getOrCreateInstance(document.getElementById(toastId)).show()
+
+  self.hide = (toastId) => bootstrap.Toast.getOrCreateInstance(document.getElementById(toastId)).hide()
+
   return self
 })()
 
@@ -297,25 +302,35 @@ var TournamentBracketComponent = (() => {
   // Private
   var foo = () => {}
 
-  self.createTeam = ({top = false, name = '', score = '-'}) => {
+  self.createTeam = ({win = false, draw = false, top = false, name = '', score = '-'}) => {
+    let iconType = '-'
+    let baseStyle = `match-top`
+
+    if (!draw) {
+      baseStyle = `match-${top ? 'top' : 'bottom'}`
+      iconType = `-${win ? '1' : '2'}-`
+    }
+
     return `
-    <div class="match-${top ? 'top rounded-3 rounded-bottom-0' : 'bottom rounded-3 rounded-top-0'} team border border-dark-subtle">
-      <span class="image ps-2"></span>
+    <div class="${baseStyle} rounded-${top ? 'bottom' : 'top'}-0 rounded-3 team border border-dark-subtle">
+      <span class="image ps-2">
+        <i class="bi bi${iconType}circle"></i>
+      </span>
       <span class="seed ps-2"></span>
-      <span class="name ps-2">${name || '-'}</span>
+      <span class="name">${name || '-'}</span>
       <span class="score ps-2 pe-2 ms-auto">${score || '-'}</span>
     </div>
     `
   }
 
   self.createMatch = (matchObject) => {
-    const leftScore = matchObject['leftScore']
-    const rightScore = matchObject['rightScore']
+    const leftScore = Number(matchObject['leftScore']) || 0
+    const rightScore = Number(matchObject['rightScore']) || 0
 
     return `
     <div class="match winner-${leftScore > rightScore ? 'top' : 'bottom'}">
-      ${self.createTeam({'top': true, 'name': matchObject['leftUser'], 'score': leftScore})}
-      ${self.createTeam({'name': matchObject['rightUser'], 'score': rightScore})}
+      ${self.createTeam({'win': leftScore > rightScore, 'draw': leftScore == rightScore, 'top': true, 'name': matchObject['leftUser'], 'score': leftScore})}
+      ${self.createTeam({'win': rightScore > leftScore, 'draw': leftScore == rightScore, 'name': matchObject['rightUser'], 'score': rightScore})}
 
       <div class="match-lines">
         <div class="line one position-absolute bg-secondary"></div>
@@ -357,14 +372,14 @@ var TournamentBracketComponent = (() => {
 
       let node = temp.shift()
 
-      if ("left" in node)
+      if ("left" in node && Object.keys(node["left"]).length !== 0)
         temp.push(node["left"])
 
-      if ("right" in node)
+      if ("right" in node && Object.keys(node["right"]).length !== 0)
         temp.push(node["right"])
     }
 
-    if ((Math.log(queue.length + 1)/Math.log(2)) % 1 !== 0)
+    if ((Math.log(queue.length + 1) / Math.log(2)) % 1 !== 0)
       return ''
 
     let start = 0
@@ -384,61 +399,7 @@ var TournamentBracketComponent = (() => {
   }
 
   self.init = ({data = {}}) => {
-    data = {
-      "matchId": "final",
-      "leftUser": "",
-      "leftScore": "",
-      "rightUser": "",
-      "rightScore": "",
-      "left": {
-          "matchId": "first semifinal",
-          "leftUser": "a",
-          "leftScore": 11,
-          "rightUser": "b",
-          "rightScore": 8,
-          "left": {
-              "matchId": "first quarterfinals",
-              "leftUser": "e",
-              "leftScore": 9,
-              "rightUser": "a",
-              "rightScore": 11,
-              "nextRound": {}
-          },
-          "right": {
-              "matchId": "second quarterfinals",
-              "leftUser": "f",
-              "leftScore": 10,
-              "rightUser": "b",
-              "rightScore": 11,
-              "nextRound": {}
-          }
-      },
-      "right": {
-          "matchId": "second semifinal",
-          "leftUser": "c",
-          "leftScore": 6,
-          "rightUser": "d",
-          "rightScore": 11,
-          "left": {
-              "matchId": "third quarterfinals",
-              "leftUser": "g",
-              "leftScore": 7,
-              "rightUser": "c",
-              "rightScore": 11,
-              "nextRound": {}
-          },
-          "right": {
-              "matchId": "fourth quarterfinals",
-              "leftUser": "h",
-              "leftScore": 8,
-              "rightUser": "d",
-              "rightScore": 11,
-              "nextRound": {}
-          }
-      }
-    }
-
-    if (!data)
+    if (typeof data !== 'object' || Object.keys(data).length === 0)
       return ''
 
     return self.createBracket(data)

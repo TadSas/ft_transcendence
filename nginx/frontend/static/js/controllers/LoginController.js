@@ -6,12 +6,16 @@ var LoginController = (() => {
 
   // Public
   self.submit = () => {
-    new httpRequest({resource: '/auth/api/login', method: 'GET', successCallback: response => {
-      if ('redirect_uri' in response)
-        location.href = response.redirect_uri
-      else
-        showMessage('There was a problem with redirection to the authorization server.', 'danger')
-    }}).send()
+    new httpRequest({
+      resource: '/auth/api/login',
+      method: 'GET',
+      successCallback: response => {
+        if ('redirect_uri' in response)
+          location.href = response.redirect_uri
+        else
+          showMessage('There was a problem with redirection to the authorization server.', 'danger')
+      }
+    }).send()
   }
 
   self.submitOTP = () => {
@@ -23,35 +27,50 @@ var LoginController = (() => {
         input.classList.add('border-2')
         input.classList.add('border-danger')
       })
+
       return
     }
 
-    new httpRequest({resource: '/auth/api/twofactor/verify', method: 'POST', body: JSON.stringify({'otp': otp}), successCallback: response => {
-      if (!('status' in response) || response['status'] !== 0)
-        return
+    new httpRequest({
+      resource: '/auth/api/twofactor/verify',
+      method: 'POST',
+      body: JSON.stringify({'otp': otp}),
+      successCallback: response => {
+        if (!('status' in response) || response['status'] !== 0)
+          return
 
-      if (!('authenticated' in response))
-        return
+        if (!('authenticated' in response))
+          return
 
-      if (!response['authenticated']) {
-        inputs.forEach(input => {
-          input.value = ''
-          input.classList.add('border-2')
-          input.classList.add('border-danger')
-        })
-      } else {
-        const loginCont = document.getElementById("login")
+        if (!response['authenticated']) {
+          inputs.forEach(input => {
+            input.value = ''
+            input.classList.add('border-2')
+            input.classList.add('border-danger')
+          })
+        } else {
+          const loginCont = document.getElementById("login")
 
-        document.getElementById('hiddenVerify').click()
+          document.getElementById('hiddenVerify').click()
 
-        if (!loginCont.classList.contains("d-none"))
-          loginCont.classList.add("d-none")
+          if (!loginCont.classList.contains("d-none"))
+            loginCont.classList.add("d-none")
+        }
       }
-    }}).send()
+    }).send()
   }
 
   self.authenticationCheck = () => {
-    return new httpRequest({resource: '/auth/api/authentication/check', method: 'GET', sync: true, successCallback: () => {}}).send()
+    const authentication = new httpRequest({
+      resource: '/auth/api/authentication/check',
+      method: 'GET',
+      sync: true,
+      successCallback: response => response
+    }).send()
+
+    window.user = authentication.user
+
+    return authentication
   }
 
   return self
