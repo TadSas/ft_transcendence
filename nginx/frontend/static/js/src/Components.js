@@ -269,7 +269,8 @@ var ToastComponents = (() => {
       toastContainer.removeChild(toastContainer.lastChild)
     }
 
-    document.querySelectorAll(`#${id}`).forEach(element => element.remove())
+    const redundantToasts = document.querySelectorAll(`#${id}`)
+    redundantToasts && redundantToasts.forEach(element => element.remove())
     document.getElementById('toast').insertAdjacentHTML(
       'afterbegin',
       `

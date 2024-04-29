@@ -7,6 +7,8 @@ from .main import MatchesController
 
 
 class PongGameConsumer(AsyncWebsocketConsumer):
+    connected_users = dict()
+
     async def connect(self):
         if 'user' not in self.scope:
             return await self.close(code=4004)
@@ -35,6 +37,11 @@ class PongGameConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
+        if match_id in self.connected_users:
+            self.connected_users[match_id].add(username)
+        else:
+            self.connected_users[match_id] = {username}
+
         await self.accept()
 
     async def disconnect(self, code):
@@ -45,20 +52,14 @@ class PongGameConsumer(AsyncWebsocketConsumer):
             )
 
     async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        # receive_type = text_data_json.get('type')
-        # connected_user  = self.scope['user'].get('login')
-
-        # if receive_type == 'notifications':
-        #     pass
-
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 'type': 'pong_packet',
                 'subtype': 'paddle_move',
                 'sender_channel_name': self.channel_name,
-                **text_data_json
+                'connected_users': list(self.connected_users[self.room_group_name]),
+                **json.loads(text_data)
             }
         )
 
@@ -66,7 +67,4 @@ class PongGameConsumer(AsyncWebsocketConsumer):
         if self.channel_name == event['sender_channel_name']:
             return
 
-        await self.send(text_data=json.dumps({
-            **event
-        }))
-
+        await self.send(text_data=json.dumps({**event}))

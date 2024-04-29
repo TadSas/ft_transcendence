@@ -41,7 +41,7 @@ var NotificationController = (() => {
         case 'game_invite': {
           const game = data['game']
           const matchId = data['id']
-          const toastId = `${matchId}${subtype}Toast`
+          const toastId = `${subtype}${matchId}Toast`
           const opponent = data['opponent']
           const tournament = data['tournament'] || {}
           const acceptEvent = `PongController.notifyAccept('${opponent}','${matchId}','${toastId}')`
@@ -73,7 +73,7 @@ var NotificationController = (() => {
         case 'game_accept': {
           const matchId = data['id']
           const opponent = data['opponent']
-          const toastId = `${matchId}${subtype}Toast`
+          const toastId = `${subtype}${matchId}Toast`
           let dataLink = 'data-link'
           let href = `href="/pong/${matchId}"`
 
@@ -96,7 +96,7 @@ var NotificationController = (() => {
         case 'game_decline': {
           const matchId = data['id']
           const opponent = data['opponent']
-          const toastId = `${matchId}${subtype}Toast`
+          const toastId = `${subtype}${matchId}Toast`
 
           ToastComponents.createToast({
             id: toastId,

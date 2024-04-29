@@ -14,8 +14,8 @@ export default class PongGame {
     rightUsername = '',
     controlSide = '',
     gameWebSocket = undefined,
-    width = 1280,
-    depth = 720
+    width = 720,
+    depth = 405
   }) {
     this.depth = depth
     this.width = width
@@ -268,47 +268,41 @@ export default class PongGame {
     this.renderer.render(this.scene, this.camera)
   }
 
+  async setPaddleDirection(direction, key) {
+    if (this.controlSide) {
+      if (this.controlSide == 'left')
+        this.leftPaddle.userData['movingDirection'] = direction
+      else
+        this.rightPaddle.userData['movingDirection'] = direction
+
+      await this.sendGameState(direction)
+    } else {
+      if ([38, 40].includes(key))
+        this.rightPaddle.userData['movingDirection'] = direction
+      else
+        this.leftPaddle.userData['movingDirection'] = direction
+    }
+  }
+
   setKeyboardEvents() {
     const KEY_W = 87
     const KEY_S = 83
     const KEY_UP_ARROW = 38
     const KEY_DOWN_ARROW = 40
 
-    const setPaddleDirection = (direction, key) => {
-      if (this.controlSide) {
-        if (this.controlSide == 'left')
-          this.leftPaddle.userData['movingDirection'] = direction
-        else
-          this.rightPaddle.userData['movingDirection'] = direction
-
-        if (this.multiplayer && this.gameWebSocket && this.gameWebSocket.readyState === WebSocket.OPEN) {
-          this.gameWebSocket.send(JSON.stringify({
-            'paddle_type': this.controlSide,
-            'paddle_moving_direction': direction,
-            'padle_y_position': (this.controlSide == 'left' ? this.leftPaddle : this.rightPaddle).position.y
-          }))
-        }
-      } else {
-        if ([KEY_UP_ARROW, KEY_DOWN_ARROW].includes(key))
-          this.rightPaddle.userData['movingDirection'] = direction
-        else
-          this.leftPaddle.userData['movingDirection'] = direction
-      }
-    }
-
     window.onkeydown = e => {
       switch (e.keyCode) {
         case KEY_UP_ARROW:
-          setPaddleDirection(this.paddleUp, KEY_UP_ARROW)
+          this.setPaddleDirection(this.paddleUp, KEY_UP_ARROW)
           break
         case KEY_DOWN_ARROW:
-          setPaddleDirection(this.paddleDown, KEY_DOWN_ARROW)
+          this.setPaddleDirection(this.paddleDown, KEY_DOWN_ARROW)
           break
         case KEY_W:
-          setPaddleDirection(this.paddleUp, KEY_W)
+          this.setPaddleDirection(this.paddleUp, KEY_W)
           break
         case KEY_S:
-          setPaddleDirection(this.paddleDown, KEY_S)
+          this.setPaddleDirection(this.paddleDown, KEY_S)
           break
         default:
           break
@@ -319,13 +313,27 @@ export default class PongGame {
       switch (e.keyCode) {
         case KEY_UP_ARROW:
         case KEY_DOWN_ARROW:
-          setPaddleDirection(this.paddleStatic, KEY_UP_ARROW)
+          this.setPaddleDirection(this.paddleStatic, KEY_UP_ARROW)
           break
         case KEY_W:
         case KEY_S:
-          setPaddleDirection(this.paddleStatic, KEY_W)
+          this.setPaddleDirection(this.paddleStatic, KEY_W)
           break
       }
+    }
+  }
+
+  async sendGameState(direction) {
+    if (this.multiplayer && this.gameWebSocket && this.gameWebSocket.readyState === WebSocket.OPEN) {
+      this.gameWebSocket.send(JSON.stringify({
+        'paddle_type': this.controlSide,
+        'paddle_moving_direction': direction,
+        'padle_y_position': (this.controlSide == 'left' ? this.leftPaddle : this.rightPaddle).position.y,
+        'ball_x_position': this.ball.position.x,
+        'ball_y_position': this.ball.position.y,
+        'left_player_score': this.leftPlayerScore,
+        'right_player_score': this.rightPlayerScore,
+      }))
     }
   }
 
