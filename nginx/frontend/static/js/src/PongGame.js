@@ -44,10 +44,6 @@ export default class PongGame {
     this.renderer = new THREE.WebGLRenderer({antialias: true, alpha: true})
     this.renderer.setSize(this.width, this.depth)
 
-    const container = document.getElementById(this.containerID)
-    container.innerHTML = ''
-    container.appendChild(this.renderer.domElement)
-
     this.ball = this.createSphere(0, 0, 0, 0.25, 0.25, 0.25)
     this.ball.material = new THREE.MeshBasicMaterial({color: this.ballColor})
 
@@ -86,6 +82,13 @@ export default class PongGame {
 
     this.dx
     this.dy
+  }
+
+  insertGamecanvas() {
+    const container = document.getElementById(this.containerID)
+
+    container.innerHTML = ''
+    container.appendChild(this.renderer.domElement)
   }
 
   setGameWebSocket(gameWebSocket) {

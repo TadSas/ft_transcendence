@@ -25,7 +25,7 @@ const showMessage = (message, type = 'primary', duration = 5000) => {
   `
 
   messageCont.innerHTML += messageElement
-  
+
   setTimeout(() => {
     const messageDiv = document.querySelector('#message div')
     if (messageDiv) {
@@ -69,4 +69,22 @@ const escapeHtml = (unsafe) => {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;')
+}
+
+const objectsEqual = (o1, o2) => {
+  if (!o1 || !o2)
+    return false
+
+  return Object.keys(o1).length === Object.keys(o2).length && Object.keys(o1).every(p => o1[p] === o2[p])
+}
+
+const arraysEqual = (a1, a2) => {
+  if (!a1 || !a2)
+    return false
+
+  return a1.length === a2.length && a1.every((o, idx) => objectsEqual(o, a2[idx]))
+}
+
+const setsEqual = (xs, ys) => {
+  return xs.size === ys.size && [...xs].every((x) => ys.has(x))
 }

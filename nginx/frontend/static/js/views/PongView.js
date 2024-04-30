@@ -14,6 +14,8 @@ export default class extends BaseView {
 
     const matchObject = this.matchId ? await PongController.getMatch(this.matchId) : {}
 
+    this.matchId && PongController.initPong(matchObject)
+
     return `
     <div class="row overflow-hidden mx-0">
       <div class="col-2 px-0">
@@ -25,10 +27,17 @@ export default class extends BaseView {
         <div class="p-3 vh-10 overflow-x-scroll bg-opacity-50 border rounded me-1">
         </div>
 
-        <div id="pongCont" class="p-3 vh-60 overflow-x-scroll bg-opacity-50 border rounded me-1 d-flex justify-content-center align-items-center">
+        <div id="pongCont" class="p-3 vh-60 overflow-x-scroll bg-opacity-50 border rounded me-1 d-flex justify-content-center align-items-center ${this.matchId ? 'd-none' : ''}">
+          ${
+            this.matchId ? '' : `
+            <button type="button" class="btn btn-outline-secondary" onclick="PongController.initPong()">Start pong</button>
+            `
+          }
+        </div>
+        <div id="pongWaintingCont" class="p-3 vh-60 overflow-x-scroll bg-opacity-50 border rounded me-1 d-flex justify-content-center align-items-center ${this.matchId ? '' : 'd-none'}">
           ${
             this.matchId ? `
-            <div id="pongWaintingCont" class="container text-center">
+            <div class="container text-center">
               <div class="justify-content-center mb-3">
                 <div class="spinner-grow spinner-grow-sm mx-1" role="status">
                   <span class="visually-hidden">Loading...</span>
@@ -44,16 +53,11 @@ export default class extends BaseView {
                 <strong role="status">We are waiting for all parties to be ready to start the game.</strong>
               </div>
             </div>
-            ` : `
-            <button type="button" class="btn btn-outline-secondary" onclick="PongController.initPong('${this.matchId}')">Start pong</button>
-            `
+            ` : ''
           }
         </div>
 
         <div class="p-4 vh-10 overflow-x-scroll bg-opacity-50 border rounded me-1 d-flex justify-content-center align-items-center">
-          ${
-            this.matchId ? this.initReadyView(matchObject) : ''
-          }
         </div>
       </div>
       <div class="col-2 px-0">
@@ -79,17 +83,35 @@ export default class extends BaseView {
     const readyButtons = []
     const players = matchObject.players
 
-    if (players[0] == window.user.login) {
-      readyButtons.push(`<button type="button" class="btn btn-secondary me-5" onclick="PongController.initPong('${this.matchId}')"> ${players[0]} - ready?</button>`)
-    } else {
-      readyButtons.push(`<button type="button" class="btn btn-secondary me-5" disabled> ${players[0]} - waiting</button>`)
-    }
+    if (players[0] == window.user.login)
+      readyButtons.push(
+        `<button type="button" class="btn btn-secondary me-5" onclick="PongController.gameInstance.insertGamecanvas()">
+          ${players[0]}
+          <span class="bi bi-question-circle" aria-hidden="true"></span>
+        </button>`
+    )
+    else
+      readyButtons.push(
+        `<button type="button" class="btn btn-secondary me-5" disabled>
+          <span class="me-2" role="status">${players[0]}</span>
+          <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+        </button>`
+      )
 
-    if (players[1] == window.user.login) {
-      readyButtons.push(`<button type="button" class="btn btn-secondary me-5" onclick="PongController.initPong('${this.matchId}')"> ${players[0]} - ready?</button>`)
-    } else {
-      readyButtons.push(`<button type="button" class="btn btn-secondary me-5" disabled> ${players[1]} - waiting</button>`)
-    }
+    if (players[1] == window.user.login)
+      readyButtons.push(
+        `<button type="button" class="ms-5 btn btn-secondary" onclick="PongController.gameInstance.insertGamecanvas()">
+          <span class="bi bi-question-circle me-2" aria-hidden="true"></span>
+          ${players[1]}
+        </button>`
+      )
+    else
+      readyButtons.push(
+        `<button type="button" class="ms-5 btn btn-secondary" disabled>
+        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+        <span role="status">${players[1]}</span>
+        </button>`
+      )
 
     return readyButtons.join('')
   }

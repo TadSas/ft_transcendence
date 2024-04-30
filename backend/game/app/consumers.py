@@ -8,6 +8,7 @@ from .main import MatchesController
 
 class PongGameConsumer(AsyncWebsocketConsumer):
     connected_users = dict()
+    user_mapping = dict()
 
     async def connect(self):
         if 'user' not in self.scope:
@@ -37,19 +38,43 @@ class PongGameConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
+        self.user_mapping[self.channel_name] = username
+
         if match_id in self.connected_users:
             self.connected_users[match_id].add(username)
         else:
             self.connected_users[match_id] = {username}
 
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'pong_ready',
+                'now_connected': username,
+                'connected_users': list(self.connected_users[self.room_group_name]),
+            }
+        )
+
         await self.accept()
 
     async def disconnect(self, code):
+        username = self.user_mapping[self.channel_name]
+        self.connected_users[self.room_group_name].remove(username)
+
         if hasattr(self, 'room_group_name'):
             await self.channel_layer.group_discard(
                 self.room_group_name,
                 self.channel_name
             )
+
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'pong_ready',
+                'now_disconnected': username,
+                'connected_users': list(self.connected_users[self.room_group_name]),
+            }
+        )
+
 
     async def receive(self, text_data):
         await self.channel_layer.group_send(
@@ -64,7 +89,10 @@ class PongGameConsumer(AsyncWebsocketConsumer):
         )
 
     async def pong_packet(self, event):
-        if self.channel_name == event['sender_channel_name']:
+        if self.channel_name == event.pop('sender_channel_name'):
             return
 
+        await self.send(text_data=json.dumps({**event}))
+
+    async def pong_ready(self, event):
         await self.send(text_data=json.dumps({**event}))

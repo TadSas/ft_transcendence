@@ -6,14 +6,13 @@ var PongController = (() => {
   var foo = () => {}
 
   // Public
-  self.initPong = async (matchId) => {
-    if (matchId) {
-      const match = await self.getMatch(matchId)
+  self.initPong = async (match) => {
+    if (typeof match === 'object' && Object.keys(match).length > 0) {
       const matchPlayers = match.players
       const homePlayer = matchPlayers[0]
       const awayPlayer = matchPlayers[1]
 
-      const gameInstance = new PongGame({
+      self.gameInstance = new PongGame({
         containerID: 'pongCont',
         multiplayer: true,
         leftUsername: homePlayer,
@@ -21,26 +20,53 @@ var PongController = (() => {
         controlSide: homePlayer == window.user.login ? 'left' : 'right'
       })
 
-      self.initGameWebSocketConnection(match, gameInstance)
+      self.initGameWebSocketConnection(match, self.gameInstance)
 
-      gameInstance.setGameWebSocket(gameWebSocket)
-      gameInstance.start()
+      self.gameInstance.setGameWebSocket(gameWebSocket)
+      self.gameInstance.start()
 
       return
     }
 
-    new PongGame({containerID: 'pongCont'}).start()
+    self.gameInstance = new PongGame({containerID: 'pongCont'})
+    self.gameInstance.start()
+    self.gameInstance.insertGamecanvas()
   }
 
   self.initGameWebSocketConnection = (match, gameInstance) => {
+    const matchPlayers = match.players
+
     if (gameWebSocket && gameWebSocket.readyState === WebSocket.OPEN)
       gameWebSocket.close()
 
     gameWebSocket = new WebSocket(`wss://${location.host}/game/pong/room/${match.id}`)
+
     gameWebSocket.onmessage = (e) => {
       const data = JSON.parse(e.data)
-      gameInstance.setPaddleMovingDirection(data['paddle_type'], data['paddle_moving_direction'])
-      gameInstance.smoothMovePaddleYPosition(data['paddle_type'], data['padle_y_position'])
+
+      switch (data['type']) {
+        case 'pong_ready':
+          const connectedUsers = data['connected_users']
+          const pongCont = document.getElementById('pongCont')
+          const pongWaintingCont = document.getElementById('pongWaintingCont')
+
+          if (setsEqual(new Set(connectedUsers), new Set(matchPlayers))) {
+            gameInstance.insertGamecanvas()
+            pongCont && pongCont.classList.remove('d-none')
+            pongWaintingCont && pongWaintingCont.classList.add('d-none')
+          } else {
+            pongCont && pongCont.classList.add('d-none')
+            pongWaintingCont && pongWaintingCont.classList.remove('d-none')
+          }
+
+        break
+        case 'pong_packet':
+          console.log('data:', data)
+          gameInstance.setPaddleMovingDirection(data['paddle_type'], data['paddle_moving_direction'])
+          gameInstance.smoothMovePaddleYPosition(data['paddle_type'], data['padle_y_position'])
+
+          break
+      }
     }
 
     return gameWebSocket
