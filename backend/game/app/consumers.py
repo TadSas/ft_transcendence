@@ -45,6 +45,8 @@ class PongGameConsumer(AsyncWebsocketConsumer):
         else:
             self.connected_users[match_id] = {username}
 
+        await self.accept()
+
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -53,8 +55,6 @@ class PongGameConsumer(AsyncWebsocketConsumer):
                 'connected_users': list(self.connected_users[self.room_group_name]),
             }
         )
-
-        await self.accept()
 
     async def disconnect(self, code):
         username = self.user_mapping[self.channel_name]
@@ -81,9 +81,7 @@ class PongGameConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             {
                 'type': 'pong_packet',
-                'subtype': 'paddle_move',
                 'sender_channel_name': self.channel_name,
-                'connected_users': list(self.connected_users[self.room_group_name]),
                 **json.loads(text_data)
             }
         )

@@ -66,13 +66,20 @@ export default class PongGame {
     this.setRightUsername()
     this.updateRightScore()
 
-    this.ballxStep = 0.05
-    this.ballyStep = 0.05
+    this.pressedKeys = {
+      87: 0, // KEY_W
+      83: 0, // KEY_S
+      38: 0, // KEY_UP_ARROW
+      40: 0, // KEY_DOWN_ARROW
+    }
 
-    this.ballStartDirection = 0
+    this.ballxStep = 0.1
+    this.ballyStep = 0.1
+
+    this.ballStartDirection = 1
     // this.controlSide == 'right' ? 1.5 : -1.5
 
-    this.paddleyStep = 0.1
+    this.paddleyStep = 0.2
 
     this.paddleUp = 1
     this.paddleDown = -1
@@ -125,6 +132,11 @@ export default class PongGame {
         this.rightPaddle.position.y = start + i * ((diff) / (step - 1))
       }
     }
+  }
+
+  setBallDirection() {
+    this.ballStartDirection = 0
+    this.setEntitiesDefualtParameters()
   }
 
   start() {
@@ -294,7 +306,14 @@ export default class PongGame {
     const KEY_DOWN_ARROW = 40
 
     window.onkeydown = e => {
-      switch (e.keyCode) {
+      const keyCode = e.keyCode
+
+      if (this.pressedKeys[keyCode] === 1)
+        return
+
+      this.pressedKeys[keyCode] = 1
+
+      switch (keyCode) {
         case KEY_UP_ARROW:
           this.setPaddleDirection(this.paddleUp, KEY_UP_ARROW)
           break
@@ -313,7 +332,14 @@ export default class PongGame {
     }
 
     window.onkeyup = e => {
-      switch (e.keyCode) {
+      const keyCode = e.keyCode
+
+      if (this.pressedKeys[keyCode] === 0)
+        return
+
+      this.pressedKeys[keyCode] = 0
+
+      switch (keyCode) {
         case KEY_UP_ARROW:
         case KEY_DOWN_ARROW:
           this.setPaddleDirection(this.paddleStatic, KEY_UP_ARROW)

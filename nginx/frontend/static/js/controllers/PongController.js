@@ -54,6 +54,7 @@ var PongController = (() => {
             gameInstance.insertGamecanvas()
             pongCont && pongCont.classList.remove('d-none')
             pongWaintingCont && pongWaintingCont.classList.add('d-none')
+            gameInstance.setBallDirection()
           } else {
             pongCont && pongCont.classList.add('d-none')
             pongWaintingCont && pongWaintingCont.classList.remove('d-none')
@@ -61,7 +62,6 @@ var PongController = (() => {
 
         break
         case 'pong_packet':
-          console.log('data:', data)
           gameInstance.setPaddleMovingDirection(data['paddle_type'], data['paddle_moving_direction'])
           gameInstance.smoothMovePaddleYPosition(data['paddle_type'], data['padle_y_position'])
 
