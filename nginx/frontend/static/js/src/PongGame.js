@@ -10,17 +10,15 @@ export default class PongGame {
   constructor({
     containerID = '',
     multiplayer = false,
-    leftUsername =  '',
-    rightUsername = '',
+    leftSideName =  '',
+    rightSideName = '',
     controlSide = '',
     gameWebSocket = undefined,
-    width = 720,
-    depth = 405
   }) {
     this.containerID = containerID
     this.multiplayer = multiplayer
-    this.leftUsername = leftUsername
-    this.rightUsername = rightUsername
+    this.leftSideName = leftSideName
+    this.rightSideName = rightSideName
     this.controlSide = controlSide
     this.gameWebSocket = gameWebSocket
     this.font = new FontLoader().parse(fontJSON)
@@ -35,65 +33,19 @@ export default class PongGame {
       0xe0e0e0  // back
     ]
 
-    // this.scene = new THREE.Scene()
-    // this.camera = new THREE.PerspectiveCamera(75, width / depth, 0.1, 1000)
-    // this.camera.position.z = 10
-
-    // this.renderer = new THREE.WebGLRenderer()
-    // this.renderer.setSize(width, depth)
-
-    // this.ball = this.createSphere(0, 0, 0, 0.25)
-    // this.ball.material = new THREE.MeshBasicMaterial({color: this.ballColor})
-
-    // this.leftPaddle = this.createCube(-10, 0, 0, 0.25, 3, 0.5)
-    // this.setCubeColors(this.leftPaddle, this.cubeSideColors)
-    // this.rightPaddle = this.createCube(10, 0, 0, 0.25, 3, 0.5)
-    // this.setCubeColors(this.rightPaddle, this.cubeSideColors)
-
-    // this.gameTopBound = 7
-    // this.gameBottomBound = -7
-    // this.gameLeftBound = -12
-    // this.gameRightBound = 12
-
-    this.net = this.createNet(0, 0, 0, 0.5, 1, 0)
-
-    // this.leftPlayerScore = this.rightPlayerScore = 0
     // this.scoreBoard = {}
     // this.setLeftUsername()
     // this.updateLeftScore()
     // this.setRightUsername()
     // this.updateRightScore()
 
-    // this.pressedKeys = {
-    //   87: 0, // KEY_W
-    //   83: 0, // KEY_S
-    //   38: 0, // KEY_UP_ARROW
-    //   40: 0, // KEY_DOWN_ARROW
-    // }
+    this.pressedKeys = {
+      87: 0, // KEY_W
+      83: 0, // KEY_S
+      38: 0, // KEY_UP_ARROW
+      40: 0, // KEY_DOWN_ARROW
+    }
 
-    // this.ballxStep = 0.1
-    // this.ballyStep = 0.1
-
-    // this.ballStartDirection = 1
-    // // this.controlSide == 'right' ? 1.5 : -1.5
-
-    // this.paddleyStep = 0.2
-
-    // this.paddleUp = 1
-    // this.paddleDown = -1
-    // this.paddleStatic = 0
-
-    // this.updateRate = 10
-
-    // this.dx
-    // this.dy
-  }
-
-  insertGameCanvas() {
-    const container = document.getElementById(this.containerID)
-
-    container.innerHTML = ''
-    container.appendChild(this.renderer.domElement)
   }
 
   setGameWebSocket(gameWebSocket) {
@@ -276,11 +228,6 @@ export default class PongGame {
     setTimeout(this.update.bind(this), this.updateRate)
   }
 
-  animate() {
-    requestAnimationFrame(this.animate.bind(this))
-    this.renderer.render(this.scene, this.camera)
-  }
-
   async setPaddleDirection(direction, key) {
     if (this.controlSide) {
       if (this.controlSide == 'left')
@@ -347,20 +294,6 @@ export default class PongGame {
           this.setPaddleDirection(this.paddleStatic, KEY_W)
           break
       }
-    }
-  }
-
-  async sendGameState(direction) {
-    if (this.multiplayer && this.gameWebSocket && this.gameWebSocket.readyState === WebSocket.OPEN) {
-      this.gameWebSocket.send(JSON.stringify({
-        'paddle_type': this.controlSide,
-        'paddle_moving_direction': direction,
-        'padle_y_position': (this.controlSide == 'left' ? this.leftPaddle : this.rightPaddle).position.y,
-        'ball_x_position': this.ball.position.x,
-        'ball_y_position': this.ball.position.y,
-        'left_player_score': this.leftPlayerScore,
-        'right_player_score': this.rightPlayerScore,
-      }))
     }
   }
 
@@ -480,22 +413,6 @@ export default class PongGame {
     return cube
   }
 
-  createNet(x, y, z, width, depth, length) {
-    for (let i = 0; i < (this.gameTopBound + 1.5); i += 1.5) {
-      this.setCubeColors(
-        this.createCube(x, y + i, z - 1, width, depth, length),
-        this.cubeSideColors
-      )
-    }
-
-    for (let i = 1.5; i < (Math.abs(this.gameBottomBound) + 1.5); i += 1.5) {
-      this.setCubeColors(
-        this.createCube(x, y - i, z - 1, width, depth, length),
-        this.cubeSideColors
-      )
-    }
-  }
-
   setCubeColors(cube, sideColors) {
     const colors = []
     const color = new THREE.Color()
@@ -532,11 +449,13 @@ export default class PongGame {
 
     this.createScene(gameCanvas.width, gameCanvas.height)
     this.setGameBorders(gameBorders.top, gameBorders.right, gameBorders.bottom, gameBorders.left)
-    this.createBall(ball.x, ball.y, ballMeasurements.diameter)
-    this.createPaddles(paddles, paddleMeasurements)
-    this.insertGameCanvas()
+    this.drawNet()
+    this.drawBall(ball.x, ball.y, ballMeasurements.diameter)
+    this.drawPaddles(paddles, paddleMeasurements)
+    this.insertCanvasIntoDOM()
 
     this.animate()
+    this.registerKeyboardEvents()
   }
 
   createScene(width, height) {
@@ -544,7 +463,7 @@ export default class PongGame {
     this.camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000)
     this.camera.position.z = 10
 
-    this.renderer = new THREE.WebGLRenderer()
+    this.renderer = new THREE.WebGLRenderer({antialias: true, alpha: true})
     this.renderer.setSize(width, height)
   }
 
@@ -555,11 +474,28 @@ export default class PongGame {
     this.gameLeftBound = left
   }
 
-  createBall(x, y, diameter) {
-    this.ball = this.createSphere(x, y, 0, diameter, 0xff0000)
+  drawNet() {
+    const x = 0
+    const y = 0
+    const z = 0
+    const width = 0.5
+    const depth = 1
+    const length = 0
+
+    for (let i = 0; i < (this.gameTopBound + 1.5); i += 1.5) {
+      this.createCube(x, y + i, z - 1, width, depth, length, this.cubeSideColors)
+    }
+
+    for (let i = 1.5; i < (Math.abs(this.gameBottomBound) + 1.5); i += 1.5) {
+      this.createCube(x, y - i, z - 1, width, depth, length, this.cubeSideColors)
+    }
   }
 
-  createPaddles(paddles, paddleMeasurements) {
+  drawBall(x, y, diameter) {
+    this.ball = this.createSphere(x, y, 0, diameter, this.ballColor)
+  }
+
+  drawPaddles(paddles, paddleMeasurements) {
     const leftSide = {}
     const rightSide = {}
     const leftPaddles = paddles.left
@@ -581,9 +517,81 @@ export default class PongGame {
       )
     }
 
-    this.paddles = {
-      'left': leftSide,
-      'right': rightSide
+    this.paddles = {'left': leftSide, 'right': rightSide}
+  }
+
+  insertCanvasIntoDOM() {
+    const container = document.getElementById(this.containerID)
+
+    container.innerHTML = ''
+    container.appendChild(this.renderer.domElement)
+  }
+
+  animate() {
+    requestAnimationFrame(this.animate.bind(this))
+    this.renderer.render(this.scene, this.camera)
+  }
+
+  registerKeyboardEvents() {
+    const KEY_W = 87
+    const KEY_S = 83
+    const KEY_UP_ARROW = 38
+    const KEY_DOWN_ARROW = 40
+
+    const paddleUp = 1
+    const paddleDown = -1
+    const paddleStatic = 0
+
+    window.onkeydown = e => {
+      const keyCode = e.keyCode
+
+      if (this.pressedKeys[keyCode] === 1)
+        return
+
+      this.pressedKeys[keyCode] = 1
+
+      switch (keyCode) {
+        case KEY_UP_ARROW:
+          this.sendGameState(paddleUp)
+          break
+        case KEY_DOWN_ARROW:
+          this.sendGameState(paddleDown)
+          break
+        case KEY_W:
+          this.sendGameState(paddleUp)
+          break
+        case KEY_S:
+          this.sendGameState(paddleDown)
+          break
+        default:
+          break
+      }
+    }
+
+    window.onkeyup = e => {
+      const keyCode = e.keyCode
+
+      if (this.pressedKeys[keyCode] === 0)
+        return
+
+      this.pressedKeys[keyCode] = 0
+
+      switch (keyCode) {
+        case KEY_UP_ARROW:
+        case KEY_DOWN_ARROW:
+          this.sendGameState(paddleStatic)
+          break
+        case KEY_W:
+        case KEY_S:
+          this.sendGameState(paddleStatic)
+          break
+      }
     }
   }
+
+  sendGameState(direction) {
+    if (this.gameWebSocket && this.gameWebSocket.readyState === WebSocket.OPEN)
+      this.gameWebSocket.send(JSON.stringify({'type': 'move_paddle', 'direction': direction}))
+  }
+
 }

@@ -15,15 +15,14 @@ var PongController = (() => {
       self.gameInstance = new PongGame({
         containerID: 'pongCont',
         multiplayer: true,
-        leftUsername: homePlayer,
-        rightUsername: awayPlayer,
+        leftSideName: homePlayer,
+        rightSideName: awayPlayer,
         controlSide: homePlayer == window.user.login ? 'left' : 'right'
       })
 
       self.initGameWebSocketConnection(match, self.gameInstance)
 
-      // self.gameInstance.setGameWebSocket(gameWebSocket)
-      // self.gameInstance.start()
+      self.gameInstance.gameWebSocket = gameWebSocket
 
       return
     }
@@ -49,17 +48,12 @@ var PongController = (() => {
           const pongCont = document.getElementById('pongCont')
           const pongWaintingCont = document.getElementById('pongWaintingCont')
 
-          // gameInstance.insertGamecanvas()
           pongCont && pongCont.classList.remove('d-none')
           pongWaintingCont && pongWaintingCont.classList.add('d-none')
           gameInstance.drawGame(data)
-          // gameInstance.setBallDirection()
 
         break
         case 'pong_packet':
-          gameInstance.setPaddleMovingDirection(data['paddle_type'], data['paddle_moving_direction'])
-          gameInstance.smoothMovePaddleYPosition(data['paddle_type'], data['padle_y_position'])
-
           break
       }
     }
