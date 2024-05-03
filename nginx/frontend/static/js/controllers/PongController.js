@@ -22,8 +22,8 @@ var PongController = (() => {
 
       self.initGameWebSocketConnection(match, self.gameInstance)
 
-      self.gameInstance.setGameWebSocket(gameWebSocket)
-      self.gameInstance.start()
+      // self.gameInstance.setGameWebSocket(gameWebSocket)
+      // self.gameInstance.start()
 
       return
     }
@@ -45,20 +45,15 @@ var PongController = (() => {
       const data = JSON.parse(e.data)
 
       switch (data['type']) {
-        case 'pong_ready':
-          const connectedUsers = data['connected_users']
+        case 'pong_start':
           const pongCont = document.getElementById('pongCont')
           const pongWaintingCont = document.getElementById('pongWaintingCont')
 
-          if (setsEqual(new Set(connectedUsers), new Set(matchPlayers))) {
-            gameInstance.insertGamecanvas()
-            pongCont && pongCont.classList.remove('d-none')
-            pongWaintingCont && pongWaintingCont.classList.add('d-none')
-            gameInstance.setBallDirection()
-          } else {
-            pongCont && pongCont.classList.add('d-none')
-            pongWaintingCont && pongWaintingCont.classList.remove('d-none')
-          }
+          // gameInstance.insertGamecanvas()
+          pongCont && pongCont.classList.remove('d-none')
+          pongWaintingCont && pongWaintingCont.classList.add('d-none')
+          gameInstance.drawGame(data)
+          // gameInstance.setBallDirection()
 
         break
         case 'pong_packet':

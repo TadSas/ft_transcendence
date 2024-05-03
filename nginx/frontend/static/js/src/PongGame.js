@@ -17,8 +17,6 @@ export default class PongGame {
     width = 720,
     depth = 405
   }) {
-    this.depth = depth
-    this.width = width
     this.containerID = containerID
     this.multiplayer = multiplayer
     this.leftUsername = leftUsername
@@ -27,7 +25,7 @@ export default class PongGame {
     this.gameWebSocket = gameWebSocket
     this.font = new FontLoader().parse(fontJSON)
 
-    this.ballColor = 0x000000
+    this.ballColor = 0xff0000
     this.cubeSideColors = [
       0xe0e0e0, // right
       0xe0e0e0, // left
@@ -37,61 +35,61 @@ export default class PongGame {
       0xe0e0e0  // back
     ]
 
-    this.scene = new THREE.Scene()
-    this.camera = new THREE.PerspectiveCamera(75, this.width / this.depth, 0.1, 1000)
-    this.camera.position.z = 10
+    // this.scene = new THREE.Scene()
+    // this.camera = new THREE.PerspectiveCamera(75, width / depth, 0.1, 1000)
+    // this.camera.position.z = 10
 
-    this.renderer = new THREE.WebGLRenderer({antialias: true, alpha: true})
-    this.renderer.setSize(this.width, this.depth)
+    // this.renderer = new THREE.WebGLRenderer()
+    // this.renderer.setSize(width, depth)
 
-    this.ball = this.createSphere(0, 0, 0, 0.25, 0.25, 0.25)
-    this.ball.material = new THREE.MeshBasicMaterial({color: this.ballColor})
+    // this.ball = this.createSphere(0, 0, 0, 0.25)
+    // this.ball.material = new THREE.MeshBasicMaterial({color: this.ballColor})
 
-    this.leftPaddle = this.createCube(-10, 0, 0, 0.25, 3, 0.5)
-    this.setCubeColors(this.leftPaddle, this.cubeSideColors)
-    this.rightPaddle = this.createCube(10, 0, 0, 0.25, 3, 0.5)
-    this.setCubeColors(this.rightPaddle, this.cubeSideColors)
+    // this.leftPaddle = this.createCube(-10, 0, 0, 0.25, 3, 0.5)
+    // this.setCubeColors(this.leftPaddle, this.cubeSideColors)
+    // this.rightPaddle = this.createCube(10, 0, 0, 0.25, 3, 0.5)
+    // this.setCubeColors(this.rightPaddle, this.cubeSideColors)
 
-    this.gameTopBound = 7
-    this.gameBottomBound = -7
-    this.gameLeftBound = -12
-    this.gameRightBound = 12
+    // this.gameTopBound = 7
+    // this.gameBottomBound = -7
+    // this.gameLeftBound = -12
+    // this.gameRightBound = 12
 
     this.net = this.createNet(0, 0, 0, 0.5, 1, 0)
 
-    this.leftPlayerScore = this.rightPlayerScore = 0
-    this.scoreBoard = {}
-    this.setLeftUsername()
-    this.updateLeftScore()
-    this.setRightUsername()
-    this.updateRightScore()
+    // this.leftPlayerScore = this.rightPlayerScore = 0
+    // this.scoreBoard = {}
+    // this.setLeftUsername()
+    // this.updateLeftScore()
+    // this.setRightUsername()
+    // this.updateRightScore()
 
-    this.pressedKeys = {
-      87: 0, // KEY_W
-      83: 0, // KEY_S
-      38: 0, // KEY_UP_ARROW
-      40: 0, // KEY_DOWN_ARROW
-    }
+    // this.pressedKeys = {
+    //   87: 0, // KEY_W
+    //   83: 0, // KEY_S
+    //   38: 0, // KEY_UP_ARROW
+    //   40: 0, // KEY_DOWN_ARROW
+    // }
 
-    this.ballxStep = 0.1
-    this.ballyStep = 0.1
+    // this.ballxStep = 0.1
+    // this.ballyStep = 0.1
 
-    this.ballStartDirection = 1
-    // this.controlSide == 'right' ? 1.5 : -1.5
+    // this.ballStartDirection = 1
+    // // this.controlSide == 'right' ? 1.5 : -1.5
 
-    this.paddleyStep = 0.2
+    // this.paddleyStep = 0.2
 
-    this.paddleUp = 1
-    this.paddleDown = -1
-    this.paddleStatic = 0
+    // this.paddleUp = 1
+    // this.paddleDown = -1
+    // this.paddleStatic = 0
 
-    this.updateRate = 10
+    // this.updateRate = 10
 
-    this.dx
-    this.dy
+    // this.dx
+    // this.dy
   }
 
-  insertGamecanvas() {
+  insertGameCanvas() {
     const container = document.getElementById(this.containerID)
 
     container.innerHTML = ''
@@ -451,21 +449,22 @@ export default class PongGame {
     }
   }
 
-  createSphere(x, y, z, width, depth, length) {
+  createSphere(x, y, z, diameter, color) {
     const sphere = new THREE.Mesh(
       new THREE.SphereGeometry(1, 32, 16),
       new THREE.MeshBasicMaterial({color: this.ballColor})
     )
 
     sphere.position.set(x, y, z)
-    sphere.scale.set(width, depth, length)
+    sphere.scale.set(diameter, diameter, diameter)
+    sphere.material = new THREE.MeshBasicMaterial({color: color})
 
     this.scene.add(sphere)
 
     return sphere
   }
 
-  createCube(x, y, z, width, depth, length) {
+  createCube(x, y, z, width, depth, length, sideColors) {
     const cube = new THREE.Mesh(
       new THREE.BoxGeometry(1, 1, 1).toNonIndexed(),
       new THREE.MeshBasicMaterial({vertexColors: true})
@@ -473,6 +472,8 @@ export default class PongGame {
 
     cube.position.set(x, y, z)
     cube.scale.set(width, depth, length)
+
+    this.setCubeColors(cube, sideColors)
 
     this.scene.add(cube)
 
@@ -516,5 +517,73 @@ export default class PongGame {
 
   precisionSum(x, y) {
     return Math.round((x + y + Number.EPSILON) * 100) / 100
+  }
+
+  /* Methods for server-side pong */
+
+  drawGame(data) {
+    const game = data.game
+    const gameCanvas = game.canvas
+    const gameBorders = game.borders
+    const ball = data.ball
+    const ballMeasurements = data.ball_measurements
+    const paddles = data.paddles
+    const paddleMeasurements = data.paddle_measurements
+
+    this.createScene(gameCanvas.width, gameCanvas.height)
+    this.setGameBorders(gameBorders.top, gameBorders.right, gameBorders.bottom, gameBorders.left)
+    this.createBall(ball.x, ball.y, ballMeasurements.diameter)
+    this.createPaddles(paddles, paddleMeasurements)
+    this.insertGameCanvas()
+
+    this.animate()
+  }
+
+  createScene(width, height) {
+    this.scene = new THREE.Scene()
+    this.camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000)
+    this.camera.position.z = 10
+
+    this.renderer = new THREE.WebGLRenderer()
+    this.renderer.setSize(width, height)
+  }
+
+  setGameBorders(top, right, bottom, left) {
+    this.gameTopBound = top
+    this.gameRightBound = right
+    this.gameBottomBound = bottom
+    this.gameLeftBound = left
+  }
+
+  createBall(x, y, diameter) {
+    this.ball = this.createSphere(x, y, 0, diameter, 0xff0000)
+  }
+
+  createPaddles(paddles, paddleMeasurements) {
+    const leftSide = {}
+    const rightSide = {}
+    const leftPaddles = paddles.left
+    const rightPaddles = paddles.right
+    const paddleWidth = paddleMeasurements.width
+    const paddleHeight = paddleMeasurements.height
+
+    for (let index in leftPaddles) {
+      leftSide[index] = this.createCube(
+        leftPaddles[index].x, leftPaddles[index].y, 0,
+        paddleWidth, paddleHeight, 0.5, this.cubeSideColors
+      )
+    }
+
+    for (let index in rightPaddles) {
+      rightSide[index] = this.createCube(
+        rightPaddles[index].x, rightPaddles[index].y, 0,
+        paddleWidth, paddleHeight, 0.5, this.cubeSideColors
+      )
+    }
+
+    this.paddles = {
+      'left': leftSide,
+      'right': rightSide
+    }
   }
 }

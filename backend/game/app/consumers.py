@@ -3,12 +3,14 @@ import json
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 
+from .games import Pong
 from .main import MatchesController
 
 
 class PongGameConsumer(AsyncWebsocketConsumer):
-    connected_users = dict()
     user_mapping = dict()
+    connected_users = dict()
+    room_game_instances = dict()
 
     async def connect(self):
         if 'user' not in self.scope:
@@ -31,8 +33,6 @@ class PongGameConsumer(AsyncWebsocketConsumer):
 
         self.room_group_name = match_id
 
-        self.match_players = match_players
-
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
@@ -47,14 +47,17 @@ class PongGameConsumer(AsyncWebsocketConsumer):
 
         await self.accept()
 
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'pong_ready',
-                'now_connected': username,
-                'connected_users': list(self.connected_users[self.room_group_name]),
-            }
-        )
+        if set(match_players) == set(self.connected_users[match_id]):
+            game_instance = Pong()
+            self.room_game_instances[match_id] = game_instance
+
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'pong_start',
+                    **await game_instance.initialize()
+                }
+            )
 
     async def disconnect(self, code):
         username = self.user_mapping[self.channel_name]
@@ -69,12 +72,11 @@ class PongGameConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send(
             self.room_group_name,
             {
-                'type': 'pong_ready',
+                'type': 'pong_start',
                 'now_disconnected': username,
                 'connected_users': list(self.connected_users[self.room_group_name]),
             }
         )
-
 
     async def receive(self, text_data):
         await self.channel_layer.group_send(
@@ -92,5 +94,5 @@ class PongGameConsumer(AsyncWebsocketConsumer):
 
         await self.send(text_data=json.dumps({**event}))
 
-    async def pong_ready(self, event):
+    async def pong_start(self, event):
         await self.send(text_data=json.dumps({**event}))
