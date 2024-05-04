@@ -54,6 +54,7 @@ var PongController = (() => {
 
         break
         case 'pong_packet':
+          gameInstance.refresh(data.data)
           break
       }
     }

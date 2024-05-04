@@ -1,5 +1,5 @@
 import json
-import asyncio
+import threading
 
 from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -12,6 +12,7 @@ class PongGameConsumer(AsyncWebsocketConsumer):
     user_mapping = dict()
     connected_users = dict()
     room_game_instances = dict()
+    threads = dict()
 
     async def connect(self):
         if 'user' not in self.scope:
@@ -49,10 +50,14 @@ class PongGameConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
         if set(match_players) == set(self.connected_users[match_id]):
-            game_instance = Pong(players={
-                match_players[0]: 'left.0',
-                match_players[1]: 'right.0',
-            })
+            game_instance = Pong(
+                players={
+                    match_players[0]: 'left.0',
+                    match_players[1]: 'right.0',
+                },
+                channel_layer=self.channel_layer,
+                room_group_name=self.room_group_name,
+            )
             self.room_game_instances[match_id] = game_instance
 
             await self.channel_layer.group_send(
@@ -62,6 +67,14 @@ class PongGameConsumer(AsyncWebsocketConsumer):
                     **await game_instance.initialize()
                 }
             )
+
+            loop_thread = threading.Thread(
+                target=game_instance.broadcast_wrapper,
+                args=(self.channel_layer, self.room_group_name)
+            )
+            self.threads[match_id] = loop_thread
+
+            loop_thread.start()
 
     async def disconnect(self, code):
         username = self.user_mapping[self.channel_name]
@@ -83,13 +96,10 @@ class PongGameConsumer(AsyncWebsocketConsumer):
         )
 
     async def receive(self, text_data):
-        data = json.loads(text_data)
-
-        await getattr(
-            self.room_game_instances[self.room_group_name],
-            data.get('type'),
-            'unknown_action'
-        )(self.scope['user']['login'], data)
+        await self.room_game_instances[self.room_group_name].push_action(
+            player=self.scope['user']['login'],
+            data=json.loads(text_data)
+        )
 
     async def pong_packet(self, event):
         await self.send(text_data=json.dumps({**event}))

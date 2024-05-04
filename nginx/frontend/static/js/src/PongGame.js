@@ -45,8 +45,8 @@ export default class PongGame {
       38: 0, // KEY_UP_ARROW
       40: 0, // KEY_DOWN_ARROW
     }
-
   }
+  /*
 
   setGameWebSocket(gameWebSocket) {
     this.gameWebSocket = gameWebSocket
@@ -382,59 +382,10 @@ export default class PongGame {
     }
   }
 
-  createSphere(x, y, z, diameter, color) {
-    const sphere = new THREE.Mesh(
-      new THREE.SphereGeometry(1, 32, 16),
-      new THREE.MeshBasicMaterial({color: this.ballColor})
-    )
-
-    sphere.position.set(x, y, z)
-    sphere.scale.set(diameter, diameter, diameter)
-    sphere.material = new THREE.MeshBasicMaterial({color: color})
-
-    this.scene.add(sphere)
-
-    return sphere
-  }
-
-  createCube(x, y, z, width, depth, length, sideColors) {
-    const cube = new THREE.Mesh(
-      new THREE.BoxGeometry(1, 1, 1).toNonIndexed(),
-      new THREE.MeshBasicMaterial({vertexColors: true})
-    )
-
-    cube.position.set(x, y, z)
-    cube.scale.set(width, depth, length)
-
-    this.setCubeColors(cube, sideColors)
-
-    this.scene.add(cube)
-
-    return cube
-  }
-
-  setCubeColors(cube, sideColors) {
-    const colors = []
-    const color = new THREE.Color()
-    const positionAttribute = cube.geometry.getAttribute('position')
-
-    for (let i = 0; i < positionAttribute.count; i += 6) {
-      color.setHex(sideColors[i/6])
-      colors.push(color.r, color.g, color.b)
-      colors.push(color.r, color.g, color.b)
-      colors.push(color.r, color.g, color.b)
-
-      colors.push(color.r, color.g, color.b)
-      colors.push(color.r, color.g, color.b)
-      colors.push(color.r, color.g, color.b)
-    }
-
-    cube.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
-  }
-
   precisionSum(x, y) {
     return Math.round((x + y + Number.EPSILON) * 100) / 100
   }
+  */
 
   /* Methods for server-side pong */
 
@@ -493,6 +444,56 @@ export default class PongGame {
 
   drawBall(x, y, diameter) {
     this.ball = this.createSphere(x, y, 0, diameter, this.ballColor)
+  }
+
+  createSphere(x, y, z, diameter, color) {
+    const sphere = new THREE.Mesh(
+      new THREE.SphereGeometry(1, 32, 16),
+      new THREE.MeshBasicMaterial({color: this.ballColor})
+    )
+
+    sphere.position.set(x, y, z)
+    sphere.scale.set(diameter, diameter, diameter)
+    sphere.material = new THREE.MeshBasicMaterial({color: color})
+
+    this.scene.add(sphere)
+
+    return sphere
+  }
+
+  createCube(x, y, z, width, depth, length, sideColors) {
+    const cube = new THREE.Mesh(
+      new THREE.BoxGeometry(1, 1, 1).toNonIndexed(),
+      new THREE.MeshBasicMaterial({vertexColors: true})
+    )
+
+    cube.position.set(x, y, z)
+    cube.scale.set(width, depth, length)
+
+    this.setCubeColors(cube, sideColors)
+
+    this.scene.add(cube)
+
+    return cube
+  }
+
+  setCubeColors(cube, sideColors) {
+    const colors = []
+    const color = new THREE.Color()
+    const positionAttribute = cube.geometry.getAttribute('position')
+
+    for (let i = 0; i < positionAttribute.count; i += 6) {
+      color.setHex(sideColors[i/6])
+      colors.push(color.r, color.g, color.b)
+      colors.push(color.r, color.g, color.b)
+      colors.push(color.r, color.g, color.b)
+
+      colors.push(color.r, color.g, color.b)
+      colors.push(color.r, color.g, color.b)
+      colors.push(color.r, color.g, color.b)
+    }
+
+    cube.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
   }
 
   drawPaddles(paddles, paddleMeasurements) {
@@ -591,7 +592,37 @@ export default class PongGame {
 
   sendGameState(direction) {
     if (this.gameWebSocket && this.gameWebSocket.readyState === WebSocket.OPEN)
-      this.gameWebSocket.send(JSON.stringify({'type': 'move_paddle', 'direction': direction}))
+      this.gameWebSocket.send(JSON.stringify({
+        'type': direction ? 'move_paddle' : 'stop_paddle', 'direction': direction
+      }))
   }
 
+  refresh(data) {
+    this.refreshBall(data.ball)
+    this.refreshPaddles(data.paddles)
+    this.refreshScore(data.score)
+  }
+
+  refreshBall(ball) {
+
+  }
+
+  refreshPaddles(paddles) {
+    if (!paddles)
+      return
+
+    for (let index in paddles.left) {
+      this.paddles['left'][index].position.y = paddles['left'][index]['y']
+      this.paddles['left'][index].position.x = paddles['left'][index]['x']
+    }
+
+    for (let index in paddles.right) {
+      this.paddles['right'][index].position.y = paddles['right'][index]['y']
+      this.paddles['right'][index].position.x = paddles['right'][index]['x']
+    }
+  }
+
+  refreshScore(score) {
+
+  }
 }
