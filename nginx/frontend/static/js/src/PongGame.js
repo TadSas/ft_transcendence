@@ -541,7 +541,6 @@ export default class PongGame {
 
     const paddleUp = 1
     const paddleDown = -1
-    const paddleStatic = 0
 
     window.onkeydown = e => {
       const keyCode = e.keyCode
@@ -553,16 +552,16 @@ export default class PongGame {
 
       switch (keyCode) {
         case KEY_UP_ARROW:
-          this.sendGameState(paddleUp)
+          this.sendMovePaddleEvent(paddleUp)
           break
         case KEY_DOWN_ARROW:
-          this.sendGameState(paddleDown)
+          this.sendMovePaddleEvent(paddleDown)
           break
         case KEY_W:
-          this.sendGameState(paddleUp)
+          this.sendMovePaddleEvent(paddleUp)
           break
         case KEY_S:
-          this.sendGameState(paddleDown)
+          this.sendMovePaddleEvent(paddleDown)
           break
         default:
           break
@@ -580,27 +579,30 @@ export default class PongGame {
       switch (keyCode) {
         case KEY_UP_ARROW:
         case KEY_DOWN_ARROW:
-          this.sendGameState(paddleStatic)
+          this.sendStopPaddleEvent()
           break
         case KEY_W:
         case KEY_S:
-          this.sendGameState(paddleStatic)
+          this.sendStopPaddleEvent()
           break
       }
     }
   }
 
-  sendGameState(direction) {
+  sendMovePaddleEvent(direction) {
     if (this.gameWebSocket && this.gameWebSocket.readyState === WebSocket.OPEN)
-      this.gameWebSocket.send(JSON.stringify({
-        'type': direction ? 'move_paddle' : 'stop_paddle', 'direction': direction
-      }))
+      this.gameWebSocket.send(JSON.stringify({'type': 'move_paddle', 'direction': direction}))
+  }
+
+  sendStopPaddleEvent() {
+    if (this.gameWebSocket && this.gameWebSocket.readyState === WebSocket.OPEN)
+      this.gameWebSocket.send(JSON.stringify({'type': 'stop_paddle'}))
   }
 
   refresh(data) {
-    this.refreshBall(data.ball)
+    // this.refreshBall(data.ball)
     this.refreshPaddles(data.paddles)
-    this.refreshScore(data.score)
+    // this.refreshScore(data.score)
   }
 
   refreshBall(ball) {
@@ -611,14 +613,22 @@ export default class PongGame {
     if (!paddles)
       return
 
+    const leftPaddles = this.paddles['left']
     for (let index in paddles.left) {
-      this.paddles['left'][index].position.y = paddles['left'][index]['y']
-      this.paddles['left'][index].position.x = paddles['left'][index]['x']
+      const oldPadlle = leftPaddles[index].position
+      const newPaddle = paddles['left'][index]
+
+      oldPadlle.y = newPaddle['y']
+      oldPadlle.x = newPaddle['x']
     }
 
+    const rightPaddles = this.paddles['right']
     for (let index in paddles.right) {
-      this.paddles['right'][index].position.y = paddles['right'][index]['y']
-      this.paddles['right'][index].position.x = paddles['right'][index]['x']
+      const oldPadlle = rightPaddles[index].position
+      const newPaddle = paddles['right'][index]
+
+      oldPadlle.y = newPaddle['y']
+      oldPadlle.x = newPaddle['x']
     }
   }
 

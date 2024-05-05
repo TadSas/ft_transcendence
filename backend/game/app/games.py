@@ -104,8 +104,7 @@ class Pong:
             self.players[player]['y'] += self.paddle_speed * direction
 
     async def stop_paddle(self, player, data):
-        if (direction := data['direction']) == 0:
-            self.players[player]['y'] += self.paddle_speed * direction
+        self.players[player]['y'] += 0
 
     async def unknown_action(self, player, data):
         pass
