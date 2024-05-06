@@ -1,5 +1,8 @@
+import sys
+import math
 import asyncio
 
+from decimal import Decimal
 from time import sleep
 
 
@@ -19,15 +22,26 @@ class Pong:
         self.channel_layer = channel_layer
         self.room_group_name = room_group_name
         self.borders = {'top': 7, 'right': 12, 'bottom': -7, 'left': -12}
-        self.paddle_measurements = {'width': 0.25, 'height': 3}
-        self.ball_measurements = {'diameter': 0.25}
+
         self.paddles = self.init_paddles(players)
+        self.paddle_measurements = {'width': 0.25, 'height': 3}
+
         self.players = self.init_players(players)
+
         self.ball = {'x': 0, 'y': 0}
+        self.ball_measurements = {'diameter': 0.25}
+        self.ball_direction = -1
+        self.ball_step = {'x': 0.05, 'y': 0.05}
+        self.ball_speed = {'x': self.ball_step['x'] * self.ball_direction, 'y': 0}
+        self.ball_borders = {
+            'left': -10 + self.paddle_measurements['width'] / 2,
+            'right': 10 - self.paddle_measurements['width'] / 2
+        }
+
         self.score = {'left': 0, 'right': 0}
         self.do_broadcast = True
 
-        self.paddle_speed = 0.25
+        self.paddle_step = 0.25
 
     def init_paddles(self, players):
         paddles = {'left': {}, 'right': {}}
@@ -82,14 +96,20 @@ class Pong:
             return
 
         if self.paddle_within_bounds(paddle := self.players[player]):
-            paddle['y'] += self.paddle_speed * direction
+            paddle['y'] += self.paddle_step * direction
         elif self.paddle_over_bounds(paddle):
-            paddle['y'] -= self.paddle_speed / 10
+            paddle['y'] -= self.paddle_step / 10
         elif self.paddle_under_bounds(paddle):
-            paddle['y'] += self.paddle_speed / 10
+            paddle['y'] += self.paddle_step / 10
 
-    async def stop_paddle(self, player, data):
-        self.players[player]['y'] += 0
+    async def pong_reconnect(self, player, data):
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'pong_reconnect',
+                **await self.initialize()
+            }
+        )
 
     async def unknown_action(self, player, data):
         pass
@@ -105,3 +125,61 @@ class Pong:
 
     def paddle_under_bounds(self, paddle):
         return paddle['y'] - self.paddle_measurements['height'] < self.borders['bottom']
+
+    async def move_ball(self):
+        self.check_ball_collisions()
+        self.check_ball_out_of_bounds()
+
+        self.ball['x'] += self.ball_speed['x']
+        self.ball['y'] += self.ball_speed['y']
+
+    def check_ball_collisions(self):
+        ball_x_coordinate = self.ball['x']
+        ball_y_coordinate = self.ball['y']
+        ball_half_width = self.ball_measurements['diameter'] / 2
+        paddle_half_height = self.paddle_measurements['height'] / 2
+
+        # left paddle
+        if round(ball_x_coordinate - ball_half_width, 3) == round(self.ball_borders['left'], 3):
+            for paddle in self.paddles['left'].values():
+                paddle_y_coordinate = paddle['y']
+
+                if (
+                    paddle_y_coordinate - paddle_half_height < ball_y_coordinate + ball_half_width and
+                    paddle_y_coordinate + paddle_half_height > ball_y_coordinate - ball_half_width
+                ):
+                    self.ball_speed['x'] *= -1
+                    self.ball_speed['y'] = (ball_y_coordinate - paddle_y_coordinate) / 20
+
+        # right paddle
+        elif round(ball_x_coordinate + ball_half_width, 3) == round(self.ball_borders['right'], 3):
+            for paddle in self.paddles['right'].values():
+                paddle_y_coordinate = paddle['y']
+
+                if (
+                    paddle_y_coordinate - paddle_half_height < ball_y_coordinate + ball_half_width and
+                    paddle_y_coordinate + paddle_half_height > ball_y_coordinate - ball_half_width
+                ):
+                    self.ball_speed['x'] *= -1
+                    self.ball_speed['y'] = (ball_y_coordinate - paddle_y_coordinate) / 20
+
+        elif ball_y_coordinate >= self.borders['top'] or ball_y_coordinate <= self.borders['bottom']:
+            self.ball_speed['y'] *= -1
+
+    def check_ball_out_of_bounds(self):
+        if self.ball['x'] < self.borders['left']:
+            self.prepare_next_round()
+            self.score['right'] += 1
+        elif self.ball['x'] > self.borders['right']:
+            self.prepare_next_round()
+            self.score['left'] += 1
+
+    def prepare_next_round(self):
+        for paddle in self.paddles['left'].values():
+            paddle['y'] = 0
+
+        for paddle in self.paddles['right'].values():
+            paddle['y'] = 0
+
+        self.ball = {'x': 0, 'y': 0}
+        self.ball_speed = {'x': self.ball_step['x'] * self.ball_direction, 'y': 0}

@@ -17,7 +17,6 @@ var PongController = (() => {
         multiplayer: true,
         leftSideName: homePlayer,
         rightSideName: awayPlayer,
-        controlSide: homePlayer == window.user.login ? 'left' : 'right'
       })
 
       self.initGameWebSocketConnection(match, self.gameInstance)
@@ -33,24 +32,23 @@ var PongController = (() => {
   }
 
   self.initGameWebSocketConnection = (match, gameInstance) => {
-    const matchPlayers = match.players
-
-    if (gameWebSocket && gameWebSocket.readyState === WebSocket.OPEN)
-      gameWebSocket.close()
-
-    gameWebSocket = new WebSocket(`wss://${location.host}/game/pong/room/${match.id}`)
+    if (!gameWebSocket || [WebSocket.CLOSING, WebSocket.CLOSED].includes(gameWebSocket.readyState))
+      gameWebSocket = new WebSocket(`wss://${location.host}/game/pong/room/${match.id}`)
+    else
+      gameWebSocket.send(JSON.stringify({'type': 'pong_reconnect'}))
 
     gameWebSocket.onmessage = (e) => {
       const data = JSON.parse(e.data)
 
       switch (data['type']) {
         case 'pong_start':
+        case 'pong_reconnect':
           const pongCont = document.getElementById('pongCont')
           const pongWaintingCont = document.getElementById('pongWaintingCont')
 
           pongCont && pongCont.classList.remove('d-none')
           pongWaintingCont && pongWaintingCont.classList.add('d-none')
-          gameInstance.drawGame(data)
+          gameInstance.init(data)
 
         break
         case 'pong_packet':

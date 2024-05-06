@@ -50,49 +50,44 @@ class PongGameConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
         if set(match_players) == set(self.connected_users[match_id]):
-            game_instance = Pong(
-                players={
-                    match_players[0]: 'left.0',
-                    match_players[1]: 'right.0',
-                },
-                channel_layer=self.channel_layer,
-                room_group_name=self.room_group_name,
-            )
-            self.room_game_instances[match_id] = game_instance
+            if match_id not in self.room_game_instances:
+                game_instance = Pong(
+                    players={
+                        match_players[0]: 'left.0',
+                        match_players[1]: 'right.0',
+                    },
+                    channel_layer=self.channel_layer,
+                    room_group_name=self.room_group_name,
+                )
+                self.room_game_instances[match_id] = game_instance
 
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'pong_start',
-                    **await game_instance.initialize()
-                }
-            )
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'pong_start',
+                        **await game_instance.initialize()
+                    }
+                )
 
-            loop_thread = threading.Thread(
-                target=game_instance.broadcast_wrapper,
-                args=(self.channel_layer, self.room_group_name)
-            )
-            self.threads[match_id] = loop_thread
+                loop_thread = threading.Thread(
+                    target=game_instance.broadcast_wrapper,
+                    args=(self.channel_layer, self.room_group_name)
+                )
+                self.threads[match_id] = loop_thread
 
-            loop_thread.start()
+                loop_thread.start()
 
     async def disconnect(self, code):
-        username = self.user_mapping[self.channel_name]
-        self.connected_users[self.room_group_name].remove(username)
+        self.connected_users[self.room_group_name].remove(self.user_mapping[self.channel_name])
 
-        if hasattr(self, 'room_group_name'):
-            await self.channel_layer.group_discard(
-                self.room_group_name,
-                self.channel_name
-            )
+        if not len(self.connected_users[self.room_group_name]):
+            self.threads[self.room_group_name].join()
+            del self.room_game_instances[self.room_group_name]
+            del self.connected_users[self.room_group_name]
 
-        await self.channel_layer.group_send(
+        await self.channel_layer.group_discard(
             self.room_group_name,
-            {
-                'type': 'pong_start',
-                'now_disconnected': username,
-                'connected_users': list(self.connected_users[self.room_group_name]),
-            }
+            self.channel_name
         )
 
     async def receive(self, text_data):
@@ -105,8 +100,13 @@ class PongGameConsumer(AsyncWebsocketConsumer):
             game_instance.unknown_action
         )(player=self.scope['user']['login'], data=data)
 
+        await game_instance.move_ball()
+
+    async def pong_start(self, event):
+        await self.send(text_data=json.dumps({**event}))
+
     async def pong_packet(self, event):
         await self.send(text_data=json.dumps({**event}))
 
-    async def pong_start(self, event):
+    async def pong_reconnect(self, event):
         await self.send(text_data=json.dumps({**event}))

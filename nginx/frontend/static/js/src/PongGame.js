@@ -12,14 +12,25 @@ export default class PongGame {
     multiplayer = false,
     leftSideName =  '',
     rightSideName = '',
-    controlSide = '',
     gameWebSocket = undefined,
   }) {
+    this.initialized = false
     this.containerID = containerID
     this.multiplayer = multiplayer
-    this.leftSideName = leftSideName
-    this.rightSideName = rightSideName
-    this.controlSide = controlSide
+    this.scoreBoard = {
+      'left': {
+        'score': 0,
+        'scoreObj': undefined,
+        'name': leftSideName,
+        'nameObj': undefined
+      },
+      'right': {
+        'score': 0,
+        'scoreObj': undefined,
+        'name': rightSideName,
+        'nameObj': undefined
+      }
+    }
     this.gameWebSocket = gameWebSocket
     this.font = new FontLoader().parse(fontJSON)
 
@@ -33,323 +44,17 @@ export default class PongGame {
       0xe0e0e0  // back
     ]
 
-    // this.scoreBoard = {}
-    // this.setLeftUsername()
-    // this.updateLeftScore()
-    // this.setRightUsername()
-    // this.updateRightScore()
-
-    this.interval = undefined
-
     this.pressedKeys = {'up': 0, 'down': 0}
-  }
-  /*
-
-  setGameWebSocket(gameWebSocket) {
-    this.gameWebSocket = gameWebSocket
+    this.registerKeyboardEvents()
   }
 
-  setPaddleMovingDirection(paddleType, direction) {
-    if (![this.paddleUp, this.paddleDown, this.paddleStatic].includes(direction))
-      return
-
-    if (paddleType == 'left')
-      this.leftPaddle.userData['movingDirection'] = direction
-    else if (paddleType == 'right')
-      this.rightPaddle.userData['movingDirection'] = direction
-  }
-
-  smoothMovePaddleYPosition(paddleType, position) {
-    const step = 20
-    const end = position
-
-    if (paddleType == 'left') {
-      const start = this.leftPaddle.position.y
-      const diff = end - start
-
-      for (let i = 0; i < step; i++) {
-        this.leftPaddle.position.y = start + i * ((diff) / (step - 1))
-      }
-    }
-    else if (paddleType == 'right') {
-      const start = this.leftPaddle.position.y
-      const diff = end - start
-
-      for (let i = 0; i < step; i++) {
-        this.rightPaddle.position.y = start + i * ((diff) / (step - 1))
-      }
-    }
-  }
-
-  setBallDirection() {
-    this.ballStartDirection = 0
-    this.setEntitiesDefualtParameters()
-  }
-
-  start() {
-    this.setEntitiesDefualtParameters()
-
-    this.update()
+  init(data) {
+    this.drawGame(data)
+    this.initialized = true
 
     this.animate()
-
-    this.setKeyboardEvents()
+    this.interval = setInterval(this.sendPaddleState.bind(this), 15)
   }
-
-  setEntitiesDefualtParameters() {
-    this.dx = this.ballxStep * this.ballStartDirection
-    this.dy = 0
-
-    this.ball.position.x = 0
-    this.ball.position.y = 0
-
-    this.leftPaddle.position.y = 0
-    this.rightPaddle.position.y = 0
-
-    this.leftPaddle.userData['movingDirection'] = this.paddleStatic
-    this.rightPaddle.userData['movingDirection'] = this.paddleStatic
-  }
-
-  setLeftUsername() {
-    this.scene.remove(this.scoreBoard['leftUsername'])
-
-    const leftUsernameGeometry = new TextGeometry(
-      String(this.leftUsername),
-      {font: this.font, size: 0.75, depth: 0.25}
-    )
-
-    const leftUsernameNameBoard = new THREE.Mesh(
-      leftUsernameGeometry,
-      [
-        new THREE.MeshPhongMaterial({color: 0xad4000}),
-        new THREE.MeshPhongMaterial({color: 0x5c2301})
-      ]
-    )
-
-    const usenameSize = new THREE.Vector3()
-    new THREE.Box3().setFromObject(leftUsernameNameBoard).getSize(usenameSize)
-
-    leftUsernameNameBoard.castShadow = true
-    leftUsernameNameBoard.position.x = -2 - usenameSize.x
-    leftUsernameNameBoard.position.y = this.gameTopBound - 3.5
-    leftUsernameNameBoard.position.z = -1
-
-    this.scene.add(leftUsernameNameBoard)
-    this.scoreBoard['leftUsername'] = leftUsernameNameBoard
-  }
-
-  setRightUsername() {
-    this.scene.remove(this.scoreBoard['righttUsername'])
-
-    const rightUsernameGeometry = new TextGeometry(
-      String(this.rightUsername),
-      {font: this.font, size: 0.75, depth: 0.25}
-    )
-
-    const rightUsernameNameBoard = new THREE.Mesh(
-      rightUsernameGeometry,
-      [
-        new THREE.MeshPhongMaterial({color: 0xad4000}),
-        new THREE.MeshPhongMaterial({color: 0x5c2301})
-      ]
-    )
-
-    rightUsernameNameBoard.castShadow = true
-    rightUsernameNameBoard.position.x = 2
-    rightUsernameNameBoard.position.y = this.gameTopBound - 3.5
-    rightUsernameNameBoard.position.z = -1
-
-    this.scene.add(rightUsernameNameBoard)
-    this.scoreBoard['righttUsername'] = rightUsernameNameBoard
-  }
-
-  updateRightScore() {
-    this.scene.remove(this.scoreBoard['rightPlayerScoreBoard'])
-
-    const rightScoreGeometry = new TextGeometry(
-      String(this.rightPlayerScore),
-      {font: this.font, size: 2, depth: 0.25}
-    )
-
-    const rightPlayerScoreBoard = new THREE.Mesh(
-      rightScoreGeometry,
-      [
-        new THREE.MeshPhongMaterial({color: 0xad4000}),
-        new THREE.MeshPhongMaterial({color: 0x5c2301})
-      ]
-    )
-    rightPlayerScoreBoard.castShadow = true
-    rightPlayerScoreBoard.position.x = 2
-    rightPlayerScoreBoard.position.y = this.gameTopBound - 2
-    rightPlayerScoreBoard.position.z = -1
-
-    this.scene.add(rightPlayerScoreBoard)
-    this.scoreBoard['rightPlayerScoreBoard'] = rightPlayerScoreBoard
-  }
-
-  updateLeftScore() {
-    this.scene.remove(this.scoreBoard['leftPlayerScoreBoard'])
-
-    const leftScoreGeometry = new TextGeometry(
-      String(this.leftPlayerScore),
-      {font: this.font, size: 2, depth: 0.25}
-    )
-
-    const leftPlayerScoreBoard = new THREE.Mesh(
-      leftScoreGeometry,
-      [
-        new THREE.MeshPhongMaterial({color: 0xad4000}),
-        new THREE.MeshPhongMaterial({color: 0x5c2301})
-      ]
-    )
-    leftPlayerScoreBoard.castShadow = true
-    leftPlayerScoreBoard.position.x = -2 - leftPlayerScoreBoard.scale.x
-    leftPlayerScoreBoard.position.y = this.gameTopBound - 2
-    leftPlayerScoreBoard.position.z = -1
-
-    this.scene.add(leftPlayerScoreBoard)
-    this.scoreBoard['leftPlayerScoreBoard'] = leftPlayerScoreBoard
-  }
-
-  update() {
-    this.animateBall()
-    this.movePaddles()
-    this.checkCollisionWithRightPaddles()
-    this.checkCollisionWithLeftPaddles()
-    this.checkCollisionWithBounds()
-    this.checkBallOutOfBounds()
-
-    if ([this.leftPlayerScore, this.rightPlayerScore].includes(11))
-      return
-
-    setTimeout(this.update.bind(this), this.updateRate)
-  }
-
-  async setPaddleDirection(direction, key) {
-    if (this.controlSide) {
-      if (this.controlSide == 'left')
-        this.leftPaddle.userData['movingDirection'] = direction
-      else
-        this.rightPaddle.userData['movingDirection'] = direction
-
-      await this.sendGameState(direction)
-    } else {
-      if ([38, 40].includes(key))
-        this.rightPaddle.userData['movingDirection'] = direction
-      else
-        this.leftPaddle.userData['movingDirection'] = direction
-    }
-  }
-
-  setKeyboardEvents() {
-    const KEY_W = 87
-    const KEY_S = 83
-    const KEY_UP_ARROW = 38
-    const KEY_DOWN_ARROW = 40
-
-    window.onkeydown = e => {
-      const keyCode = e.keyCode
-
-      if (this.pressedKeys[keyCode] === 1)
-        return
-
-      this.pressedKeys[keyCode] = 1
-
-      switch (keyCode) {
-        case KEY_UP_ARROW:
-          this.setPaddleDirection(this.paddleUp, KEY_UP_ARROW)
-          break
-        case KEY_DOWN_ARROW:
-          this.setPaddleDirection(this.paddleDown, KEY_DOWN_ARROW)
-          break
-        case KEY_W:
-          this.setPaddleDirection(this.paddleUp, KEY_W)
-          break
-        case KEY_S:
-          this.setPaddleDirection(this.paddleDown, KEY_S)
-          break
-        default:
-          break
-      }
-    }
-
-    window.onkeyup = e => {
-      const keyCode = e.keyCode
-
-      if (this.pressedKeys[keyCode] === 0)
-        return
-
-      this.pressedKeys[keyCode] = 0
-
-      switch (keyCode) {
-        case KEY_UP_ARROW:
-        case KEY_DOWN_ARROW:
-          this.setPaddleDirection(this.paddleStatic, KEY_UP_ARROW)
-          break
-        case KEY_W:
-        case KEY_S:
-          this.setPaddleDirection(this.paddleStatic, KEY_W)
-          break
-      }
-    }
-  }
-
-  animateBall() {
-    this.ball.position.y = this.precisionSum(this.ball.position.y, this.dy)
-    this.ball.position.x = this.precisionSum(this.ball.position.x, this.dx)
-  }
-
-  checkCollisionWithRightPaddles() {
-    if (
-      (Math.floor(((this.ball.position.x + this.ball.scale.x / 2) + Number.EPSILON) * 10) / 10) ===
-      (Math.floor(((this.rightPaddle.position.x - this.rightPaddle.scale.x / 2) + Number.EPSILON) * 10) / 10)
-    ) {
-        if (
-          (this.rightPaddle.position.y - this.rightPaddle.scale.y / 2) < (this.ball.position.y + this.ball.scale.y / 2) &&
-          (this.rightPaddle.position.y + this.rightPaddle.scale.y / 2) > (this.ball.position.y - this.ball.scale.y / 2)
-        ) {
-          this.dx *= -1
-          this.dy += this.rightPaddle.userData['movingDirection'] * this.ballxStep
-        }
-    }
-  }
-
-  checkCollisionWithLeftPaddles() {
-    if (
-      (Math.floor(((this.ball.position.x - this.ball.scale.x / 2) + Number.EPSILON) * 10) / 10) ===
-      (Math.floor(((this.leftPaddle.position.x + this.leftPaddle.scale.x / 2) + Number.EPSILON) * 10) / 10)
-    ) {
-        if (
-          (this.leftPaddle.position.y - this.leftPaddle.scale.y / 2) < (this.ball.position.y + this.ball.scale.y / 2) &&
-          (this.leftPaddle.position.y + this.leftPaddle.scale.y / 2) > (this.ball.position.y - this.ball.scale.y / 2)
-        ) {
-          this.dx *= -1
-          this.dy += this.leftPaddle.userData['movingDirection'] * this.ballxStep
-        }
-    }
-  }
-
-  checkCollisionWithBounds() {
-    if ((this.ball.position.y >= this.gameTopBound) || (this.ball.position.y <= this.gameBottomBound))
-      this.dy *= -1
-  }
-
-  checkBallOutOfBounds() {
-    if (this.ball.position.x > this.gameRightBound) {
-      this.setEntitiesDefualtParameters()
-      this.leftPlayerScore += 1
-      this.updateLeftScore()
-    }
-
-    if (this.ball.position.x < this.gameLeftBound) {
-      this.setEntitiesDefualtParameters()
-      this.rightPlayerScore += 1
-      this.updateRightScore()
-    }
-  }
-  */
-
-  /* Methods for server-side pong */
 
   drawGame(data) {
     const game = data.game
@@ -365,11 +70,8 @@ export default class PongGame {
     this.drawNet()
     this.drawBall(ball.x, ball.y, ballMeasurements.diameter)
     this.drawPaddles(paddles, paddleMeasurements)
+    this.drawScoreBorad()
     this.insertCanvasIntoDOM()
-
-    this.animate()
-    this.interval = setInterval(this.sendGameState.bind(this), 10)
-    this.registerKeyboardEvents()
   }
 
   createScene(width, height) {
@@ -484,6 +186,118 @@ export default class PongGame {
     this.paddles = {'left': leftSide, 'right': rightSide}
   }
 
+  drawScoreBorad() {
+    this.drawLeftSideScore()
+    this.drawLeftSideName()
+    this.drawRightSideScore()
+    this.drawRightSideName()
+  }
+
+  drawLeftSideScore() {
+    const leftScoreObj = this.scoreBoard['left']['scoreObj']
+    leftScoreObj && this.scene.remove(leftScoreObj)
+
+    const leftScoreGeometry = new TextGeometry(
+      String(this.scoreBoard['left']['score']),
+      {font: this.font, size: 2, depth: 0.25}
+    )
+
+    const leftPlayerScoreBoard = new THREE.Mesh(
+      leftScoreGeometry,
+      [
+        new THREE.MeshPhongMaterial({color: 0xad4000}),
+        new THREE.MeshPhongMaterial({color: 0x5c2301})
+      ]
+    )
+    leftPlayerScoreBoard.castShadow = true
+    leftPlayerScoreBoard.position.x = -2 - leftPlayerScoreBoard.scale.x
+    leftPlayerScoreBoard.position.y = this.gameTopBound - 2
+    leftPlayerScoreBoard.position.z = -1
+
+    this.scene.add(leftPlayerScoreBoard)
+    this.scoreBoard['left']['scoreObj'] = leftPlayerScoreBoard
+  }
+
+  drawRightSideScore() {
+    const rightScoreObj = this.scoreBoard['right']['scoreObj']
+    rightScoreObj && this.scene.remove(rightScoreObj)
+
+    const rightScoreGeometry = new TextGeometry(
+      String(this.scoreBoard['right']['score']),
+      {font: this.font, size: 2, depth: 0.25}
+    )
+
+    const rightPlayerScoreBoard = new THREE.Mesh(
+      rightScoreGeometry,
+      [
+        new THREE.MeshPhongMaterial({color: 0xad4000}),
+        new THREE.MeshPhongMaterial({color: 0x5c2301})
+      ]
+    )
+    rightPlayerScoreBoard.castShadow = true
+    rightPlayerScoreBoard.position.x = 2
+    rightPlayerScoreBoard.position.y = this.gameTopBound - 2
+    rightPlayerScoreBoard.position.z = -1
+
+    this.scene.add(rightPlayerScoreBoard)
+    this.scoreBoard['right']['scoreObj'] = rightPlayerScoreBoard
+  }
+
+  drawLeftSideName() {
+    const leftNameObj = this.scoreBoard['left']['nameObj']
+    leftNameObj && this.scene.remove(leftNameObj)
+
+    const leftUsernameGeometry = new TextGeometry(
+      String(this.scoreBoard['left']['name']),
+      {font: this.font, size: 0.75, depth: 0.25}
+    )
+
+    const leftUsernameNameBoard = new THREE.Mesh(
+      leftUsernameGeometry,
+      [
+        new THREE.MeshPhongMaterial({color: 0xad4000}),
+        new THREE.MeshPhongMaterial({color: 0x5c2301})
+      ]
+    )
+
+    const usenameSize = new THREE.Vector3()
+    new THREE.Box3().setFromObject(leftUsernameNameBoard).getSize(usenameSize)
+
+    leftUsernameNameBoard.castShadow = true
+    leftUsernameNameBoard.position.x = -2 - usenameSize.x
+    leftUsernameNameBoard.position.y = this.gameTopBound - 3.5
+    leftUsernameNameBoard.position.z = -1
+
+    this.scene.add(leftUsernameNameBoard)
+    this.scoreBoard['left']['nameObj'] = leftUsernameNameBoard
+  }
+
+  drawRightSideName() {
+    const rightNameObj = this.scoreBoard['right']['nameObj']
+    rightNameObj && this.scene.remove(rightNameObj)
+
+    const rightUsernameGeometry = new TextGeometry(
+      String(this.scoreBoard['right']['name']),
+      {font: this.font, size: 0.75, depth: 0.25}
+    )
+
+    const rightUsernameNameBoard = new THREE.Mesh(
+      rightUsernameGeometry,
+      [
+        new THREE.MeshPhongMaterial({color: 0xad4000}),
+        new THREE.MeshPhongMaterial({color: 0x5c2301})
+      ]
+    )
+
+    rightUsernameNameBoard.castShadow = true
+    rightUsernameNameBoard.position.x = 2
+    rightUsernameNameBoard.position.y = this.gameTopBound - 3.5
+    rightUsernameNameBoard.position.z = -1
+
+    this.scene.add(rightUsernameNameBoard)
+    this.scoreBoard['right']['nameObj'] = rightUsernameNameBoard
+  }
+
   insertCanvasIntoDOM() {
     const container = document.getElementById(this.containerID)
 
@@ -503,9 +317,7 @@ export default class PongGame {
     const KEY_DOWN_ARROW = 40
 
     window.onkeydown = e => {
-      const keyCode = e.keyCode
-
-      switch (keyCode) {
+      switch (e.keyCode) {
         case KEY_UP_ARROW:
           this.pressedKeys['up'] = 1
           this.pressedKeys['down'] = 0
@@ -528,9 +340,7 @@ export default class PongGame {
     }
 
     window.onkeyup = e => {
-      const keyCode = e.keyCode
-
-      switch (keyCode) {
+      switch (e.keyCode) {
         case KEY_UP_ARROW:
         case KEY_W:
           this.pressedKeys['up'] = 0
@@ -543,7 +353,7 @@ export default class PongGame {
     }
   }
 
-  sendGameState() {
+  sendPaddleState() {
     if (this.gameWebSocket && this.gameWebSocket.readyState === WebSocket.OPEN)
       this.gameWebSocket.send(JSON.stringify({
         'type': 'move_paddle',
@@ -551,19 +361,18 @@ export default class PongGame {
       }))
   }
 
-  sendStopPaddleEvent() {
-    if (this.gameWebSocket && this.gameWebSocket.readyState === WebSocket.OPEN)
-      this.gameWebSocket.send(JSON.stringify({'type': 'stop_paddle'}))
-  }
-
   refresh(data) {
-    // this.refreshBall(data.ball)
+    if (!this.initialized)
+      return
+
+    this.refreshScore(data.score)
+    this.refreshBall(data.ball)
     this.refreshPaddles(data.paddles)
-    // this.refreshScore(data.score)
   }
 
   refreshBall(ball) {
-
+    this.ball.position.x = ball['x']
+    this.ball.position.y = ball['y']
   }
 
   refreshPaddles(paddles) {
@@ -590,6 +399,14 @@ export default class PongGame {
   }
 
   refreshScore(score) {
+    if (score['left'] === this.scoreBoard['left']['score'] + 1) {
+      this.scoreBoard['left']['score'] += 1
+      this.drawLeftSideScore()
+    }
 
+    if (score['right'] === this.scoreBoard['right']['score'] + 1) {
+      this.scoreBoard['right']['score'] += 1
+      this.drawRightSideScore()
+    }
   }
 }
