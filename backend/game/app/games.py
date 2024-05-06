@@ -27,9 +27,7 @@ class Pong:
         self.score = {'left': 0, 'right': 0}
         self.do_broadcast = True
 
-        self.paddle_speed = 0.15
-
-        self.action_queue = []
+        self.paddle_speed = 0.25
 
     def init_paddles(self, players):
         paddles = {'left': {}, 'right': {}}
@@ -77,34 +75,33 @@ class Pong:
                     }
                 }
             )
-            await self.run_action()
-            sleep(0.018)
-            # sleep(0.015)
-
-    async def pop_action(self):
-        if (action_queue_len := len(self.action_queue)) == 0:
-            return None
-        elif action_queue_len == 1:
-            return self.action_queue[0]
-        else:
-            return self.action_queue.pop(0)
-
-    async def push_action(self, player, data):
-        self.action_queue.append((
-            getattr(self, data.get('type'), self.unknown_action),
-            {'player': player, 'data': data}
-        ))
-
-    async def run_action(self):
-        if (action := await self.pop_action()):
-            await action[0](**action[1])
+            sleep(0.015)
 
     async def move_paddle(self, player, data):
-        if (direction := data['direction']) in (-1, 1):
-            self.players[player]['y'] += self.paddle_speed * direction
+        if (direction := data['direction']) not in (-1, 1):
+            return
+
+        if self.paddle_within_bounds(paddle := self.players[player]):
+            paddle['y'] += self.paddle_speed * direction
+        elif self.paddle_over_bounds(paddle):
+            paddle['y'] -= self.paddle_speed / 10
+        elif self.paddle_under_bounds(paddle):
+            paddle['y'] += self.paddle_speed / 10
 
     async def stop_paddle(self, player, data):
         self.players[player]['y'] += 0
 
     async def unknown_action(self, player, data):
         pass
+
+    def paddle_within_bounds(self, paddle):
+        return (
+            paddle['y'] + self.paddle_measurements['height'] / 2 <= self.borders['top'] and
+            paddle['y'] - self.paddle_measurements['height'] / 2 >= self.borders['bottom']
+        )
+
+    def paddle_over_bounds(self, paddle):
+        return paddle['y'] + self.paddle_measurements['height'] > self.borders['top']
+
+    def paddle_under_bounds(self, paddle):
+        return paddle['y'] - self.paddle_measurements['height'] < self.borders['bottom']

@@ -96,10 +96,14 @@ class PongGameConsumer(AsyncWebsocketConsumer):
         )
 
     async def receive(self, text_data):
-        await self.room_game_instances[self.room_group_name].push_action(
-            player=self.scope['user']['login'],
-            data=json.loads(text_data)
-        )
+        data = json.loads(text_data)
+        game_instance = self.room_game_instances[self.room_group_name]
+
+        await getattr(
+            game_instance,
+            data.get('type'),
+            game_instance.unknown_action
+        )(player=self.scope['user']['login'], data=data)
 
     async def pong_packet(self, event):
         await self.send(text_data=json.dumps({**event}))

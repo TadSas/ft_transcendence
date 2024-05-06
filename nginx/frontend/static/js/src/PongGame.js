@@ -39,12 +39,9 @@ export default class PongGame {
     // this.setRightUsername()
     // this.updateRightScore()
 
-    this.pressedKeys = {
-      87: 0, // KEY_W
-      83: 0, // KEY_S
-      38: 0, // KEY_UP_ARROW
-      40: 0, // KEY_DOWN_ARROW
-    }
+    this.interval = undefined
+
+    this.pressedKeys = {'up': 0, 'down': 0}
   }
   /*
 
@@ -302,37 +299,6 @@ export default class PongGame {
     this.ball.position.x = this.precisionSum(this.ball.position.x, this.dx)
   }
 
-  movePaddles() {
-    if (this.ifPaddleInsideGameBounds(this.rightPaddle))
-      this.rightPaddle.position.y += this.paddleyStep * this.rightPaddle.userData['movingDirection']
-    else if (this.ifPaddleOverGameBounds(this.rightPaddle))
-      this.rightPaddle.position.y -= this.paddleyStep / 10
-    else if (this.ifPaddleUnderGameBounds(this.rightPaddle))
-      this.rightPaddle.position.y += this.paddleyStep / 10
-
-    if (this.ifPaddleInsideGameBounds(this.leftPaddle))
-      this.leftPaddle.position.y += this.paddleyStep * this.leftPaddle.userData['movingDirection']
-    else if (this.ifPaddleOverGameBounds(this.leftPaddle))
-      this.leftPaddle.position.y -= this.paddleyStep / 10
-    else if (this.ifPaddleUnderGameBounds(this.leftPaddle))
-      this.leftPaddle.position.y += this.paddleyStep / 10
-  }
-
-  ifPaddleInsideGameBounds(paddle) {
-    return (
-      ((paddle.position.y + (paddle.scale.y / 2)) <= this.gameTopBound) &&
-      ((paddle.position.y - (paddle.scale.y / 2)) >= this.gameBottomBound)
-    )
-  }
-
-  ifPaddleUnderGameBounds(paddle) {
-    return ((paddle.position.y - (paddle.scale.y / 2)) < this.gameBottomBound)
-  }
-
-  ifPaddleOverGameBounds(paddle) {
-    return ((paddle.position.y + (paddle.scale.y / 2)) > this.gameTopBound)
-  }
-
   checkCollisionWithRightPaddles() {
     if (
       (Math.floor(((this.ball.position.x + this.ball.scale.x / 2) + Number.EPSILON) * 10) / 10) ===
@@ -381,10 +347,6 @@ export default class PongGame {
       this.updateRightScore()
     }
   }
-
-  precisionSum(x, y) {
-    return Math.round((x + y + Number.EPSILON) * 100) / 100
-  }
   */
 
   /* Methods for server-side pong */
@@ -406,6 +368,7 @@ export default class PongGame {
     this.insertCanvasIntoDOM()
 
     this.animate()
+    this.interval = setInterval(this.sendGameState.bind(this), 10)
     this.registerKeyboardEvents()
   }
 
@@ -539,29 +502,25 @@ export default class PongGame {
     const KEY_UP_ARROW = 38
     const KEY_DOWN_ARROW = 40
 
-    const paddleUp = 1
-    const paddleDown = -1
-
     window.onkeydown = e => {
       const keyCode = e.keyCode
 
-      if (this.pressedKeys[keyCode] === 1)
-        return
-
-      this.pressedKeys[keyCode] = 1
-
       switch (keyCode) {
         case KEY_UP_ARROW:
-          this.sendMovePaddleEvent(paddleUp)
+          this.pressedKeys['up'] = 1
+          this.pressedKeys['down'] = 0
           break
         case KEY_DOWN_ARROW:
-          this.sendMovePaddleEvent(paddleDown)
+          this.pressedKeys['up'] = 0
+          this.pressedKeys['down'] = 1
           break
         case KEY_W:
-          this.sendMovePaddleEvent(paddleUp)
+          this.pressedKeys['up'] = 1
+          this.pressedKeys['down'] = 0
           break
         case KEY_S:
-          this.sendMovePaddleEvent(paddleDown)
+          this.pressedKeys['up'] = 0
+          this.pressedKeys['down'] = 1
           break
         default:
           break
@@ -571,27 +530,25 @@ export default class PongGame {
     window.onkeyup = e => {
       const keyCode = e.keyCode
 
-      if (this.pressedKeys[keyCode] === 0)
-        return
-
-      this.pressedKeys[keyCode] = 0
-
       switch (keyCode) {
         case KEY_UP_ARROW:
-        case KEY_DOWN_ARROW:
-          this.sendStopPaddleEvent()
-          break
         case KEY_W:
+          this.pressedKeys['up'] = 0
+          break
+        case KEY_DOWN_ARROW:
         case KEY_S:
-          this.sendStopPaddleEvent()
+          this.pressedKeys['down'] = 0
           break
       }
     }
   }
 
-  sendMovePaddleEvent(direction) {
+  sendGameState() {
     if (this.gameWebSocket && this.gameWebSocket.readyState === WebSocket.OPEN)
-      this.gameWebSocket.send(JSON.stringify({'type': 'move_paddle', 'direction': direction}))
+      this.gameWebSocket.send(JSON.stringify({
+        'type': 'move_paddle',
+        'direction': this.pressedKeys['up'] - this.pressedKeys['down']
+      }))
   }
 
   sendStopPaddleEvent() {
