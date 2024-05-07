@@ -7,28 +7,19 @@ var PongController = (() => {
 
   // Public
   self.initPong = async (match) => {
-    if (typeof match === 'object' && Object.keys(match).length > 0) {
-      const matchPlayers = match.players
-      const homePlayer = matchPlayers[0]
-      const awayPlayer = matchPlayers[1]
-
-      self.gameInstance = new PongGame({
-        containerID: 'pongCont',
-        multiplayer: true,
-        leftSideName: homePlayer,
-        rightSideName: awayPlayer,
-      })
-
-      self.initGameWebSocketConnection(match, self.gameInstance)
-
-      self.gameInstance.gameWebSocket = gameWebSocket
-
+    if (typeof match !== 'object' || Object.keys(match).length === 0)
       return
-    }
 
-    self.gameInstance = new PongGame({containerID: 'pongCont'})
-    self.gameInstance.start()
-    self.gameInstance.insertGamecanvas()
+    self.gameInstance = new PongGame({
+      containerID: 'pongCont',
+      multiplayer: true,
+      leftSideName: match.players[0],
+      rightSideName: match.players[1],
+    })
+
+    self.initGameWebSocketConnection(match, self.gameInstance)
+
+    self.gameInstance.gameWebSocket = gameWebSocket
   }
 
   self.initGameWebSocketConnection = (match, gameInstance) => {
@@ -58,6 +49,10 @@ var PongController = (() => {
     }
 
     return gameWebSocket
+  }
+
+  self.createSinglePong = () => {
+    // self.initPong()
   }
 
   self.getMatch = async (matchId) => {

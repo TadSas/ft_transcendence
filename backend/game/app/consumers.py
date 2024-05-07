@@ -61,6 +61,8 @@ class PongGameConsumer(AsyncWebsocketConsumer):
                 )
                 self.room_game_instances[match_id] = game_instance
 
+                await database_sync_to_async(MatchesController().update_match_status)(match_id, 'playing')
+
                 await self.channel_layer.group_send(
                     self.room_group_name,
                     {
@@ -81,6 +83,7 @@ class PongGameConsumer(AsyncWebsocketConsumer):
         self.connected_users[self.room_group_name].remove(self.user_mapping[self.channel_name])
 
         if not len(self.connected_users[self.room_group_name]):
+            self.room_game_instances[self.room_group_name].do_broadcast = False
             self.threads[self.room_group_name].join()
             del self.room_game_instances[self.room_group_name]
             del self.connected_users[self.room_group_name]
@@ -109,4 +112,7 @@ class PongGameConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({**event}))
 
     async def pong_reconnect(self, event):
+        await self.send(text_data=json.dumps({**event}))
+
+    async def pong_end(self, event):
         await self.send(text_data=json.dumps({**event}))

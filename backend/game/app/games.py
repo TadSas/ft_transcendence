@@ -1,9 +1,9 @@
-import sys
-import math
 import asyncio
 
-from decimal import Decimal
 from time import sleep
+from channels.db import database_sync_to_async
+
+from .main import MatchesController
 
 
 class Pong:
@@ -25,13 +25,14 @@ class Pong:
 
         self.paddles = self.init_paddles(players)
         self.paddle_measurements = {'width': 0.25, 'height': 3}
+        self.paddle_step = 0.15
 
         self.players = self.init_players(players)
 
         self.ball = {'x': 0, 'y': 0}
         self.ball_measurements = {'diameter': 0.25}
         self.ball_direction = -1
-        self.ball_step = {'x': 0.05, 'y': 0.05}
+        self.ball_step = {'x': 0.075, 'y': 0.05}
         self.ball_speed = {'x': self.ball_step['x'] * self.ball_direction, 'y': 0}
         self.ball_borders = {
             'left': -10 + self.paddle_measurements['width'] / 2,
@@ -40,8 +41,6 @@ class Pong:
 
         self.score = {'left': 0, 'right': 0}
         self.do_broadcast = True
-
-        self.paddle_step = 0.25
 
     def init_paddles(self, players):
         paddles = {'left': {}, 'right': {}}
@@ -128,7 +127,7 @@ class Pong:
 
     async def move_ball(self):
         self.check_ball_collisions()
-        self.check_ball_out_of_bounds()
+        await self.check_ball_out_of_bounds()
 
         self.ball['x'] += self.ball_speed['x']
         self.ball['y'] += self.ball_speed['y']
@@ -149,7 +148,7 @@ class Pong:
                     paddle_y_coordinate + paddle_half_height > ball_y_coordinate - ball_half_width
                 ):
                     self.ball_speed['x'] *= -1
-                    self.ball_speed['y'] = (ball_y_coordinate - paddle_y_coordinate) / 20
+                    self.ball_speed['y'] = (ball_y_coordinate - paddle_y_coordinate) / 30
 
         # right paddle
         elif round(ball_x_coordinate + ball_half_width, 3) == round(self.ball_borders['right'], 3):
@@ -161,18 +160,20 @@ class Pong:
                     paddle_y_coordinate + paddle_half_height > ball_y_coordinate - ball_half_width
                 ):
                     self.ball_speed['x'] *= -1
-                    self.ball_speed['y'] = (ball_y_coordinate - paddle_y_coordinate) / 20
+                    self.ball_speed['y'] = (ball_y_coordinate - paddle_y_coordinate) / 30
 
         elif ball_y_coordinate >= self.borders['top'] or ball_y_coordinate <= self.borders['bottom']:
             self.ball_speed['y'] *= -1
 
-    def check_ball_out_of_bounds(self):
+    async def check_ball_out_of_bounds(self):
         if self.ball['x'] < self.borders['left']:
             self.prepare_next_round()
             self.score['right'] += 1
         elif self.ball['x'] > self.borders['right']:
             self.prepare_next_round()
             self.score['left'] += 1
+
+        await self.check_game_over()
 
     def prepare_next_round(self):
         for paddle in self.paddles['left'].values():
@@ -183,3 +184,20 @@ class Pong:
 
         self.ball = {'x': 0, 'y': 0}
         self.ball_speed = {'x': self.ball_step['x'] * self.ball_direction, 'y': 0}
+
+    async def check_game_over(self):
+        if 11 in self.score.values():
+            sleep(0.1)
+            self.do_broadcast = False
+            await self.pong_end()
+            await database_sync_to_async(MatchesController().finish_match)(game='pong', match_id=self.room_group_name, score=self.score)
+
+    async def pong_end(self):
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'pong_end',
+                'score': self.score,
+                'winner': max(self.score, key=self.score.get)
+            }
+        )

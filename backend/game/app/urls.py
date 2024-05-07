@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     GetMatchView,
+    CreateMatchView,
     CreateTournamentView,
     GetUpcomingGamesView,
     GetTournamentListView,
@@ -11,6 +12,7 @@ from .views import (
 
 
 urlpatterns = [
+    path('match/create', CreateMatchView.as_view(), name='api-create-match'),
     path('match/<slug:match_id>/get', GetMatchView.as_view(), name='api-get-match'),
 
     path('tournament/list', GetTournamentListView.as_view(), name='api-tournament-list'),

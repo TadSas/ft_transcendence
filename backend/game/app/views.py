@@ -58,3 +58,12 @@ class GetMatchView(APIView):
         return JsonResponse({
             'status': 0, **MatchesController().get_match(request.user.get('login'), match_id)
         })
+
+
+class CreateMatchView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def post(self, request):
+        return JsonResponse({
+            'status': 0, **MatchesController().create_new_match(request.user.get('login'), request.data)
+        })

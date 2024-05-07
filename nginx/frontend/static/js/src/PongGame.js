@@ -53,7 +53,7 @@ export default class PongGame {
     this.initialized = true
 
     this.animate()
-    this.interval = setInterval(this.sendPaddleState.bind(this), 15)
+    this.interval = setInterval(this.sendPaddleState.bind(this), 10)
   }
 
   drawGame(data) {

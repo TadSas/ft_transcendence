@@ -30,7 +30,7 @@ export default class extends BaseView {
         <div id="pongCont" class="p-3 vh-60 overflow-x-scroll bg-opacity-50 border rounded me-1 d-flex justify-content-center align-items-center ${this.matchId ? 'd-none' : ''}">
           ${
             this.matchId ? '' : `
-            <button type="button" class="btn btn-outline-secondary" onclick="PongController.initPong()">Start pong</button>
+            <button type="button" class="btn btn-outline-secondary" onclick="PongController.createSinglePong()">Start pong</button>
             `
           }
         </div>
