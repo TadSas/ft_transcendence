@@ -327,11 +327,26 @@ var TournamentBracketComponent = (() => {
   self.createMatch = (matchObject) => {
     const leftScore = Number(matchObject['leftScore']) || 0
     const rightScore = Number(matchObject['rightScore']) || 0
+    const leftUser = matchObject['leftUser']
+    const leftUserAlias = (self.participants[leftUser] || {}).alias
+    const rightUser = matchObject['rightUser']
+    const rightUserAlias = (self.participants[rightUser] || {}).alias
 
     return `
     <div class="match winner-${leftScore > rightScore ? 'top' : 'bottom'}">
-      ${self.createTeam({'win': leftScore > rightScore, 'draw': leftScore == rightScore, 'top': true, 'name': matchObject['leftUser'], 'score': leftScore})}
-      ${self.createTeam({'win': rightScore > leftScore, 'draw': leftScore == rightScore, 'name': matchObject['rightUser'], 'score': rightScore})}
+      ${self.createTeam({
+        'win': leftScore > rightScore,
+        'draw': leftScore == rightScore,
+        'top': true,
+        'name': leftUserAlias && `${leftUserAlias || ''} (${leftUser})` || leftUser,
+        'score': leftScore
+      })}
+      ${self.createTeam({
+        'win': rightScore > leftScore,
+        'draw': leftScore == rightScore,
+        'name': rightUserAlias && `${rightUserAlias || ''} (${rightUser})` || rightUser,
+        'score': rightScore
+      })}
 
       <div class="match-lines">
         <div class="line one position-absolute bg-secondary"></div>
@@ -399,11 +414,17 @@ var TournamentBracketComponent = (() => {
     `
   }
 
-  self.init = ({data = {}}) => {
-    if (typeof data !== 'object' || Object.keys(data).length === 0)
+  self.init = ({draw = {}, participants = {}}) => {
+    if (
+      typeof draw !== 'object' || Object.keys(draw).length === 0 ||
+      typeof participants !== 'object' || Object.keys(participants).length === 0
+    )
       return ''
 
-    return self.createBracket(data)
+    self.draw = draw
+    self.participants = participants
+
+    return self.createBracket(draw)
   }
 
   return self

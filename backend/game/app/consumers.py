@@ -51,10 +51,18 @@ class PongGameConsumer(AsyncWebsocketConsumer):
 
         if set(match_players) == set(self.connected_users[match_id]):
             if match_id not in self.room_game_instances:
+                match_score = match.score
+                left_user = match_players[0]
+                right_user = match_players[1]
+
                 game_instance = Pong(
                     players={
-                        match_players[0]: 'left.0',
-                        match_players[1]: 'right.0',
+                        left_user: 'left.0',
+                        right_user: 'right.0',
+                    },
+                    score={
+                        'left': match_score[left_user],
+                        'right': match_score[right_user],
                     },
                     channel_layer=self.channel_layer,
                     room_group_name=self.room_group_name,
@@ -78,15 +86,24 @@ class PongGameConsumer(AsyncWebsocketConsumer):
                 self.threads[match_id] = loop_thread
 
                 loop_thread.start()
+            # else:
+                # self.room_game_instances[self.room_group_name].do_broadcast = True
 
     async def disconnect(self, code):
         self.connected_users[self.room_group_name].remove(self.user_mapping[self.channel_name])
 
         if not len(self.connected_users[self.room_group_name]):
-            self.room_game_instances[self.room_group_name].do_broadcast = False
-            self.threads[self.room_group_name].join()
-            del self.room_game_instances[self.room_group_name]
-            del self.connected_users[self.room_group_name]
+            if self.room_group_name in self.room_game_instances:
+                self.room_game_instances[self.room_group_name].do_broadcast = False
+
+            if self.room_group_name in self.threads:
+                self.threads[self.room_group_name].join()
+
+            self.room_game_instances.pop(self.room_group_name, None)
+            self.connected_users.pop(self.room_group_name, None)
+        # else:
+        #     if self.room_group_name in self.room_game_instances:
+        #         self.room_game_instances[self.room_group_name].do_broadcast = False
 
         await self.channel_layer.group_discard(
             self.room_group_name,
@@ -95,15 +112,17 @@ class PongGameConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-        game_instance = self.room_game_instances[self.room_group_name]
 
-        await getattr(
-            game_instance,
-            data.get('type'),
-            game_instance.unknown_action
-        )(player=self.scope['user']['login'], data=data)
+        if self.room_group_name in self.room_game_instances:
+            game_instance = self.room_game_instances[self.room_group_name]
 
-        await game_instance.move_ball()
+            await getattr(
+                game_instance,
+                data.get('type'),
+                game_instance.unknown_action
+            )(player=self.scope['user']['login'], data=data)
+
+            await game_instance.move_ball()
 
     async def pong_start(self, event):
         await self.send(text_data=json.dumps({**event}))

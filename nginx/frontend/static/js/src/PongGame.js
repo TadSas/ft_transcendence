@@ -64,13 +64,14 @@ export default class PongGame {
     const ballMeasurements = data.ball_measurements
     const paddles = data.paddles
     const paddleMeasurements = data.paddle_measurements
+    const score = data.score
 
     this.createScene(gameCanvas.width, gameCanvas.height)
     this.setGameBorders(gameBorders.top, gameBorders.right, gameBorders.bottom, gameBorders.left)
     this.drawNet()
     this.drawBall(ball.x, ball.y, ballMeasurements.diameter)
     this.drawPaddles(paddles, paddleMeasurements)
-    this.drawScoreBorad()
+    this.drawScoreBorad(score)
     this.insertCanvasIntoDOM()
   }
 
@@ -186,7 +187,10 @@ export default class PongGame {
     this.paddles = {'left': leftSide, 'right': rightSide}
   }
 
-  drawScoreBorad() {
+  drawScoreBorad(score) {
+    this.scoreBoard['left']['score'] = score['left']
+    this.scoreBoard['right']['score'] = score['right']
+
     this.drawLeftSideScore()
     this.drawLeftSideName()
     this.drawRightSideScore()

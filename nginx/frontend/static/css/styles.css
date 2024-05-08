@@ -303,6 +303,10 @@
   font-size: 14px;
 }
 
+.match .name {
+  font-size: 12px;
+}
+
 .match-lines {
   display: block;
   position: absolute;

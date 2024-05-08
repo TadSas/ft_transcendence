@@ -93,7 +93,12 @@ class TournamentsController:
         if tournament.status == 'started':
             return
 
-        serializer = TournamentsSerializer(tournament, data={'status': 'started'})
+        serializer = TournamentsSerializer(tournament, data={
+            'name': tournament.name,
+            'game': tournament.game,
+            'host': tournament.host,
+            'status': 'started'
+        })
 
         if serializer.is_valid():
             serializer.save()
@@ -104,24 +109,51 @@ class TournamentsController:
         Parameters
         ----------
         tournament_id : str
+        draw : dict
 
         """
         tournament = self.get_tournament(tournament_id)
 
-        serializer = TournamentsSerializer(tournament, data={'status': 'finished'})
+        serializer = TournamentsSerializer(tournament, data={
+            'name': tournament.name,
+            'game': tournament.game,
+            'host': tournament.host,
+            'status': 'finished'
+        })
 
         if serializer.is_valid():
             serializer.save()
 
-    def update_match(self, game: str, tournament_id: str, match_path: str, score: dict):
+    def update_tournament_draw(self, tournament_id, draw):
+        """ Update tournament draw
+
+        Parameters
+        ----------
+        tournament_id : str
+        draw : dict
+        """
+        tournament = self.get_tournament(tournament_id)
+
+        serializer = TournamentsSerializer(tournament, data={
+            'name': tournament.name,
+            'game': tournament.game,
+            'host': tournament.host,
+            'status': tournament.status,
+            'draw': draw
+        })
+
+        if serializer.is_valid():
+            serializer.save()
+
+    def update_match(self, tournament_id: str, match_path: str, score: dict, finished: bool = False):
         """ Update tournament match result
 
         Parameters
         ----------
-        game : str
         tournament_id : str
         match_path : str
         score : dict
+        finished : bool
 
         """
         tournament = self.get_tournament(tournament_id)
@@ -132,21 +164,24 @@ class TournamentsController:
         match['rightScore'] = score['right']
 
         if relation_side:
-            parent_match[relation_side] = match[f'{max(score, key=score.get)}User']
+            parent_match[f"{relation_side}User"] = match[f'{max(score, key=score.get)}User']
 
             if (
+                finished and
                 (left_user := parent_match['leftUser']) and
                 (right_user := parent_match['rightUser']) and
                 not parent_match['matchId']
             ):
                 parent_match['matchId'] = MatchesController().create_match(
-                    game=game,
+                    game=tournament.game,
                     players=[left_user, right_user],
                     tournament_path='/'.join(match_path.split('/')[:-1]) or '/',
                     tournament_id=tournament_id
                 )
         else:
-            self.finish_tournament(tournament_id)
+            finished and self.finish_tournament(tournament_id)
+
+        self.update_tournament_draw(tournament_id, draw)
 
     def get_tournament_match_by_path(self, draw: dict, match_path: str) -> tuple:
         """ Get tournament match and parent match by path
@@ -247,7 +282,7 @@ class TournamentsController:
 
         draw = {}
         status = 'registration'
-        tournament_participants[logged_user] = {'alias': alias}
+        tournament_participants[logged_user] = {'alias': escape(alias)}
 
         if tournament_size == len(tournament_participants):
             status = 'started'
@@ -492,7 +527,7 @@ class MatchesController:
             return
 
         match = self.get_match_by_id(match_id)
-        serializer = MatchesSerializer(match, data={'status': status})
+        serializer = MatchesSerializer(match, data={'game': match.game, 'status': status})
 
         if serializer.is_valid():
             serializer.save()
@@ -500,15 +535,14 @@ class MatchesController:
         if (tournament := match.tournament) and (tournament_id := tournament.get('id')):
             TournamentsController().start_tournament(tournament_id)
 
-    def finish_match(self, game: str, match_id: str, score: dict):
-        """ Mark match as finished
+    def update_match_score(self, match_id: str, score: dict, status: str = ''):
+        """ Update match score
 
         Parameters
         ----------
-        game : str
         match_id : str
-        players : list
         score : dict
+        status : str
 
         """
         match = self.get_match_by_id(match_id)
@@ -520,10 +554,10 @@ class MatchesController:
 
         if tournamnet_data := match.tournament:
             TournamentsController().update_match(
-                game,
                 tournament_id=tournamnet_data.get('id'),
                 match_path=tournamnet_data.get('path'),
-                score=score
+                score=score,
+                finished=status=='finished'
             )
 
         for player in match_players[:player_length // 2]:
@@ -535,9 +569,10 @@ class MatchesController:
         serializer = MatchesSerializer(
             match,
             data={
+                'game': match.game,
                 'stats': updated_stats,
                 'score': updated_score,
-                'status': 'finished'
+                'status': status or match.status
             }
         )
 
@@ -632,13 +667,12 @@ class MatchesController:
         matches = []
 
         for match in Matches.objects.filter(
-            players__has_key=logged_username,
-            status='created'
-        ).order_by('-created_at').values('id', 'game', 'players', 'stats', 'score', 'tournament'):
+            status__in=['created', 'playing']
+        ).order_by('-created_at').values('id', 'game', 'players', 'stats', 'score', 'status', 'tournament'):
             matches.append(match)
 
             if (tournament := match.get('tournament')) and (tournament_id := tournament.get('id')):
-                tournament_ids.add(tournament_id)\
+                tournament_ids.add(tournament_id)
 
         tournaments = {
             str(tournament.get('id')): tournament for tournament in

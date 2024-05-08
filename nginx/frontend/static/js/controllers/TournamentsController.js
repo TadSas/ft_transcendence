@@ -98,6 +98,7 @@ var TournamentsController = (() => {
       let buttonEvent = ''
       const tournamentId = tournament['id']
       const tournamentDraw = tournament['draw']
+      const tournamentParticipants = tournament['participants']
       const activity = tournament['activity']
       const activityTitle =activity['title']
 
@@ -112,11 +113,11 @@ var TournamentsController = (() => {
           break
         case 'watch':
           buttonStyle = 'outline-info'
-          buttonEvent = `TournamentsController.watch("${encodeURIComponent(JSON.stringify(tournamentDraw))}")`
+          buttonEvent = `TournamentsController.watch("${encodeURIComponent(JSON.stringify({'draw': tournamentDraw, 'participants': tournamentParticipants}))}")`
           break
         case 'results':
           buttonStyle = 'outline-secondary'
-          buttonEvent = ''
+          buttonEvent = `TournamentsController.watch("${encodeURIComponent(JSON.stringify({'draw': tournamentDraw, 'participants': tournamentParticipants}))}")`
           break
       }
 
@@ -129,8 +130,8 @@ var TournamentsController = (() => {
         }
       })
     }
-
-    await self.initUpcomingGames()
+    const upcomingGamesCont = document.getElementById('upcomingGamesCont')
+    upcomingGamesCont && (upcomingGamesCont.innerHTML = await self.initUpcomingGames())
 
     return TableComponent.init({'headers': headers, 'data': tournaments})
   }
@@ -203,13 +204,14 @@ var TournamentsController = (() => {
     }).send()
   }
 
-  self.watch = (tournamentDraw) => {
+  self.watch = (data) => {
+    data = JSON.parse(decodeURIComponent(data))
     document.getElementsByClassName('modals')[0].innerHTML = Components.modal({
       'size': 'extraLarge',
       'centered': true,
       'modalId': 'watchTournamentModalId',
       'modalTitle': 'Current matches of the tournament',
-      'modalBody': TournamentBracketComponent.init({'data': JSON.parse(decodeURIComponent(tournamentDraw))}),
+      'modalBody': TournamentBracketComponent.init({'draw': data.draw, 'participants': data.participants}),
       'cancelButtonTitle': 'Close',
       'cancelButtonClass': 'btn btn-secondary',
     })
@@ -217,8 +219,6 @@ var TournamentsController = (() => {
   }
 
   self.initUpcomingGames = async () => {
-    const upcomingGamesCont = document.getElementById('upcomingGamesCont')
-
     return await new httpRequest({
       resource: `/game/api/tournament/games/upcoming`,
       method: 'GET',
@@ -235,6 +235,7 @@ var TournamentsController = (() => {
           let playerNames = []
           let playerImages = []
           const game = match['game']
+          const status = match['status']
           const players = match['players']
           const tournament = tournaments[(match['tournament'] || {})['id']]
           const tournamentName = tournament['name']
@@ -246,6 +247,16 @@ var TournamentsController = (() => {
           }
 
           playerNames = playerNames.join(', ')
+
+          let button = ''
+
+          if (status === 'created') {
+            if (players.includes(window.user.login)) {
+              button = `<li class="d-flex align-items-center">
+                <a href="/${game}/${match['id']}" type="button" class="btn btn-success" data-link>Play now</a>
+              </li>`
+            }
+          }
 
           upcomingGames += `
           <div class="list-group-item list-group-item-action">
@@ -260,11 +271,7 @@ var TournamentsController = (() => {
                   <li class="me-auto">
                     ${playerImages.join(`<span class="px-1 fw-bold"> VS </span>`)}
                   </li>
-                  ${
-                    match['id'] && `<li class="d-flex align-items-center">
-                      <a href="/${game}/${match['id']}" type="button" class="btn btn-success" data-link>Play now</a>
-                    </li>`
-                  }
+                  ${button}
                 </ul>
               </div>
             </div>

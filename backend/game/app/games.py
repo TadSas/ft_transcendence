@@ -13,6 +13,7 @@ class Pong:
         height = 405,
         multiplayer = False,
         players={},
+        score={},
         channel_layer=None,
         room_group_name=None,
     ):
@@ -39,7 +40,7 @@ class Pong:
             'right': 10 - self.paddle_measurements['width'] / 2
         }
 
-        self.score = {'left': 0, 'right': 0}
+        self.score = score or {'left': 0, 'right': 0}
         self.do_broadcast = True
 
     def init_paddles(self, players):
@@ -70,6 +71,7 @@ class Pong:
             'ball_measurements': self.ball_measurements,
             'paddles': self.paddles,
             'paddle_measurements': self.paddle_measurements,
+            'score': self.score,
         }
 
     def broadcast_wrapper(self, channel_layer, room_group_name):
@@ -126,6 +128,9 @@ class Pong:
         return paddle['y'] - self.paddle_measurements['height'] < self.borders['bottom']
 
     async def move_ball(self):
+        if not self.do_broadcast:
+            return
+
         self.check_ball_collisions()
         await self.check_ball_out_of_bounds()
 
@@ -169,9 +174,17 @@ class Pong:
         if self.ball['x'] < self.borders['left']:
             self.prepare_next_round()
             self.score['right'] += 1
+            await database_sync_to_async(MatchesController().update_match_score)(
+                match_id=self.room_group_name,
+                score=self.score
+            )
         elif self.ball['x'] > self.borders['right']:
             self.prepare_next_round()
             self.score['left'] += 1
+            await database_sync_to_async(MatchesController().update_match_score)(
+                match_id=self.room_group_name,
+                score=self.score
+            )
 
         await self.check_game_over()
 
@@ -190,7 +203,11 @@ class Pong:
             sleep(0.1)
             self.do_broadcast = False
             await self.pong_end()
-            await database_sync_to_async(MatchesController().finish_match)(game='pong', match_id=self.room_group_name, score=self.score)
+            await database_sync_to_async(MatchesController().update_match_score)(
+                match_id=self.room_group_name,
+                score=self.score,
+                status='finished'
+            )
 
     async def pong_end(self):
         await self.channel_layer.group_send(

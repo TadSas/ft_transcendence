@@ -45,6 +45,11 @@ var PongController = (() => {
         case 'pong_packet':
           gameInstance.refresh(data.data)
           break
+        case 'pong_end':
+          if (gameWebSocket && [WebSocket.OPEN, WebSocket.CONNECTING].includes(gameWebSocket.readyState))
+            gameWebSocket.close()
+
+          break
       }
     }
 
