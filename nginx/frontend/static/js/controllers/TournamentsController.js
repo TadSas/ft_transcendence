@@ -235,6 +235,7 @@ var TournamentsController = (() => {
           let playerNames = []
           let playerImages = []
           const game = match['game']
+          const score = match['score']
           const status = match['status']
           const players = match['players']
           const tournament = tournaments[(match['tournament'] || {})['id']]
@@ -251,11 +252,15 @@ var TournamentsController = (() => {
           let button = ''
 
           if (status === 'created') {
-            if (players.includes(window.user.login)) {
-              button = `<li class="d-flex align-items-center">
-                <a href="/${game}/${match['id']}" type="button" class="btn btn-success" data-link>Play now</a>
-              </li>`
-            }
+            if (players.includes(window.user.login))
+              button = `<a href="/${game}/${match['id']}" type="button" class="btn btn-success" data-link>Play now</a>`
+            else
+              button = `<a type="button" class="btn btn-outline-secondary pe-none">Not started</a>`
+          } else if (status === 'playing') {
+            if (players.includes(window.user.login))
+              button = `<a href="/${game}/${match['id']}" type="button" class="btn btn-primary" data-link>Continue</a>`
+            else
+              button = `<a type="button" class="btn btn-outline-info pe-none">${score[players.at(0)] || '0'} : ${score[players.at(-1)] || '0'}</a>`
           }
 
           upcomingGames += `
@@ -271,7 +276,9 @@ var TournamentsController = (() => {
                   <li class="me-auto">
                     ${playerImages.join(`<span class="px-1 fw-bold"> VS </span>`)}
                   </li>
-                  ${button}
+                  <li class="d-flex align-items-center">
+                    ${button}
+                  </li>
                 </ul>
               </div>
             </div>

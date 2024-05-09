@@ -213,8 +213,12 @@ export default class PongGame {
         new THREE.MeshPhongMaterial({color: 0x5c2301})
       ]
     )
+
+    const usenameSize = new THREE.Vector3()
+    new THREE.Box3().setFromObject(leftPlayerScoreBoard).getSize(usenameSize)
+
     leftPlayerScoreBoard.castShadow = true
-    leftPlayerScoreBoard.position.x = -2 - leftPlayerScoreBoard.scale.x
+    leftPlayerScoreBoard.position.x = -2 - usenameSize.x
     leftPlayerScoreBoard.position.y = this.gameTopBound - 2
     leftPlayerScoreBoard.position.z = -1
 

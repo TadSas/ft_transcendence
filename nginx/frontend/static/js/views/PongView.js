@@ -50,11 +50,27 @@ export default class extends BaseView {
                 </div>
               </div>
               <div class="row justify-content-center">
-                <strong role="status">We are waiting for all parties to be ready to start the game.</strong>
+                <strong>We are waiting for all parties to be ready to start the game.</strong>
               </div>
             </div>
             ` : ''
           }
+        </div>
+        <div id="pongResultCont" class="p-3 vh-60 overflow-x-scroll bg-opacity-50 border rounded me-1 d-flex justify-content-center align-items-center d-none">
+          <div class="container text-center">
+            <div class="justify-content-center">
+              <p class="fs-4">
+                <strong>Final result is </strong>
+                <strong id="pongResultScore"></strong>
+              </p>
+            </div>
+            <hr>
+            <div class="row justify-content-center">
+              <p class="fs-4">
+                <strong id="pongResultMessage"></strong>
+              </p>
+            </div>
+          </div>
         </div>
 
         <div class="p-4 vh-10 overflow-x-scroll bg-opacity-50 border rounded me-1 d-flex justify-content-center align-items-center">
@@ -69,7 +85,7 @@ export default class extends BaseView {
 
   initNotificationSection = (matchObject) => {
     return `
-    <div>
+    <div id="pongNotifyOpponent">
       <h5 class="display-7 lh-1 fw-bold">Notify your opponent about the game</h5>
       <hr>
       <div class="d-grid">

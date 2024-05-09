@@ -30,24 +30,63 @@ var PongController = (() => {
 
     gameWebSocket.onmessage = (e) => {
       const data = JSON.parse(e.data)
+      const pongCont = document.getElementById('pongCont')
 
       switch (data['type']) {
         case 'pong_start':
         case 'pong_reconnect':
-          const pongCont = document.getElementById('pongCont')
+          const pongNotifyOpponent = document.getElementById('pongNotifyOpponent')
+          pongNotifyOpponent && pongNotifyOpponent.remove()
+
           const pongWaintingCont = document.getElementById('pongWaintingCont')
+          pongWaintingCont && pongWaintingCont.classList.add('d-none')
 
           pongCont && pongCont.classList.remove('d-none')
-          pongWaintingCont && pongWaintingCont.classList.add('d-none')
+
           gameInstance.init(data)
 
-        break
+          break
         case 'pong_packet':
           gameInstance.refresh(data.data)
           break
         case 'pong_end':
           if (gameWebSocket && [WebSocket.OPEN, WebSocket.CONNECTING].includes(gameWebSocket.readyState))
             gameWebSocket.close()
+
+          delete self['gameInstance']
+          if (pongCont) {
+            pongCont.innerHTML = ''
+            pongCont.classList.add('d-none')
+          }
+
+          const pongResultCont = document.getElementById('pongResultCont')
+          pongResultCont && pongResultCont.classList.remove('d-none')
+
+          const pongResultScore = document.getElementById('pongResultScore')
+          if (pongResultScore) {
+            const score = data.score
+            const players = data.players
+            const leftPlayer = players.at(0)
+            const rightPlayer = players.at(-1)
+            pongResultScore.innerText = `(${leftPlayer}) ${score[leftPlayer]} : ${score[rightPlayer]} (${rightPlayer})`
+          }
+
+          const pongResultMessage = document.getElementById('pongResultMessage')
+          if (pongResultMessage) {
+            const winMessages = [
+              "Well done! You're the Pong ace!", "Congratulations! You've conquered the Pong battlefield!","Victory is yours! You're the undisputed Pong champ!",
+              "Congratulations! You've mastered the art of Pong!", "Bravo! You're the Pong virtuoso!", "Victory dance time! You're the Pong superstar!"
+            ]
+            const loseMessages = [
+              "Hard luck! Keep honing those skills!", "Tough one! Practice makes perfect!", "Close match! Keep practicing and you'll dominate!",
+              "Unlucky! Keep your paddle up and try again!", "Tough break! The next game's yours!", "Close call! You're getting closer with each game!"
+            ]
+
+            if (data.winner === window.user.login)
+              pongResultMessage.innerText = winMessages[Math.floor(Math.random() * winMessages.length)]
+            else
+              pongResultMessage.innerText = loseMessages[Math.floor(Math.random() * loseMessages.length)]
+          }
 
           break
       }

@@ -210,11 +210,15 @@ class Pong:
             )
 
     async def pong_end(self):
+        match = await database_sync_to_async(MatchesController().get_match_by_id)(match_id=self.room_group_name)
+        match_score = match.score
+
         await self.channel_layer.group_send(
             self.room_group_name,
             {
                 'type': 'pong_end',
-                'score': self.score,
-                'winner': max(self.score, key=self.score.get)
+                'players': match.players,
+                'score': match_score,
+                'winner': max(match_score, key=match_score.get),
             }
         )
