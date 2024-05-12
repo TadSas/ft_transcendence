@@ -140,3 +140,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 JWT_COOKIE_NAME = 'ft_transcendence_jwt'
 
 AUTHORIZATION_SERVER = 'http://auth:8080'
+
+GAME_SERVER = 'http://game:8081'

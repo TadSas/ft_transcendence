@@ -101,7 +101,7 @@ var PongController = (() => {
 
   self.getMatch = async (matchId) => {
     return new httpRequest({
-      resource: `/game/api/match/${matchId}/get`,
+      resource: `/game/api/match/${matchId}`,
       method: 'GET',
       successCallback: response => response['data']['match']
     }).send()
@@ -148,6 +148,63 @@ var PongController = (() => {
       const hiddenGameAccept = document.getElementById('hiddenGameAccept')
       hiddenGameAccept && hiddenGameAccept.click()
     }
+  }
+
+  self.getProfileStatsView = async (userInformation) => {
+    const stats = await new httpRequest({
+      resource: `/game/api/match/stats/${userInformation.login}`,
+      method: 'GET',
+      successCallback: response => response['data']
+    }).send()
+
+    return `
+    <div class="position-relative p-5 text-start bg-body border rounded-4 mb-3">
+      <h3 class="border-bottom pb-2">Stats</h3>
+      <div class="d-flex align-items-end flex-row mt-4">
+        <div class="container text-center">
+          <div class="row">
+
+            <div class="col-4 col-sm-4 d-flex justify-content-center">
+              <div class="px-2">
+                <i class="bi bi-controller h1"></i>
+                <p class="text-center text-wrap">Played: ${stats.played || '0'}</p>
+              </div>
+            </div>
+
+            <div class="col-4 col-sm-4 d-flex justify-content-center">
+              <div class="px-2">
+                <i class="bi bi-emoji-laughing h1"></i>
+                <p class="text-center text-wrap">Won: ${stats.won || '0'}</p>
+              </div>
+            </div>
+
+            <div class="col-4 col-sm-4 d-flex justify-content-center">
+              <div class="px-2">
+                <i class="bi bi-emoji-frown h1"></i>
+                <p class="text-center text-wrap">Lost: ${stats.lost || '0'}</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+    `
+  }
+
+  self.getProfileMatchHistoryView = async (userInformation) => {
+    const matchHistoryData = await new httpRequest({
+      resource: `/game/api/match/history/${userInformation.login}`,
+      method: 'GET',
+      successCallback: response => response['data']
+    }).send()
+
+    return `
+    <div class="position-relative p-5 text-start bg-body border rounded-4 mb-3">
+      <h3 class="border-bottom pb-2">Match history</h3>
+      ${TableComponent.init({'headers': matchHistoryData['headers'], 'data': matchHistoryData['match_history']})}
+    </div>
+    `
   }
 
   return self

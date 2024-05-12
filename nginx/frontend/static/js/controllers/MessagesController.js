@@ -21,14 +21,6 @@ var MessagesController = (() => {
     }).send()
   }
 
-  self.getRoom = (roomId) => {
-    return new httpRequest({
-      resource: `/chat/api/room/${roomId}/get`,
-      method: 'GET',
-      successCallback: response => response['data']['room']
-    }).send()
-  }
-
   self.startChatting = (room) => {
     room = JSON.parse(decodeURIComponent(room))
     const user = room.user

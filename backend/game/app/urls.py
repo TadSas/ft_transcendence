@@ -3,17 +3,21 @@ from django.urls import path
 from .views import (
     GetMatchView,
     CreateMatchView,
+    GetUserStatsView,
     CreateTournamentView,
     GetUpcomingGamesView,
     GetTournamentListView,
     RegisterTournamentView,
+    GetUserMatchHistoryView,
     UnregisterTournamentView,
 )
 
 
 urlpatterns = [
     path('match/create', CreateMatchView.as_view(), name='api-create-match'),
-    path('match/<slug:match_id>/get', GetMatchView.as_view(), name='api-get-match'),
+    path('match/<slug:match_id>', GetMatchView.as_view(), name='api-get-match'),
+    path('match/stats/<slug:username>', GetUserStatsView.as_view(), name='api-user-stats'),
+    path('match/history/<slug:username>', GetUserMatchHistoryView.as_view(), name='api-user-match-history'),
 
     path('tournament/list', GetTournamentListView.as_view(), name='api-tournament-list'),
     path('tournament/create', CreateTournamentView.as_view(), name='api-tournament-create'),

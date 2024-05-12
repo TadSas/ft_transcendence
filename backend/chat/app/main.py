@@ -10,7 +10,7 @@ class RoomController:
     def __init__(self):
         pass
 
-    def create_room(self, user: str, chatter: str) -> str:
+    def create_room(self, user: str, chatter: str) -> dict:
         """ Creates the room with the specified user and chatter
 
         Parameters
@@ -20,7 +20,7 @@ class RoomController:
 
         Returns
         -------
-        str
+        dict
 
         """
         result = {'data': {}}
@@ -40,6 +40,23 @@ class RoomController:
             result['data']['room_id'] = str(room.id)
 
         return result
+
+    def create_tournament_room(self, request_data: dict) -> dict:
+        """ Create tournament room
+
+        Parameters
+        ----------
+        request_data : dict
+
+        Returns
+        -------
+        dict
+
+        """
+        if len(participants := request_data.get('participants')) != 2:
+            return {'status': 1, 'message': 'Not enaught participants'}
+
+        return self.create_room(participants[0], participants[1])
 
     def get_room(self, room_id: str) -> Rooms:
         """ Returnes the room with specified room id

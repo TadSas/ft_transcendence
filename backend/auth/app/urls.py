@@ -39,7 +39,7 @@ urlpatterns = [
     path('friends/request/cancel', CancelFriendRequestView.as_view(), name='api-cancel-friend-request'),
     path('friends/request/accept', AcceptFriendRequestView.as_view(), name='api-accept-friend-request'),
     path('friends/request/reject', RejectFriendRequestView.as_view(), name='api-reject-friend-request'),
-    path('friends/request/all/get', GetAllFriendRequestView.as_view(), name='api-get-all-friend-request'),
+    path('friends/request/all', GetAllFriendRequestView.as_view(), name='api-get-all-friend-request'),
     path('friends/status/<slug:friend>', FriendStatusView.as_view(), name='api-friend-status'),
 
     path('friends/all', GetAllFriendsView.as_view(), name='api-get-all-friends'),

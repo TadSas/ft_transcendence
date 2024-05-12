@@ -153,7 +153,7 @@ var FriendsController = (() => {
 
   self.getFriendRequests = async () => {
     return new httpRequest({
-      resource: '/auth/api/friends/request/all/get',
+      resource: '/auth/api/friends/request/all',
       method: 'GET',
       successCallback: response => {
         if ('data' in response, 'requests' in response['data'])

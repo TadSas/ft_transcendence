@@ -5,7 +5,7 @@ from .models import Rooms, Messages
 
 class RoomsSerializer(serializers.Serializer):
     id = serializers.UUIDField(read_only=True)
-    participants = serializers.ListField(child=serializers.CharField(max_length=32))
+    participants = serializers.ListField(child=serializers.CharField(max_length=64))
     blocked = serializers.JSONField(required=False)
     created_at = serializers.DateTimeField(required=False)
 

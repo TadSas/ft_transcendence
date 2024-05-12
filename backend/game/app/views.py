@@ -67,3 +67,21 @@ class CreateMatchView(APIView):
         return JsonResponse({
             'status': 0, **MatchesController().create_new_match(request.user.get('login'), request.data)
         })
+
+
+class GetUserStatsView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request, username = ''):
+        return JsonResponse({
+            'status': 0, **MatchesController().get_user_stats(request.user.get('login'), username)
+        })
+
+
+class GetUserMatchHistoryView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request, username = ''):
+        return JsonResponse({
+            'status': 0, **MatchesController().get_user_match_history(request.user.get('login'), username)
+        })

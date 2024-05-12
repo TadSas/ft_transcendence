@@ -36,7 +36,7 @@ export default class extends BaseView {
 
     document.getElementById('footer').classList.add('d-none')
 
-    const rooms = await new httpRequest({resource: '/chat/api/rooms/get', method: 'GET', successCallback: response => {
+    const rooms = await new httpRequest({resource: '/chat/api/rooms/list', method: 'GET', successCallback: response => {
       return response
     }}).send()
 

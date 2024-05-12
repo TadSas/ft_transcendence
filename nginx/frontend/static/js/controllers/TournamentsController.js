@@ -299,5 +299,27 @@ var TournamentsController = (() => {
     document.getElementById('tournamentListing').innerHTML = await self.list()
   }
 
+  self.getProfileTournamnetsView = async (userInformation) => {
+    return `
+    <div class="position-relative p-5 text-start bg-body border rounded-4 mb-3">
+      <h3 class="border-bottom pb-2">Tournaments</h3>
+      <div class="d-flex align-items-end flex-row mt-4">
+        <div class="container text-center">
+          <div class="row">
+
+            <div class="col-3 col-sm-3 d-flex justify-content-center">
+              <div class="px-2">
+                <i class="bi bi-trophy h1"></i>
+                <p class="text-center text-wrap">No tournaments found</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+    `
+  }
+
   return self
 })()

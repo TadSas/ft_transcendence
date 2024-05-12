@@ -22,107 +22,12 @@ export default class extends BaseView {
       }
     })
 
-    const userInformationHeaders = {
-      'login': 'Username',
-      'first_name': 'Name',
-      'last_name': 'Surname',
-      'email': 'Email',
-      'created_at': 'Join date'
-    }
-
-    const resource = this.username ? `/auth/api/user/${this.username}` : '/auth/api/user'
-    const user = await new httpRequest({resource: resource, method: 'GET', successCallback: response => {return response}}).send()
+    const user = await new httpRequest({
+      resource: this.username ? `/auth/api/user/${this.username}` : '/auth/api/user',
+      method: 'GET',
+      successCallback: response => {return response}
+    }).send()
     const userInformation = user['data']
-
-    const generalInformation = `
-    <div class="position-relative p-5 text-start bg-body border rounded-4 mb-3">
-      <h3 class="text-body-emphasis border-bottom pb-2">General information</h3>
-      <div class="d-flex align-items-end flex-row mt-4">
-        <div class="container text-center">
-          ${
-            (() => {
-              let content = ''
-
-              for (const header in userInformationHeaders) {
-                content += `
-                <div class="row">
-
-                  <div class="col-4 col-sm-4">
-                    <div class="px-2">
-                      <p class="text-start text-wrap fw-bold">${userInformationHeaders[header] || ''}</p>
-                    </div>
-                  </div>
-                  <div class="col-8 col-sm-8">
-                    <div class="px-2">
-                      <p class="text-start text-wrap fw-light">${userInformation[header] || ''}</p>
-                    </div>
-                  </div>
-                  <hr>
-                </div>
-                `
-              }
-
-              return content
-            })()
-          }
-        </div>
-      </div>
-    </div>
-    `
-
-    const stats = `
-    <div class="position-relative p-5 text-start bg-body border rounded-4 mb-3">
-      <h3 class="border-bottom pb-2">Stats</h3>
-      <div class="d-flex align-items-end flex-row mt-4">
-        <div class="container text-center">
-          <div class="row">
-
-            <div class="col-4 col-sm-4 d-flex justify-content-center">
-              <div class="px-2">
-                <i class="bi bi-controller h1"></i>
-                <p class="text-center text-wrap">Played: N/A</p>
-              </div>
-            </div>
-
-            <div class="col-4 col-sm-4 d-flex justify-content-center">
-              <div class="px-2">
-                <i class="bi bi-emoji-laughing h1"></i>
-                <p class="text-center text-wrap">Won: N/A</p>
-              </div>
-            </div>
-
-            <div class="col-4 col-sm-4 d-flex justify-content-center">
-              <div class="px-2">
-                <i class="bi bi-emoji-frown h1"></i>
-                <p class="text-center text-wrap">Lost: N/A</p>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-    </div>
-    `
-
-    const tournaments = `
-    <div class="position-relative p-5 text-start bg-body border rounded-4 mb-3">
-      <h3 class="border-bottom pb-2">Tournaments</h3>
-      <div class="d-flex align-items-end flex-row mt-4">
-        <div class="container text-center">
-          <div class="row">
-
-            <div class="col-3 col-sm-3 d-flex justify-content-center">
-              <div class="px-2">
-                <i class="bi bi-trophy h1"></i>
-                <p class="text-center text-wrap">No tournaments found</p>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </div>
-    </div>
-    `
 
     const statuses = {
       'online': 'success',
@@ -172,25 +77,79 @@ export default class extends BaseView {
         </div>
 
         <div class="col-8 px-1">
-          ${generalInformation}
-          <div id="stats">
-            ${stats}
-          </div>
-          <div id="tournaments">
-            ${tournaments}
-          </div>
+          ${await this.getGeneralInformation(userInformation)}
+
           ${
             this.username ? '' : `
             <div id="friendRequests">
-              ${await FriendsController.getFriendRequestsView()}
+              ${await FriendsController.getFriendRequestsView(userInformation)}
             </div>
             `
           }
           <div id="friends">
             ${await FriendsController.getFriendsView(this.username)}
           </div>
+
+          <div id="stats">
+            ${await PongController.getProfileStatsView(userInformation)}
+          </div>
+
+          <div id="matchHistory">
+            ${await PongController.getProfileMatchHistoryView(userInformation)}
+          </div>
+
+          <div id="tournaments">
+            ${await TournamentsController.getProfileTournamnetsView(userInformation)}
+          </div>
+
         </div>
 
+      </div>
+    </div>
+    `
+  }
+
+  async getGeneralInformation(userInformation) {
+    const userInformationHeaders = {
+      'login': 'Username',
+      'first_name': 'Name',
+      'last_name': 'Surname',
+      'email': 'Email',
+      'created_at': 'Join date'
+    }
+
+    return `
+    <div class="position-relative p-5 text-start bg-body border rounded-4 mb-3">
+      <h3 class="text-body-emphasis border-bottom pb-2">General information</h3>
+      <div class="d-flex align-items-end flex-row mt-4">
+        <div class="container text-center">
+          ${
+            (() => {
+              let content = ''
+
+              for (const header in userInformationHeaders) {
+                content += `
+                <div class="row">
+
+                  <div class="col-4 col-sm-4">
+                    <div class="px-2">
+                      <p class="text-start text-wrap fw-bold">${userInformationHeaders[header] || ''}</p>
+                    </div>
+                  </div>
+                  <div class="col-8 col-sm-8">
+                    <div class="px-2">
+                      <p class="text-start text-wrap fw-light">${userInformation[header] || ''}</p>
+                    </div>
+                  </div>
+                  <hr>
+                </div>
+                `
+              }
+
+              return content
+            })()
+          }
+        </div>
       </div>
     </div>
     `

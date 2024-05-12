@@ -1,8 +1,12 @@
+import json
 import math
 import random
 
 from django.utils import timezone
 from django.utils.html import escape
+from urllib.request import Request, urlopen
+
+from game.settings import CHAT_SERVER
 
 from .models import Tournaments, Matches
 from .serializers import TournamentsSerializer, MatchesSerializer
@@ -287,6 +291,7 @@ class TournamentsController:
         if tournament_size == len(tournament_participants):
             status = 'started'
             draw = getattr(self, f"organize_{tournament.game}_matchmaking")(tournament_participants, tournament_id)
+            # self.notify_tournament_participants(tournament_id, tournament.name, tournament_participants)
 
         serializer = TournamentsSerializer(
             tournament,
@@ -304,6 +309,33 @@ class TournamentsController:
             return {'status': 1, 'message': 'An unexpected error occurred while registering for the tournament'}
 
         return {'message': 'Successfully registered for the tournament'}
+
+    def notify_tournament_participants(self, tournament_id: str, tournament_name: str, tournament_participants: dict):
+        """ Notify tournament participants
+
+        Parameters
+        ----------
+        tournament_id : str
+        tournament_name : str
+        tournament_participants : dict
+
+        """
+        for participant in tournament_participants:
+            try:
+                requesta = Request(
+                    url=f"{CHAT_SERVER}/chat/api/rooms/tournament/create",
+                    data=json.dumps({'participants': [participant, f'{tournament_name} ({tournament_id})']}).encode()
+                )
+                requesta.add_header('Content-Type', 'application/json')
+
+                with urlopen(requesta) as response:
+                    response_data = json.loads(response.read().decode())
+
+                    if response_data.get('status') == 1:
+                        continue
+
+            except Exception:
+                continue
 
     def unregister_tournament(self, logged_user: str, request_data: dict) -> dict:
         """ Unregister the logger user to the provided tournament
@@ -513,6 +545,78 @@ class MatchesController:
             }
 
         return {'data': {'match': match}}
+
+    def get_user_stats(self, logged_username: str, username: str) -> dict:
+        """ Get user stats
+
+        Parameters
+        ----------
+        logged_username : str
+        username : str
+
+        Returns
+        -------
+        dict
+
+        """
+        played = won = lost = 0
+
+        for match in Matches.objects.filter(players__contains=[username]).values():
+            score = match.get('score') or {}
+
+            if max(score, key=score.get) == username:
+                won += 1
+            else:
+                lost += 1
+
+            played += 1
+
+        return {'data': {'played': played, 'won': won, 'lost': lost}}
+
+    def get_user_match_history(self, logged_username: str, username: str) -> dict:
+        """ Get user match history
+
+        Parameters
+        ----------
+        logged_username : str
+        username : str
+
+        Returns
+        -------
+        dict
+
+        """
+        match_history = list(Matches.objects.filter(players__contains=[username]).values())
+
+        for match in match_history:
+            match['created_at'] = timezone.localtime(match['created_at']).strftime("%H:%M - %d/%m/%Y")
+
+            players = match['players'].copy()
+            players.remove(username)
+            score = match['score']
+
+            if len(players) > 0:
+                match['against'] = players[0]
+            else:
+                match['against'] = 'unknown'
+
+            if max(score, key=score.get) == username:
+                match['result'] = "Win"
+            else:
+                match['result'] = "Lose"
+
+            match['score'] = f'{score[match['players'][0]]} : {score[match['players'][-1]]}'
+
+        return {'data': {
+            'match_history': match_history,
+            'headers': {
+                'game': 'Game',
+                'score': 'Score',
+                'against': 'Against',
+                'created_at': 'Played at',
+                'result': 'Result',
+            }
+        }}
 
     def update_match_status(self, match_id: str, status: str):
         """ Update match status
