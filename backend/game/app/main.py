@@ -2,6 +2,7 @@ import json
 import math
 import random
 
+from typing import Any
 from django.utils import timezone
 from django.utils.html import escape
 from urllib.request import Request, urlopen
@@ -46,6 +47,80 @@ class TournamentsController:
 
         """
         return list(Tournaments.objects.filter(id__in=tournament_ids).values(*filters))
+
+    def get_user_tournament_stats(self, logged_user: str, username: str) -> dict:
+        """
+
+        Parameters
+        ----------
+        logged_user : str
+        username : str
+
+        Returns
+        -------
+        dict
+
+        """
+        tournaments = []
+        places = {
+            1: 'Finals',
+            2: 'Semifinals',
+            3: 'Quarterfinals',
+            4: 'Round of 16',
+            5: 'Round of 32',
+            6: 'Round of 64',
+            7: 'Round of 128',
+            8: 'Round of 256',
+        }
+
+        for tournament in list(Tournaments.objects.filter(
+            participants__has_key=username,
+            status='finished'
+        ).order_by('-created_at').values()):
+            draw = tournament.get('draw')
+            left_user = draw['leftUser']
+            right_user = draw['rightUser']
+
+            if username in (left_user, right_user):
+                place = 'Winner' if (left_user if draw['leftScore'] > draw['rightScore'] else right_user) == username else 'Finalist'
+            else:
+                place = places.get(self.get_draw_level(draw, username, 1), 'Participant')
+
+            tournaments.append({
+                'name': tournament.get('name'),
+                'place': place,
+            })
+
+        return {'data': tournaments}
+
+    def get_draw_level(self, node: dict, data: Any, level: int) -> int:
+        """ Get draw level
+
+        Parameters
+        ----------
+        node : dict
+        data : Any
+        level : int
+
+        Returns
+        -------
+        int
+
+        """
+        if not node:
+            return 0
+
+        if data in (node['leftUser'], node['rightUser']):
+            return level
+
+        down_level = self.get_draw_level(node['left'], data, level + 1)
+
+        if (down_level != 0):
+            return down_level
+
+        down_level = self.get_draw_level(node['right'], data, level + 1)
+
+        return down_level
 
     def create_tournament(self, logged_user: str, request_data: dict) -> dict:
         """ Creates a tournament by the logged user

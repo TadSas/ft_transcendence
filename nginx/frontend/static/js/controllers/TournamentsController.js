@@ -300,20 +300,43 @@ var TournamentsController = (() => {
   }
 
   self.getProfileTournamnetsView = async (userInformation) => {
+    let trophies = ''
+    const userTournaments = await new httpRequest({
+      resource: `/game/api/tournament/stats/${userInformation.login}`,
+      method: 'GET',
+      successCallback: response => response['data']
+    }).send()
+
+    if (userTournaments.length !== 0) {
+      for (const tournament of userTournaments) {
+        const place = tournament.place || ''
+
+        trophies += `
+          <div class="col-3 col-sm-3 d-flex justify-content-center">
+            <div class="px-2">
+              <i class="bi bi-trophy${place === 'Winner' ? '-fill' : ''} h1"></i>
+              <p class="text-center text-wrap">${tournament.name || ''} (${place || ''})</p>
+            </div>
+          </div>
+        `
+      }
+    } else
+      trophies = `
+        <div class="col-3 col-sm-3 d-flex justify-content-center">
+          <div class="px-2">
+            <i class="bi bi-trophy h1"></i>
+            <p class="text-center text-wrap">No tournaments found</p>
+          </div>
+        </div>
+      `
+
     return `
     <div class="position-relative p-5 text-start bg-body border rounded-4 mb-3">
       <h3 class="border-bottom pb-2">Tournaments</h3>
       <div class="d-flex align-items-end flex-row mt-4">
         <div class="container text-center">
           <div class="row">
-
-            <div class="col-3 col-sm-3 d-flex justify-content-center">
-              <div class="px-2">
-                <i class="bi bi-trophy h1"></i>
-                <p class="text-center text-wrap">No tournaments found</p>
-              </div>
-            </div>
-
+            ${trophies}
           </div>
         </div>
       </div>

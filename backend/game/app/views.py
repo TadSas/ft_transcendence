@@ -42,6 +42,15 @@ class UnregisterTournamentView(APIView):
         })
 
 
+class GetUserTournamentStatsView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request, username = ''):
+        return JsonResponse({
+            'status': 0, **TournamentsController().get_user_tournament_stats(request.user.get('login'), username)
+        })
+
+
 class GetUpcomingGamesView(APIView):
     authentication_classes = [JWTAuthentication]
 
