@@ -395,7 +395,7 @@ class UserController:
 
         """
         if not user or not (avatar_path := Path(f'{MEDIA_ROOT}/{user.avatar_path}')).is_file():
-            return BytesIO(b'')
+            avatar_path = f'{MEDIA_ROOT}/{'avatars/default/default_avatar.jpg'}'
 
         with open(avatar_path, 'rb') as fd:
             return BytesIO(fd.read())

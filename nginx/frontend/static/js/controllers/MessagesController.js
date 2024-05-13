@@ -52,14 +52,17 @@ var MessagesController = (() => {
 
   self.configureChatHeader = (roomId, participant, blocked, user) => {
     const chatHeader = document.getElementById('chatHeader')
+    const isUser = !participant.startsWith('Tournament')
+
     if (chatHeader) {
       chatHeader.classList.remove('invisible')
       chatHeader.querySelector('p').innerText = participant
-      chatHeader.setAttribute('href', `/profile/${participant}`)
+
+      isUser && chatHeader.setAttribute('href', `/profile/${participant}`)
     }
 
     const chatUserBlockToggle = document.getElementById('chatUserBlockToggle')
-    if (chatUserBlockToggle) {
+    if (chatUserBlockToggle && isUser) {
       chatUserBlockToggle.dataset.roomId = roomId
       chatUserBlockToggle.dataset.participant = participant
       chatUserBlockToggle.classList.remove('invisible')
@@ -71,7 +74,8 @@ var MessagesController = (() => {
         chatUserBlockToggle.querySelector('p').innerText = 'Block'
         chatUserBlockToggle.onclick = MessagesController.blockUser
       }
-    }
+    } else
+      chatUserBlockToggle.classList.add('invisible')
   }
 
   self.configureChatBody = (roomId, participant, blocked, user) => {

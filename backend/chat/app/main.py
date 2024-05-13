@@ -58,6 +58,26 @@ class RoomController:
 
         return self.create_room(participants[0], participants[1])
 
+    def send_tournament_message(self, request_data: dict) -> dict:
+        """ Send tournament message
+
+        Parameters
+        ----------
+        request_data : dict
+
+        Returns
+        -------
+        dict
+
+        """
+        MessagesController().save_message(
+            sender=request_data.get('sender'),
+            message=request_data.get('message'),
+            room_id=request_data.get('room_id'),
+        )
+
+        return {'message': 'Message saved successfully'}
+
     def get_room(self, room_id: str) -> Rooms:
         """ Returnes the room with specified room id
 

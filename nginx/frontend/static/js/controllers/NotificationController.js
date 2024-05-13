@@ -108,6 +108,18 @@ var NotificationController = (() => {
 
           break
         }
+        case 'tournament': {
+          ToastComponents.createToast({
+            id: 'tournament_notification',
+            icon: 'trophy',
+            title: 'Tournament notification',
+            body: data['message'],
+            autohide: false
+          })
+          ToastComponents.show('tournament_notification')
+
+          break
+        }
       }
     }
   }

@@ -1,5 +1,6 @@
 import json
 import uuid
+import socket
 
 from django.utils import timezone
 from django.utils.html import escape
@@ -8,11 +9,16 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 
 from .main import RoomController, MessagesController
 
+from chat.settings import GAME_SERVER
+
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
+        if await self.invoked_tournament_notifications():
+            return
+
         if 'user' not in self.scope:
-            return await self.close(code=4004)
+            return await self.close(code=4002)
 
         try:
             username = self.scope['user'].get('login')
@@ -52,6 +58,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
+
+        if await self.check_tournament_notifications_message(text_data_json):
+            return
+
         receive_type = text_data_json.get('type')
         connected_user  = self.scope['user'].get('login')
 
@@ -216,3 +226,52 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'type': 'unblock',
             'blocked_users': event['blocked_users']
         }))
+
+    async def tournament_notification(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'notifications',
+            'subtype': 'tournament',
+            'message': event['message']
+        }))
+
+    async def invoked_tournament_notifications(self):
+        try:
+            if self.scope['url_route']['kwargs']['room_id'] != 'tournament_notifications':
+                return
+
+            client = self.scope.get('client')[0]
+
+            host, port = GAME_SERVER.split('http://')[-1].split(':')
+            game_server_ip = list(map(lambda x: x[4][0], socket.getaddrinfo(host, int(port), type=socket.SOCK_STREAM)))
+
+            if client not in game_server_ip:
+                return
+
+            await self.channel_layer.group_add(
+                'tournament_notifications',
+                self.channel_name
+            )
+
+            await self.accept()
+
+            return True
+        except Exception:
+            pass
+
+    async def check_tournament_notifications_message(self, data):
+        if data.get('type') != 'tournament_notification':
+            return
+
+        players = data.get('players') or []
+        message = data.get('message') or ''
+
+        for player in players:
+            await self.channel_layer.group_send(
+                f'{player}_notifications',
+                {
+                    'type': 'tournament_notification',
+                    'message': message
+                }
+            )
+
+        return True

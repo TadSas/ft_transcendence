@@ -10,6 +10,7 @@ from game.settings import CHAT_SERVER
 
 from .models import Tournaments, Matches
 from .serializers import TournamentsSerializer, MatchesSerializer
+from .utils import ws_handshake, ws_send_message, ws_close_connection
 
 
 class TournamentsController:
@@ -166,6 +167,7 @@ class TournamentsController:
         match, parent_match, relation_side = self.get_tournament_match_by_path(draw, match_path)
         match['leftScore'] = score['left']
         match['rightScore'] = score['right']
+        match_cont = MatchesController()
 
         if relation_side:
             parent_match[f"{relation_side}User"] = match[f'{max(score, key=score.get)}User']
@@ -176,12 +178,21 @@ class TournamentsController:
                 (right_user := parent_match['rightUser']) and
                 not parent_match['matchId']
             ):
-                parent_match['matchId'] = MatchesController().create_match(
+                parent_match['matchId'] = match_cont.create_match(
                     game=tournament.game,
                     players=[left_user, right_user],
                     tournament_path='/'.join(match_path.split('/')[:-1]) or '/',
                     tournament_id=tournament_id
                 )
+
+                for user in (left_user, right_user):
+                    self.send_tournament_notification(
+                        tournament.name,
+                        f'Tournament({tournament.name})',
+                        tournament.participants[user].get('room_id'),
+                        user,
+                        match_cont.get_tournament_game(tournament_id, user)
+                    )
         else:
             finished and self.finish_tournament(tournament_id)
 
@@ -291,7 +302,7 @@ class TournamentsController:
         if tournament_size == len(tournament_participants):
             status = 'started'
             draw = getattr(self, f"organize_{tournament.game}_matchmaking")(tournament_participants, tournament_id)
-            # self.notify_tournament_participants(tournament_id, tournament.name, tournament_participants)
+            self.notify_tournament_participants(tournament_id, tournament.name, tournament_participants)
 
         serializer = TournamentsSerializer(
             tournament,
@@ -320,22 +331,87 @@ class TournamentsController:
         tournament_participants : dict
 
         """
+        match_cont = MatchesController()
+
         for participant in tournament_participants:
             try:
-                requesta = Request(
+                tournament_alias = f'Tournament({tournament_name})'
+                request = Request(
                     url=f"{CHAT_SERVER}/chat/api/rooms/tournament/create",
-                    data=json.dumps({'participants': [participant, f'{tournament_name} ({tournament_id})']}).encode()
+                    data=json.dumps({'participants': [participant, tournament_alias]}).encode()
                 )
-                requesta.add_header('Content-Type', 'application/json')
+                request.add_header('Content-Type', 'application/json')
 
-                with urlopen(requesta) as response:
+                with urlopen(request) as response:
                     response_data = json.loads(response.read().decode())
 
                     if response_data.get('status') == 1:
                         continue
 
+                    room_id = response_data['data']['room_id']
+                    tournament_participants[participant]['room_id'] = room_id
+
+                    self.send_tournament_notification(
+                        tournament_name,
+                        tournament_alias,
+                        room_id,
+                        participant,
+                        match_cont.get_tournament_game(tournament_id, participant)
+                    )
+
             except Exception:
                 continue
+
+    def send_tournament_notification(
+        self,
+        tournament_name: str,
+        tournament_alias: str,
+        room_id: str,
+        participant: str,
+        match: dict
+    ):
+        """ Send tournament notification
+
+        Parameters
+        ----------
+        tournament_name : str
+        tournament_alias : str
+        room_id : str
+        participant : str
+        match : dict
+
+        """
+        players = match.get('players')
+        players.remove(participant)
+        message = f"""
+        Hi <u><strong>{participant}</strong></u><br><br>
+
+        Exciting news! You have been paired up for a match in the upcoming <u><strong>{tournament_name}</strong></u> (tournament).<br>
+        Your opponent is <u><strong>{players[0]}</strong></u>. Get ready to bring your A-game and show off your skills.<br>
+        Good luck, and may the best player win!<br><br>
+
+        Best regards,<br>
+        <u><strong>Squeeze, Inc</strong></u>
+        """
+
+        try:
+            request = Request(
+                url=f"{CHAT_SERVER}/chat/api/rooms/tournament/message/send",
+                data=json.dumps({'room_id': room_id, 'message': message, 'sender': tournament_alias}).encode()
+            )
+            request.add_header('Content-Type', 'application/json')
+
+            with urlopen(request) as response:
+                response_data = json.loads(response.read().decode())
+
+                if response_data.get('status') == 1:
+                    return
+
+            socket = ws_handshake('chat', '/chat/room/tournament_notifications', 8082)
+            ws_send_message(socket, {'type': 'tournament_notification', 'players': [participant], 'message': message})
+            ws_close_connection(socket)
+        except Exception:
+            pass
 
     def unregister_tournament(self, logged_user: str, request_data: dict) -> dict:
         """ Unregister the logger user to the provided tournament
@@ -561,7 +637,7 @@ class MatchesController:
         """
         played = won = lost = 0
 
-        for match in Matches.objects.filter(players__contains=[username]).values():
+        for match in Matches.objects.filter(players__contains=[username], status='finished').values():
             score = match.get('score') or {}
 
             if max(score, key=score.get) == username:
@@ -586,7 +662,7 @@ class MatchesController:
         dict
 
         """
-        match_history = list(Matches.objects.filter(players__contains=[username]).values())
+        match_history = list(Matches.objects.filter(players__contains=[username], status='finished').order_by('-created_at').values())
 
         for match in match_history:
             match['created_at'] = timezone.localtime(match['created_at']).strftime("%H:%M - %d/%m/%Y")
@@ -617,6 +693,26 @@ class MatchesController:
                 'result': 'Result',
             }
         }}
+
+    def get_tournament_game(self, tournament_id: str, participant: str, status: str = 'created') -> dict:
+        """ Get tournament game
+
+        Parameters
+        ----------
+        tournament_id : str
+        participant : str
+        status : str, optional
+
+        Returns
+        -------
+        dict
+
+        """
+        return Matches.objects.filter(
+            tournament__contains={'id': tournament_id},
+            players__contains=[participant],
+            status=status
+        ).values().first()
 
     def update_match_status(self, match_id: str, status: str):
         """ Update match status

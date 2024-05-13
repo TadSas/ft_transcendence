@@ -194,11 +194,11 @@ var ChatComponents = (() => {
     <a id=${id} class="list-group-item list-group-item-action list-group-item-light ${active ? 'active' : ''}" role="button" onclick=${onclick}>
       <div class="d-flex align-items-center">
         <div>
-          <img src="/auth/api/avatar/${username}" alt="user" width="40" height="40" class="rounded-circle object-fit-cover">
+          <img src="/auth/api/avatar/${username.replace(/[^a-zA-Z0-9-_]/g, '')}" alt="user" width="40" height="40" class="rounded-circle object-fit-cover">
         </div>
         <div class="ms-3 w-100">
           <div class="d-flex align-items-center justify-content-between mb-1">
-            <h6 class="mb-0" id="${id}_sender">
+            <h6 class="mb-0 short-text" id="${id}_sender">
               ${username || ''}
             </h6>
             <p class="fw-lighter text-end mb-0 text-small-date" id="${id}_sentDate">

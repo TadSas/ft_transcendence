@@ -58,7 +58,7 @@ class WebSocketJWTAuthentication:
                         raise Exception()
 
                     scope['user'] = user
-            except Exception as ex:
+            except Exception:
                 pass
 
         return self.app(scope, receive, send)

@@ -25,7 +25,7 @@ class MessagesSerializer(serializers.Serializer):
     id = serializers.CharField(read_only=True, required=False)
     room_id = serializers.UUIDField()
     message = serializers.CharField()
-    sender = serializers.CharField(max_length=32)
+    sender = serializers.CharField(max_length=64)
     created_at = serializers.DateTimeField(required=False)
 
     def create(self, validated_data):

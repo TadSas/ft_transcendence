@@ -22,7 +22,7 @@ class Messages(models.Model):
 
     room = models.ForeignKey(Rooms, on_delete=models.CASCADE)
     message = models.TextField()
-    sender = models.CharField(max_length=32)
+    sender = models.CharField(max_length=64)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

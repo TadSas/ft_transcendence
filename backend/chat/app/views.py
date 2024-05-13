@@ -22,15 +22,25 @@ class CreateRoomView(APIView):
 class CreateTournamentRoomView(APIView):
 
     def post(self, request):
-        ip, port = GAME_SERVER.split('http://')[-1].split(':')
-        tournament_server = list(map(lambda x: x[4][0], socket.getaddrinfo(ip, int(port), type=socket.SOCK_STREAM)))
+        host, port = GAME_SERVER.split('http://')[-1].split(':')
+        tournament_server = list(map(lambda x: x[4][0], socket.getaddrinfo(host, int(port), type=socket.SOCK_STREAM)))
 
         if request.META.get('REMOTE_ADDR') not in tournament_server:
             return JsonResponse({'status': 1, 'message': 'Not registered service'})
 
-        return JsonResponse({
-            'status': 0, **RoomController().create_tournament_room(request.data)
-        })
+        return JsonResponse({'status': 0, **RoomController().create_tournament_room(request.data)})
+
+
+class SendTournamentMessageView(APIView):
+
+    def post(self, request):
+        host, port = GAME_SERVER.split('http://')[-1].split(':')
+        tournament_server = list(map(lambda x: x[4][0], socket.getaddrinfo(host, int(port), type=socket.SOCK_STREAM)))
+
+        if request.META.get('REMOTE_ADDR') not in tournament_server:
+            return JsonResponse({'status': 1, 'message': 'Not registered service'})
+
+        return JsonResponse({'status': 0, **RoomController().send_tournament_message(request.data)})
 
 
 class GetRoomsView(APIView):
