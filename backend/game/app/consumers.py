@@ -98,6 +98,7 @@ class PongGameConsumer(AsyncWebsocketConsumer):
 
             if self.room_group_name in self.threads:
                 self.threads[self.room_group_name].join()
+                self.threads.pop(self.room_group_name, None)
 
             self.room_game_instances.pop(self.room_group_name, None)
             self.connected_users.pop(self.room_group_name, None)

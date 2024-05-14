@@ -339,13 +339,13 @@ var TournamentBracketComponent = (() => {
         'draw': leftScore == rightScore,
         'top': true,
         'name': leftUserAlias && `${leftUserAlias || ''} (${leftUser})` || leftUser,
-        'score': leftScore
+        'score': leftScore || rightScore ? String(leftScore) : leftScore
       })}
       ${self.createTeam({
         'win': rightScore > leftScore,
         'draw': leftScore == rightScore,
         'name': rightUserAlias && `${rightUserAlias || ''} (${rightUser})` || rightUser,
-        'score': rightScore
+        'score': leftScore || rightScore ? String(rightScore) : rightScore
       })}
 
       <div class="match-lines">

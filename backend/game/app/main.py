@@ -764,7 +764,7 @@ class MatchesController:
                 'game': 'Game',
                 'score': 'Score',
                 'against': 'Against',
-                'created_at': 'Played at',
+                'created_at': 'Created at',
                 'result': 'Result',
             }
         }}

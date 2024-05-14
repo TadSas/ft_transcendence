@@ -53,6 +53,9 @@ export default class extends BaseSnippet {
           </a>
         </div>
         <div class="d-flex align-items-center justify-content-end">
+          <div class="me-3">
+            ${window.user.login}
+          </div>
           ${theme}
           <div class="flex-shrink-0 dropdown">
             <a class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">

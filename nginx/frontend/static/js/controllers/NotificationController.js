@@ -120,6 +120,10 @@ var NotificationController = (() => {
 
           break
         }
+        case 'user_activity': {
+          window.userActivity = data['user_activity']
+          DashboardController.initPlatformUsers(data['user_activity'])
+        }
       }
     }
   }

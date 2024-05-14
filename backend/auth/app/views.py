@@ -191,11 +191,11 @@ class UserView(APIView):
         return JsonResponse({'status': 0, **UserController().update_user_information(request.user, request.data)})
 
 
-class DashboardUsersView(APIView):
+class GetAllUsersView(APIView):
     authentication_classes = [JWTAuthentication]
 
     def get(self, request):
-        return JsonResponse({'status': 0, 'data': UserController().get_dashboard_users(request.user)})
+        return JsonResponse({'status': 0, **UserController().get_all_users(request.user)})
 
 
 class FriendStatusView(APIView):

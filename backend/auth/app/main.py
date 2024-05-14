@@ -307,7 +307,7 @@ class UserController:
         """
         return Users.objects.filter(login=username).first()
 
-    def get_dashboard_users(self, current_user: Users) -> list:
+    def get_all_users(self, current_user: Users) -> list:
         """ Returns all users for representing in dashboard tabs
 
         Parameters
@@ -320,9 +320,11 @@ class UserController:
 
         """
         if not current_user:
-            return []
+            return {'data': {'users': []}}
 
-        return list(Users.objects.exclude(login=current_user.login).values('login', 'status'))
+        return {'data': {'users':
+            [user.get('login') for user in Users.objects.exclude(login=current_user.login).values('login')]
+        }}
 
     def update_user_information(self, user: Users, user_data: dict) -> dict:
         """ Updates user information using form data

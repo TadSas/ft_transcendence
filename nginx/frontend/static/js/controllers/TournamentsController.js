@@ -244,7 +244,7 @@ var TournamentsController = (() => {
 
           for (const player of players) {
             playerNames.push(`<u>${tournamentParticipants[player]['alias']} (${player})</u>`)
-            playerImages.push(`<img src="/auth/api/avatar/${player}" width="32" height="32" class="rounded-circle border object-fit-cover">`)
+            playerImages.push(`<img src="/auth/api/avatar/${player}" width="28" height="28" class="rounded-circle border object-fit-cover">`)
           }
 
           playerNames = playerNames.join(', ')
@@ -253,24 +253,27 @@ var TournamentsController = (() => {
 
           if (status === 'created') {
             if (players.includes(window.user.login))
-              button = `<a href="/${game}/${match['id']}" type="button" class="btn btn-success" data-link>Play now</a>`
+              button = `<a href="/${game}/${match['id']}" type="button" class="btn btn-success btn-sm" data-link>Play now</a>`
             else
-              button = `<a type="button" class="btn btn-outline-secondary pe-none">Not started</a>`
+              button = `<a type="button" class="btn btn-outline-secondary btn-sm pe-none">Not started</a>`
           } else if (status === 'playing') {
             if (players.includes(window.user.login))
-              button = `<a href="/${game}/${match['id']}" type="button" class="btn btn-primary" data-link>Continue</a>`
+              button = `<a href="/${game}/${match['id']}" type="button" class="btn btn-primary btn-sm" data-link>Continue</a>`
             else
-              button = `<a type="button" class="btn btn-outline-info pe-none">${score[players.at(0)] || '0'} : ${score[players.at(-1)] || '0'}</a>`
+              button = `<a type="button" class="btn btn-outline-info btn-sm pe-none">${score[players.at(0)] || '0'} : ${score[players.at(-1)] || '0'}</a>`
           }
 
           upcomingGames += `
           <div class="list-group-item list-group-item-action">
             <div class="card card-cover h-100 overflow-hidden bg-body-tertiary rounded-4">
               <div class="d-flex flex-column px-4 text-shadow-1">
-                <h3 class="pt-5 mb-4 display-7 lh-1 fw-bold">
+                <h3 class="pt-4 mb-3 fs-5 lh-1 fw-bold">
                   ${game && `Game: <u>${game}</u>`}
+                  <hr class="my-2">
                   ${tournamentName && `Tournament: <u>${tournamentName}</u>`}
+                  <hr class="my-2">
                   ${playerNames && `Players: ${playerNames}`}
+                  <hr class="mt-2 mb-0">
                 </h3>
                 <ul class="d-flex list-unstyled mt-auto">
                   <li class="me-auto">

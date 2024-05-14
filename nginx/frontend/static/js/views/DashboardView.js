@@ -7,118 +7,6 @@ export default class extends BaseView {
     this.setTitle("Dashboard")
   }
 
-  async getUserCards(users) {
-    let content = ''
-
-    for (const user of users) {
-      const login = user['login'] || ''
-
-      content += `
-      <div class="col-1 col-sm-1 d-flex justify-content-center">
-        <div class="card-body">
-          <div class="px-2 position-relative">
-            <img src="/auth/api/avatar/${login}" width="64" height="64" class="rounded-circle border object-fit-cover">
-            <p>${login}</p>
-            <a href="/profile/${login}" class="stretched-link" data-link></a>
-          </div>
-        </div>
-      </div>
-      `
-    }
-
-    return content
-  }
-
-  async getPlatformUsers() {
-    const dashboardUsers = await new httpRequest({resource: '/auth/api/dashboard/users', method: 'GET', successCallback: response => {return response}}).send()
-    const users = dashboardUsers['data']
-    const onlineUsers = []
-    const inGameUsers = []
-    const offlineUsers = []
-
-    for (const user of users) {
-      switch (user['status']) {
-        case 'online':
-          onlineUsers.push(user)
-          break
-        case 'in-game':
-          inGameUsers.push(user)
-          break
-        case 'offline':
-          offlineUsers.push(user)
-          break
-      }
-    }
-
-    const onlineUsersTab = `
-    <div class="tab-pane fade show active" id="online-tab-pane" role="tabpanel" aria-labelledby="online-tab" tabindex="0">
-      <div class="d-flex align-items-end flex-row">
-        <div class="container text-center">
-          <div class="row">
-            ${await this.getUserCards(onlineUsers)}
-          </div>
-        </div>
-      </div>
-    </div>
-    `
-
-    const inGameUsersTab = `
-    <div class="tab-pane fade" id="in-game-tab-pane" role="tabpanel" aria-labelledby="in-game-tab" tabindex="0">
-      <div class="d-flex align-items-end flex-row">
-        <div class="container text-center">
-          <div class="row">
-            ${await this.getUserCards(inGameUsers)}
-          </div>
-        </div>
-      </div>
-    </div>
-    `
-
-    const offlineUsersTab = `
-    <div class="tab-pane fade" id="offline-tab-pane" role="tabpanel" aria-labelledby="offline-tab" tabindex="0">
-      <div class="d-flex align-items-end flex-row">
-        <div class="container text-center">
-          <div class="row">
-            ${await this.getUserCards(offlineUsers)}
-          </div>
-        </div>
-      </div>
-    </div>
-    `
-
-    return `
-    <div class="container marketing">
-      <h1>Platform users</h1>
-      <hr class="featurette-divider">
-      <div class="d-flex align-items-end flex-row mt-4">
-        <div class="container text-center"></div>
-      </div>
-      <div class="card text-center border-0">
-        <div class="card-header bg-transparent">
-          <ul class="nav nav-tabs card-header-tabs" id="platformUsersTab" role="tablist">
-            <li class="nav-item" role="presentation">
-              <button class="nav-link active" id="online-tab" data-bs-toggle="tab" data-bs-target="#online-tab-pane" type="button" role="tab" aria-controls="online-tab-pane" aria-selected="true">Online</button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link" id="in-game-tab" data-bs-toggle="tab" data-bs-target="#in-game-tab-pane" type="button" role="tab" aria-controls="in-game-tab-pane" aria-selected="true">In-game</button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link" id="offline-tab" data-bs-toggle="tab" data-bs-target="#offline-tab-pane" type="button" role="tab" aria-controls="offline-tab-pane" aria-selected="true">Offline</button>
-            </li>
-          </ul>
-        </div>
-
-        <div class="tab-content" id="platformUsersTabContent">
-          ${onlineUsersTab}
-          ${inGameUsersTab}
-          ${offlineUsersTab}
-        </div>
-
-      </div>
-    </div>
-    `
-  }
-
   async getContent(routes, match) {
     this.getBase(routes, match)
 
@@ -183,8 +71,33 @@ export default class extends BaseView {
 
     return `
     ${carousel}
+
     <hr>
-    ${await this.getPlatformUsers()}
+
+    <div class="container marketing">
+      <h1>Platform users</h1>
+      <hr class="featurette-divider">
+      <div class="d-flex align-items-end flex-row mt-4">
+        <div class="container text-center"></div>
+      </div>
+      <div class="card text-center border-0">
+        <div class="card-header bg-transparent">
+          <ul class="nav nav-tabs card-header-tabs" id="platformUsersTab" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="online-tab" data-bs-toggle="tab" data-bs-target="#online-tab-pane" type="button" role="tab" aria-controls="online-tab-pane" aria-selected="true">Online</button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="offline-tab" data-bs-toggle="tab" data-bs-target="#offline-tab-pane" type="button" role="tab" aria-controls="offline-tab-pane" aria-selected="true">Offline</button>
+            </li>
+          </ul>
+        </div>
+
+        <div class="tab-content" id="platformUsersTabContent">
+          ${await DashboardController.initPlatformUsers()}
+        </div>
+
+      </div>
+    </div>
     `
   }
 }

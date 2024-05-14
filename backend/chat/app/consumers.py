@@ -13,6 +13,8 @@ from chat.settings import GAME_SERVER
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
+    user_activity = {'online': []}
+
     async def connect(self):
         if await self.invoked_tournament_notifications():
             return
@@ -28,6 +30,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         if room_id == 'notifications':
             self.room_group_name = f"{username}_notifications"
+            self.user_activity['online'].append(username)
+
+            await self.send_user_activity_notification()
         else:
             try:
                 room = await database_sync_to_async(RoomController().get_room)(room_id)
@@ -49,12 +54,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         await self.accept()
 
+        await self.send_user_activity_notification()
+
     async def disconnect(self, code):
         if hasattr(self, 'room_group_name'):
             await self.channel_layer.group_discard(
                 self.room_group_name,
                 self.channel_name
             )
+
+            if self.room_group_name.endswith('_notifications'):
+                username = self.room_group_name.split('_notifications')[0]
+
+                if username in self.user_activity['online']:
+                    self.user_activity['online'].remove(username)
+
+                    await self.send_user_activity_notification()
 
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
@@ -234,6 +249,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'message': event['message']
         }))
 
+    async def user_activity_notification(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'notifications',
+            'subtype': 'user_activity',
+            'user_activity': event['user_activity']
+        }))
+
     async def invoked_tournament_notifications(self):
         try:
             if self.scope['url_route']['kwargs']['room_id'] != 'tournament_notifications':
@@ -275,3 +297,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
 
         return True
+
+    async def send_user_activity_notification(self):
+        for username in self.user_activity['online']:
+            await self.channel_layer.group_send(
+                f'{username}_notifications',
+                {
+                    'type': 'user_activity_notification',
+                    'user_activity': self.user_activity,
+                }
+            )

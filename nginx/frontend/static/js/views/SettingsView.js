@@ -62,7 +62,6 @@ export default class extends BaseView {
     const statuses = {
       'online': 'success',
       'offline': 'danger',
-      'in-game': 'warning'
     }
     const status = userInformation['status'] || ''
 
@@ -83,7 +82,7 @@ export default class extends BaseView {
             <div class="pb-3">
               <span class="badge rounded-pill text-bg-${statuses[status || 'offline']}">
                 <span class="align-middle">Status: ${status}</span>
-                ${['online', 'in-game'].includes(status) ? '<span class="spinner-grow spinner-grow-sm align-middle"></span>': ''}
+                ${status === 'online' ? '<span class="spinner-grow spinner-grow-sm align-middle"></span>': ''}
               </span>
             </div>
           </div>
