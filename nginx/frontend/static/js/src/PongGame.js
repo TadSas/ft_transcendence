@@ -44,7 +44,13 @@ export default class PongGame {
       0xe0e0e0  // back
     ]
 
-    this.pressedKeys = {'up': 0, 'down': 0}
+    this.pressedKeys = {
+      'left': {'up': 0, 'down': 0},
+      'right': {'up': 0, 'down': 0},
+      'up': 0,
+      'down': 0,
+      'side': ''
+    }
     this.registerKeyboardEvents()
   }
 
@@ -69,6 +75,7 @@ export default class PongGame {
     this.createScene(gameCanvas.width, gameCanvas.height)
     this.setGameBorders(gameBorders.top, gameBorders.right, gameBorders.bottom, gameBorders.left)
     this.drawNet()
+    this.drawVerticalBorders()
     this.drawBall(ball.x, ball.y, ballMeasurements.diameter)
     this.drawPaddles(paddles, paddleMeasurements)
     this.drawScoreBorad(score)
@@ -106,6 +113,11 @@ export default class PongGame {
     for (let i = 1.5; i < (Math.abs(this.gameBottomBound) + 1.5); i += 1.5) {
       this.createCube(x, y - i, z - 1, width, depth, length, this.cubeSideColors)
     }
+  }
+
+  drawVerticalBorders() {
+    this.createCube(0, this.gameTopBound + 1.5, -1, this.gameRightBound * 2, 1, 0, this.cubeSideColors)
+    this.createCube(0, this.gameBottomBound - 1.5, -1, this.gameRightBound * 2, 1, 0, this.cubeSideColors)
   }
 
   drawBall(x, y, diameter) {
@@ -329,18 +341,26 @@ export default class PongGame {
         case KEY_UP_ARROW:
           this.pressedKeys['up'] = 1
           this.pressedKeys['down'] = 0
+          this.pressedKeys['right']['up'] = 1
+          this.pressedKeys['right']['down'] = 0
           break
         case KEY_DOWN_ARROW:
           this.pressedKeys['up'] = 0
           this.pressedKeys['down'] = 1
+          this.pressedKeys['right']['up'] = 0
+          this.pressedKeys['right']['down'] = 1
           break
         case KEY_W:
           this.pressedKeys['up'] = 1
           this.pressedKeys['down'] = 0
+          this.pressedKeys['left']['up'] = 1
+          this.pressedKeys['left']['down'] = 0
           break
         case KEY_S:
           this.pressedKeys['up'] = 0
           this.pressedKeys['down'] = 1
+          this.pressedKeys['left']['up'] = 0
+          this.pressedKeys['left']['down'] = 1
           break
         default:
           break
@@ -350,23 +370,45 @@ export default class PongGame {
     window.onkeyup = e => {
       switch (e.keyCode) {
         case KEY_UP_ARROW:
+          this.pressedKeys['up'] = 0
+          this.pressedKeys['right']['up'] = 0
+          break
         case KEY_W:
           this.pressedKeys['up'] = 0
+          this.pressedKeys['left']['up'] = 0
           break
         case KEY_DOWN_ARROW:
+          this.pressedKeys['down'] = 0
+          this.pressedKeys['right']['down'] = 0
+          break
         case KEY_S:
           this.pressedKeys['down'] = 0
+          this.pressedKeys['left']['down'] = 0
           break
       }
     }
   }
 
   sendPaddleState() {
-    if (this.gameWebSocket && this.gameWebSocket.readyState === WebSocket.OPEN)
-      this.gameWebSocket.send(JSON.stringify({
-        'type': 'move_paddle',
-        'direction': this.pressedKeys['up'] - this.pressedKeys['down']
-      }))
+    if (this.gameWebSocket && this.gameWebSocket.readyState === WebSocket.OPEN) {
+      if (this.multiplayer) {
+        this.gameWebSocket.send(JSON.stringify({
+          'type': 'move_paddle',
+          'direction': this.pressedKeys['up'] - this.pressedKeys['down']
+        }))
+      } else {
+        this.gameWebSocket.send(JSON.stringify({
+          'type': 'move_paddle',
+          'direction': this.pressedKeys['left']['up'] - this.pressedKeys['left']['down'],
+          'side': 'left',
+        }))
+        this.gameWebSocket.send(JSON.stringify({
+          'type': 'move_paddle',
+          'direction': this.pressedKeys['right']['up'] - this.pressedKeys['right']['down'],
+          'side': 'right',
+        }))
+      }
+    }
   }
 
   refresh(data) {

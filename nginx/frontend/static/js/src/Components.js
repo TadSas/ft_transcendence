@@ -1,4 +1,4 @@
-var Components = (() => {
+var BasicComponents = (() => {
   var self = {}
 
   // Private

@@ -26,17 +26,17 @@ export default class extends BaseView {
         <div class="p-3 vh-80 overflow-x-scroll bg-opacity-50 border rounded me-1">
           <div id="tournamentForm">
             <div class="mb-4">
-              ${Components.input({'id': 'name', 'label': 'Name of the tournament'})}
+              ${BasicComponents.input({'id': 'name', 'label': 'Name of the tournament'})}
             </div>
             <div class="mb-4">
-              ${Components.selector({
+              ${BasicComponents.selector({
                 'id': 'game',
                 'label': 'Game of the tournament',
                 'options': [{'value': 'pong', 'title': 'pong'}]
               })}
             </div>
             <div class="mb-4">
-              ${Components.selector({
+              ${BasicComponents.selector({
                 'id': 'size',
                 'label': 'Size of the tournament participants',
                 'options': [
@@ -49,7 +49,7 @@ export default class extends BaseView {
               })}
             </div>
             <div class="d-flex align-items-start">
-              ${Components.button({'buttonLabel': 'Create', 'js': {'onclick': "TournamentsController.create()"}})}
+              ${BasicComponents.button({'buttonLabel': 'Create', 'js': {'onclick': "TournamentsController.create()"}})}
             </div>
           </div>
         </div>

@@ -36,10 +36,9 @@ export default class extends BaseSnippet {
             Object.values(routes).map(
             route => {
               return route.sideBar ? `
-              <li class="nav-item" id="nav-${route.name.toLowerCase()}">
+              <li class="nav-item" id="nav-${route.id}">
                 <a href="${route.path}" class="nav-link ${route.path === match ? 'active' : 'link-body-emphasis'}" data-link>
                   <i class="bi bi-${route.icon} pe-none"></i>
-                  <span class="sidebar-icon-notification position-absolute translate-middle-x p-1 bg-danger border border-light rounded-circle d-none"></span>
                   <span class="ms-2 sidebar-title-transition">${route.name}</span>
                 </a>
               </li>` : ''

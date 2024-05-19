@@ -53,17 +53,21 @@ class PongGameConsumer(AsyncWebsocketConsumer):
             if match_id not in self.room_game_instances:
                 match_score = match.score
                 left_user = match_players[0]
-                right_user = match_players[1]
+                right_user = match_players[-1]
+                multiplayer = len(match_players) > 1
 
                 game_instance = Pong(
-                    players={
-                        left_user: 'left.0',
-                        right_user: 'right.0',
-                    },
-                    score={
-                        'left': match_score[left_user],
-                        'right': match_score[right_user],
-                    },
+                    players=(
+                        {left_user: 'left.0', right_user: 'right.0'}
+                        if multiplayer else
+                        {f'{left_user}Left': 'left.0', f'{right_user}Right': 'right.0'}
+                    ),
+                    score= (
+                        {'left': match_score[left_user], 'right': match_score[right_user]}
+                        if multiplayer else
+                        {'left': match_score[f'{left_user}Left'], 'right': match_score[f'{left_user}Right']}
+                    ),
+                    multiplayer=multiplayer,
                     channel_layer=self.channel_layer,
                     room_group_name=self.room_group_name,
                 )

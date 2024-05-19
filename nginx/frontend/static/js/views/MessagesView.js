@@ -5,8 +5,6 @@ export default class extends BaseView {
   constructor(params) {
     super(params)
     this.setTitle("Messages")
-
-    document.getElementById('nav-messages').querySelector('.sidebar-icon-notification').classList.add('d-none')
   }
 
   async gerRoomCards(rooms) {
@@ -65,7 +63,7 @@ export default class extends BaseView {
             <p class="h5 mb-0 py-1 me-4 pe-none"></p>
           </div>
 
-          <a href="/pong" id="chatPongInvite" class="d-flex align-items-center link-body-emphasis text-decoration-none invisible" data-link>
+          <a id="chatPongInvite" class="d-flex align-items-center link-body-emphasis text-decoration-none invisible" onclick="PongController.createPongGame(this)" role="button">
             <i class="bi bi-rocket-takeoff pe-none me-2 mb-0 h6"></i>
             <p class="h5 mb-0 py-1 me-4 pe-none">Play Pong</p>
           </a>

@@ -45,7 +45,7 @@ class httpRequest {
 
     return fetch(this.resource, this.options).then(response => {
       if (response.status > 500)
-        return showMessage('Internal server error', 'danger')
+        return ''
 
       const contentType = response.headers.get("content-type")
 
@@ -71,8 +71,7 @@ class httpRequest {
       }
 
       return this.successCallback(responseData)
-    }).catch((error) => {
-      showMessage('Internal server error', 'danger')
+    }).catch(() => {
       hideLoader()
     })
   }

@@ -42,6 +42,7 @@ class Pong:
 
         self.score = score or {'left': 0, 'right': 0}
         self.do_broadcast = True
+        self.paused = False
 
     def init_paddles(self, players):
         paddles = {'left': {}, 'right': {}}
@@ -79,6 +80,9 @@ class Pong:
 
     async def broadcast(self, channel_layer, room_group_name):
         while self.do_broadcast:
+            if self.paused:
+                continue
+
             await channel_layer.group_send(
                 room_group_name,
                 {
@@ -96,7 +100,15 @@ class Pong:
         if (direction := data['direction']) not in (-1, 1):
             return
 
-        if self.paddle_within_bounds(paddle := self.players[player]):
+        if self.multiplayer:
+            paddle = self.players[player]
+        else:
+            if not (side := data.get('side')):
+                return
+
+            paddle = self.players[f'{player}{side.capitalize()}']
+
+        if self.paddle_within_bounds(paddle):
             paddle['y'] += self.paddle_step * direction
         elif self.paddle_over_bounds(paddle):
             paddle['y'] -= self.paddle_step / 10

@@ -79,6 +79,9 @@ var TournamentsController = (() => {
       }
     }).send()
 
+    if (!tournamentData)
+      return ''
+
     const headers = tournamentData['headers']
     const tournaments = tournamentData['tournaments']
 
@@ -121,7 +124,7 @@ var TournamentsController = (() => {
           break
       }
 
-      tournament['activity'] = Components.button({
+      tournament['activity'] = BasicComponents.button({
         'buttonId': tournamentId,
         'buttonClass': buttonStyle,
         'buttonLabel': activityTitle,
@@ -137,11 +140,11 @@ var TournamentsController = (() => {
   }
 
   self.setAlias = (tournamentId) => {
-    document.getElementsByClassName('modals')[0].innerHTML = Components.modal({
+    document.getElementsByClassName('modals')[0].innerHTML = BasicComponents.modal({
       'size': 'default',
       'modalId': 'nameAliasModalId',
       'modalTitle': 'Provide an alias name for your username',
-      'modalBody': Components.input({'id': 'newAliasName', 'label': 'You will participate in matches under this new name', 'maxlength': 16}),
+      'modalBody': BasicComponents.input({'id': 'newAliasName', 'label': 'You will participate in matches under this new name', 'maxlength': 16}),
       'approveButtonId': 'registerModalId',
       'approveButtonTitle': 'Register',
       'approveButtonClass': 'btn btn-primary',
@@ -206,7 +209,7 @@ var TournamentsController = (() => {
 
   self.watch = (data) => {
     data = JSON.parse(decodeURIComponent(data))
-    document.getElementsByClassName('modals')[0].innerHTML = Components.modal({
+    document.getElementsByClassName('modals')[0].innerHTML = BasicComponents.modal({
       'size': 'extraLarge',
       'centered': true,
       'modalId': 'watchTournamentModalId',
@@ -238,12 +241,13 @@ var TournamentsController = (() => {
           const score = match['score']
           const status = match['status']
           const players = match['players']
+          const createdAt = match['created_at']
           const tournament = tournaments[(match['tournament'] || {})['id']]
-          const tournamentName = tournament['name']
-          const tournamentParticipants = tournament['participants']
+          const tournamentName = tournament?.name
+          const tournamentParticipants = tournament?.participants
 
           for (const player of players) {
-            playerNames.push(`<u>${tournamentParticipants[player]['alias']} (${player})</u>`)
+            playerNames.push(`<u>${tournamentParticipants ? tournamentParticipants[player]['alias'] : ''} (${player})</u>`)
             playerImages.push(`<img src="/auth/api/avatar/${player}" width="28" height="28" class="rounded-circle border object-fit-cover">`)
           }
 
@@ -267,13 +271,11 @@ var TournamentsController = (() => {
           <div class="list-group-item list-group-item-action">
             <div class="card card-cover h-100 overflow-hidden bg-body-tertiary rounded-4">
               <div class="d-flex flex-column px-4 text-shadow-1">
-                <h3 class="pt-4 mb-3 fs-5 lh-1 fw-bold">
-                  ${game && `Game: <u>${game}</u>`}
-                  <hr class="my-2">
-                  ${tournamentName && `Tournament: <u>${tournamentName}</u>`}
-                  <hr class="my-2">
-                  ${playerNames && `Players: ${playerNames}`}
-                  <hr class="mt-2 mb-0">
+                <h3 class="pt-4 mb-3 fs-6 lh-1 fw-bold">
+                  ${game ? `Game: <u>${game}</u><hr class="my-2">` : ''}
+                  ${createdAt ? `Created at: <u>${createdAt}</u><hr class="my-2">` : ''}
+                  ${tournamentName ? `Tournament: <u>${tournamentName}</u><hr class="my-2">` : ''}
+                  ${playerNames ? `Players: ${playerNames}<hr class="mt-2 mb-0">` : ''}
                 </h3>
                 <ul class="d-flex list-unstyled mt-auto">
                   <li class="me-auto">
@@ -310,7 +312,7 @@ var TournamentsController = (() => {
       successCallback: response => response['data']
     }).send()
 
-    if (userTournaments.length !== 0) {
+    if (userTournaments && userTournaments.length !== 0) {
       for (const tournament of userTournaments) {
         const place = tournament.place || ''
 

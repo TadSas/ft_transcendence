@@ -713,6 +713,9 @@ class MatchesController:
         played = won = lost = 0
 
         for match in Matches.objects.filter(players__contains=[username], status='finished').values():
+            if len(match.get('players', [])) <= 1:
+                continue
+
             score = match.get('score') or {}
 
             if max(score, key=score.get) == username:
@@ -737,19 +740,22 @@ class MatchesController:
         dict
 
         """
+        result = []
         match_history = list(Matches.objects.filter(players__contains=[username], status='finished').order_by('-created_at').values())
 
         for match in match_history:
             match['created_at'] = timezone.localtime(match['created_at']).strftime("%H:%M - %d/%m/%Y")
 
-            players = match['players'].copy()
+            if len(players := match['players'].copy()) <= 1:
+                continue
+
             players.remove(username)
             score = match['score']
 
             if len(players) > 0:
                 match['against'] = players[0]
             else:
-                match['against'] = 'unknown'
+                match['against'] = 'himself'
 
             if max(score, key=score.get) == username:
                 match['result'] = "Win"
@@ -758,8 +764,10 @@ class MatchesController:
 
             match['score'] = f'{score[match['players'][0]]} : {score[match['players'][-1]]}'
 
+            result.append(match)
+
         return {'data': {
-            'match_history': match_history,
+            'match_history': result,
             'headers': {
                 'game': 'Game',
                 'score': 'Score',
@@ -835,11 +843,15 @@ class MatchesController:
                 finished=status=='finished'
             )
 
-        for player in match_players[:player_length // 2]:
-            updated_score[player] = score['left']
+        if len(match_players) > 1:
+            for player in match_players[:player_length // 2]:
+                updated_score[player] = score['left']
 
-        for player in match_players[player_length // 2:]:
-            updated_score[player] = score['right']
+            for player in match_players[player_length // 2:]:
+                updated_score[player] = score['right']
+        else:
+            updated_score[f'{match_players[0]}Left'] = score['left']
+            updated_score[f'{match_players[0]}Right'] = score['right']
 
         serializer = MatchesSerializer(
             match,
@@ -881,16 +893,11 @@ class MatchesController:
         dict
 
         """
-        game = ''
         players = [logged_user]
+        game = game if (game := request_data.get('game')) in ['pong'] else 'pong'
 
-        if username := request_data.get('username'):
+        if (username := request_data.get('username')) and username not in players:
             players.append(username)
-
-        if (game := request_data.get('game')) and game in ['pong']:
-            game = game
-        else:
-            game = 'pong'
 
         return {'data': {'match_id': self.create_match(game=game, players=players)}}
 
@@ -908,6 +915,16 @@ class MatchesController:
 
         """
         tournament_data = {}
+        stats = (
+            {player: {} for player in players}
+            if len(players) > 1 else
+            {f'{players[0]}Left': {}, f'{players[0]}Right': {}}
+        )
+        score = (
+            {player: 0 for player in players}
+            if len(players) > 1 else
+            {f'{players[0]}Left': 0, f'{players[0]}Right': 0}
+        )
 
         if tournament_id and tournament_path:
             tournament_data['id'] = tournament_id
@@ -916,8 +933,8 @@ class MatchesController:
         serializer = MatchesSerializer(data={
             'game': game,
             'players': players,
-            'stats': {player: {} for player in players},
-            'score': {player: 0 for player in players},
+            'stats': stats,
+            'score': score,
             'tournament': tournament_data
         })
 
@@ -943,7 +960,8 @@ class MatchesController:
 
         for match in Matches.objects.filter(
             status__in=['created', 'playing']
-        ).order_by('-created_at').values('id', 'game', 'players', 'stats', 'score', 'status', 'tournament'):
+        ).order_by('-created_at').values('id', 'game', 'players', 'stats', 'score', 'status', 'tournament', 'created_at'):
+            match['created_at'] = timezone.localtime(match['created_at']).strftime("%H:%M - %d/%m/%Y")
             matches.append(match)
 
             if (tournament := match.get('tournament')) and (tournament_id := tournament.get('id')):

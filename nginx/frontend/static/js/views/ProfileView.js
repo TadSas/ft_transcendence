@@ -59,7 +59,7 @@ export default class extends BaseView {
               </span>
             </div>
             ${
-              this.username ? `
+              this.username && this.username !== window.user.login  ? `
               <hr class="mt-0">
               <div id="startUserChat" class="d-inline-block me-2 mb-3">
                 <div role="button" class="btn btn-outline-success">
@@ -71,10 +71,9 @@ export default class extends BaseView {
                 ${await FriendsController.status(this.username)}
               </div>
               <hr class="mt-0">
-              <div id="startUserPong" role="button" class="btn btn-outline-secondary me-2 mb-3">
+              <a id="startUserPong" type="button" class="btn btn-outline-secondary" onclick="PongController.createPongGame(this)" data-participant="${this.username}">
                 Pong
-                <a href="/pong" type="button" class="pe-none d-none" data-link></a>
-              </div>
+              </a>
               ` : ''
             }
           </div>

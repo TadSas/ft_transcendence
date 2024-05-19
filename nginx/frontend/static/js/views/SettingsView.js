@@ -11,10 +11,10 @@ export default class extends BaseView {
     this.getBase(routes, match)
 
     const userInformationHeaders = {
-      'first_name': {'label': 'Name', 'type': Components.text},
-      'last_name': {'label': 'Surname', 'type':  Components.text},
-      'email': {'label': 'Email', 'type':  Components.email},
-      'two_factor_enabled': {'label': 'Two factor authentication', 'type': Components.checkbox}
+      'first_name': {'label': 'Name', 'type': BasicComponents.text},
+      'last_name': {'label': 'Surname', 'type':  BasicComponents.text},
+      'email': {'label': 'Email', 'type':  BasicComponents.email},
+      'two_factor_enabled': {'label': 'Two factor authentication', 'type': BasicComponents.checkbox}
     }
 
     const user = await new httpRequest({resource: '/auth/api/user', method: 'GET', successCallback: response => {return response}}).send()
@@ -34,7 +34,7 @@ export default class extends BaseView {
                 <div class="row d-flex align-items-center">
                   <div class="col-4 col-sm-4 d-flex">
                     <div class="px-2">
-                      ${Components.label({'labelText': userInformationHeaders[header]['label'] || '', 'labelFor': header})}
+                      ${BasicComponents.label({'labelText': userInformationHeaders[header]['label'] || '', 'labelFor': header})}
                     </div>
                   </div>
                   <div class="col-8 col-sm-8">
@@ -52,7 +52,7 @@ export default class extends BaseView {
             })()
           }
           <div class="d-flex align-items-start">
-            ${Components.button({'buttonLabel': 'Submit', 'js': {'onclick': "SettingsController.submit('userSettings')"}})}
+            ${BasicComponents.button({'buttonLabel': 'Submit', 'js': {'onclick': "SettingsController.submit('userSettings')"}})}
           </div>
         </div>
       </div>
@@ -77,7 +77,7 @@ export default class extends BaseView {
                 <i class="bi bi-pencil-square h3 pe-none"></i>
               </div>
             </div>
-            ${Components.file({'id': 'userAvatarInput', 'hide': true, 'js': {'onchange': `SettingsController.uploadAvatar('userAvatarInput','userAvatar')`}})}
+            ${BasicComponents.file({'id': 'userAvatarInput', 'hide': true, 'js': {'onchange': `SettingsController.uploadAvatar('userAvatarInput','userAvatar')`}})}
             <h1>${userInformation['login'] || ''}</h1>
             <div class="pb-3">
               <span class="badge rounded-pill text-bg-${statuses[status || 'offline']}">

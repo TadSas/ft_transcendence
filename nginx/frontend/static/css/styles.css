@@ -59,8 +59,8 @@
 /* ---------------------------------Sidebar---------------------------------- */
 
 #sidebar {
-  min-width: 250px;
-  max-width: 250px;
+  min-width: 275px;
+  max-width: 275px;
 }
 
 #sidebar.active {
@@ -150,6 +150,7 @@
   top: 50px;
   position: fixed;
   -webkit-transform: translateX(-50%);
+  -moz-transform: translateX(-50%);
 }
 
 /* ------------------------------Avatar on hover----------------------------- */
@@ -203,6 +204,10 @@
   display: none;
 }
 
+.otp-field input[type="number"] {
+  -moz-appearance: textfield; /* Removes the default spin buttons */
+}
+
 /* ------------------------------Chat interface------------------------------ */
 
 ::-webkit-scrollbar {
@@ -220,6 +225,26 @@
   background: --bs-gray-900;
 }
 
+html {
+  scrollbar-width: thin;
+  scrollbar-color: slategrey var(--bs-gray-900);
+}
+
+::-moz-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-moz-scrollbar-thumb {
+  background-color: slategrey;
+  border-radius: 1rem;
+  border: 1px solid slategrey;
+}
+
+::-moz-scrollbar-corner {
+  background-color: var(--bs-gray-900);
+}
+
 .text-small {
   font-size: 0.9rem;
 }
@@ -234,6 +259,11 @@
 }
 
 .short-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 1;
@@ -378,4 +408,62 @@
 .winner-top .match-top .score, .winner-bottom .match-bottom .score {
   --bs-text-opacity: 1;
   color: rgba(var(--bs-primary-rgb), var(--bs-text-opacity)) !important;
+}
+
+
+/* -------------------------------Running line------------------------------- */
+
+
+#scroll-container {
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#scroll-text {
+  font-size: 35px;
+  font-weight: 600;
+  font-family: "Pixelify Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+  white-space: nowrap;
+
+  -moz-transform: translateX(100%);
+  -webkit-transform: translateX(100%);
+  transform: translateX(100%);
+
+  -moz-animation: running-line 15s linear infinite;
+  -webkit-animation: running-line 15s linear infinite;
+  animation: running-line 15s linear infinite;
+}
+
+@-moz-keyframes running-line {
+  from {
+    -moz-transform: translateX(100%);
+  }
+  to {
+    -moz-transform: translateX(-200%);
+  }
+}
+
+@-webkit-keyframes running-line {
+  from {
+    -webkit-transform: translateX(100%);
+  }
+  to {
+    -webkit-transform: translateX(-200%);
+  }
+}
+
+@keyframes running-line {
+  from {
+    -moz-transform: translateX(100%);
+    -webkit-transform: translateX(100%);
+    transform: translateX(100%);
+  }
+  to {
+    -moz-transform: translateX(-200%);
+    -webkit-transform: translateX(-200%);
+    transform: translateX(-200%);
+  }
 }

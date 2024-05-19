@@ -49,6 +49,7 @@ var LoginController = (() => {
             input.classList.add('border-danger')
           })
         } else {
+          self.authenticationCheck()
           const loginCont = document.getElementById("login")
 
           document.getElementById('hiddenVerify').click()

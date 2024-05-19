@@ -8,8 +8,10 @@ var DashboardController = (() => {
   self.initPlatformUsers = async (users) => {
     users = users || window.userActivity || {}
 
-    const onlineUsers = users['online'] || []
+    let onlineUsers = users['online'] || []
     let offlineUsers = await new httpRequest({resource: '/auth/api/users/all', method: 'GET', successCallback: response => {return response?.data?.users}}).send()
+    onlineUsers = [...new Set(onlineUsers)]
+    offlineUsers = [...new Set(offlineUsers)]
 
     offlineUsers = offlineUsers.filter(user => !onlineUsers.includes(user))
 

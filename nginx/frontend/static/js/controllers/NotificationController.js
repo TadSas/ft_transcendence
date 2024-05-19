@@ -34,7 +34,6 @@ var NotificationController = (() => {
             body: data['message']
           })
           ToastComponents.show(toastId)
-          document.getElementById('nav-messages').querySelector('.sidebar-icon-notification').classList.remove('d-none')
 
           break
         }
@@ -54,8 +53,8 @@ var NotificationController = (() => {
             Tournament: <u>${tournament['name'] || ''}</u>
           </h3>
           <hr>
-          ${Components.button({'buttonLabel': 'Decline', 'buttonClass': 'secondary me-4', 'js': {'onclick': declineEvent}})}
-          ${Components.button({'buttonLabel': 'Accept', 'buttonClass': 'primary', 'js': {'onclick': acceptEvent}})}
+          ${BasicComponents.button({'buttonLabel': 'Decline', 'buttonClass': 'secondary me-4', 'js': {'onclick': declineEvent}})}
+          ${BasicComponents.button({'buttonLabel': 'Accept', 'buttonClass': 'primary', 'js': {'onclick': acceptEvent}})}
           <a id="hiddenGameAccept" href="/${game}/${matchId}" type="button" class="pe-none d-none" data-link></a>
           `
 

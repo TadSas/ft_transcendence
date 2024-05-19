@@ -125,7 +125,7 @@ var SettingsController = (() => {
           </div>
         </div>
         `
-        document.getElementsByClassName('modals')[0].innerHTML = Components.modal({
+        document.getElementsByClassName('modals')[0].innerHTML = BasicComponents.modal({
           'modalId': 'qrModalId', 'modalTitle': 'Attention', 'modalBody': modalBody, 'size': 'extraLarge'
         })
         new bootstrap.Modal(document.getElementById("qrModalId"), {}).show()

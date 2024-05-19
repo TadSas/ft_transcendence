@@ -14,16 +14,16 @@ import setupColorMode from "./src/ColorMode.js"
 window.PongGame = PongGame
 
 const routes = [
-  {path: "/", view: Dashboard, name: "Dashboard", icon: "house-door", sideBar: true},
+  {path: "/", view: Dashboard, id: "dashboard", name: "Dashboard", icon: "house-door", sideBar: true},
   {path: "/login", view: Login, name: "Login", container: "login", sideBar: false},
   {path: "/logout", view: Logout, name: "Login", container: "login", sideBar: false},
-  {path: "/pong", view: Pong, name: "Pong", icon: "rocket-takeoff", sideBar: true},
+  {path: "/pong", view: Pong, id: "pong", name: "Pong", icon: "rocket-takeoff", sideBar: true},
   {path: "/pong/:matchId", view: Pong, name: "Pong", sideBar: false},
-  {path: "/messages", view: Messages, name: "Messages", icon: "chat", sideBar: true},
-  {path: "/tournaments", view: Tournaments, name: "Tournaments", icon: "trophy", sideBar: true},
-  {path: "/profile", view: Profile, name: "Profile", icon: "person-circle", sideBar: true},
+  {path: "/messages", view: Messages, id: "messages", name: "Messages", icon: "chat", sideBar: true},
+  {path: "/tournaments", view: Tournaments, id: "matches-tournaments", name: "Games / Tournaments", icon: "trophy", sideBar: true},
+  {path: "/profile", view: Profile, id: "profile", name: "Profile", icon: "person-circle", sideBar: true},
   {path: "/profile/:username", view: Profile, name: "Profile", sideBar: false},
-  {path: "/settings", view: Settings, name: "Settings", icon: "speedometer2", sideBar: true},
+  {path: "/settings", view: Settings, id: "settings", name: "Settings", icon: "speedometer2", sideBar: true},
 ]
 
 const pathToRegex = path => {

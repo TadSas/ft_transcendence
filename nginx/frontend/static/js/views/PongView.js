@@ -24,13 +24,19 @@ export default class extends BaseView {
         </div>
       </div>
       <div class="col-8 px-0">
-        <div class="p-3 vh-10 overflow-x-scroll bg-opacity-50 border rounded me-1">
+        <div class="px-2 vh-10 overflow-x-scroll bg-opacity-50 border rounded me-1 d-flex align-items-center">
+          <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap" rel="stylesheet">
+          <div id="scroll-container">
+            <div id="scroll-text">
+              🎾 The battle is on! Witness two pong masters go head-to-head in an electrifying match! 🏆 Let's go players! Show us your skills and make every shot count! 🙌
+            </div>
+          </div>
         </div>
 
         <div id="pongCont" class="p-3 vh-60 overflow-x-scroll bg-opacity-50 border rounded me-1 d-flex justify-content-center align-items-center ${this.matchId ? 'd-none' : ''}">
           ${
             this.matchId ? '' : `
-            <button type="button" class="btn btn-outline-secondary" onclick="PongController.createSinglePong()">Start pong</button>
+            <a role="button" class="btn btn-outline-secondary" onclick="PongController.createPongGame(this)" data-participant="${window.user.login}">Start a single game</a>
             `
           }
         </div>
@@ -86,10 +92,10 @@ export default class extends BaseView {
   initNotificationSection = (matchObject) => {
     return `
     <div id="pongNotifyOpponent">
-      <h5 class="display-7 lh-1 fw-bold">Notify your opponent about the game</h5>
-      <hr>
       <div class="d-grid">
-        <button class="btn btn-outline-secondary" type="button" onclick="PongController.notifyPlayer('${encodeURIComponent(JSON.stringify(matchObject))}')">Notify</button>
+        <button class="btn btn-outline-secondary" type="button" onclick="PongController.notifyPlayer('${encodeURIComponent(JSON.stringify(matchObject))}')">
+          <i class="bi bi-bell-fill me-2"></i> Notify your opponent
+        </button>
       </div>
     </div>
     `

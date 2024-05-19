@@ -76,6 +76,13 @@ var MessagesController = (() => {
       }
     } else
       chatUserBlockToggle.classList.add('invisible')
+
+    const chatPongInvite = document.getElementById('chatPongInvite')
+    if (chatPongInvite && isUser) {
+      chatPongInvite.classList.remove('invisible')
+      chatPongInvite.dataset.participant = participant
+    } else
+      chatPongInvite.classList.add('invisible')
   }
 
   self.configureChatBody = (roomId, participant, blocked, user) => {
