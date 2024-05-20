@@ -198,14 +198,14 @@ var ChatComponents = (() => {
         </div>
         <div class="ms-3 w-100">
           <div class="d-flex align-items-center justify-content-between mb-1">
-            <h6 class="mb-0 short-text" id="${id}_sender">
+            <h6 class="mb-0 message-short-text" id="${id}_sender">
               ${username || ''}
             </h6>
             <p class="fw-lighter text-end mb-0 text-small-date" id="${id}_sentDate">
               ${dateTime[0] || ''}<br>${dateTime[1] || ''}
             </p>
           </div>
-          <p class="font-italic mb-0 text-small short-text" id="${id}_message">
+          <p class="font-italic mb-0 text-small message-short-text" id="${id}_message">
             ${messageText || ''}
           </p>
         </div>

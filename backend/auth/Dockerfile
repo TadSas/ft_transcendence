@@ -15,4 +15,6 @@ RUN apt-get -y update --no-install-recommends && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf ~/.cache/pip/*
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8080"]
+RUN chmod +x /config/startup.sh
+
+ENTRYPOINT ["/config/startup.sh"]

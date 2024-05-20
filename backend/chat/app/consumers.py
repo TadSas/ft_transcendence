@@ -91,6 +91,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         if connected_user == player:
                             continue
 
+                        text_data_json['player'] = player
                         await self.channel_layer.group_send(
                             f'{player}_notifications',
                             {
@@ -220,6 +221,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'game': event['game'],
                 'opponent': event['opponent'],
                 'players': event['players'],
+                'player': event['player'],
                 'tournament': event['tournament']
             }))
         elif subtype in ('game_accept', 'game_decline'):
@@ -228,6 +230,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'subtype': subtype,
                 'id': event['match_id'],
                 'opponent': event['opponent'],
+                'player': event['player'],
             }))
 
     async def chat_block(self, event):

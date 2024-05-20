@@ -188,6 +188,8 @@ var TournamentsController = (() => {
         const nameAliasModal = bootstrap.Modal.getInstance(document.getElementById("nameAliasModalId"))
         nameAliasModal && nameAliasModal.hide()
 
+        LoginController.initUsernameView(window.user.login)
+
         self.reloadListing()
       }
     }).send()
@@ -201,6 +203,8 @@ var TournamentsController = (() => {
       successCallback: response => {
         if ('message' in response && response['message'])
           showMessage(response['message'], 'success')
+
+        LoginController.initUsernameView(window.user.login)
 
         self.reloadListing()
       }

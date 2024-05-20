@@ -1,3 +1,5 @@
+import os
+
 from collections import namedtuple
 
 from configparser import ConfigParser
@@ -26,6 +28,6 @@ FTAPI = namedtuple(
     )
 )(
     AUTHORIZATION_URL=config.get('ft-api', 'authorization-url'),
-    CLIENT_ID=config.get('ft-api', 'client-id'),
-    CLIENT_SECRET=config.get('ft-api', 'client-secret'),
+    CLIENT_ID=os.environ.get('AUTH_API_CLIENT_ID'),
+    CLIENT_SECRET=os.environ.get('AUTH_API_CLIENT_SECRET'),
 )

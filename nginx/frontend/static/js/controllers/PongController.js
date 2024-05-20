@@ -180,7 +180,7 @@ var PongController = (() => {
       notificationWebSocket.send(JSON.stringify(match))
   }
 
-  self.notifyDecline = (opponent, matchId, toastId) => {
+  self.notifyDecline = (player, opponent, matchId, toastId) => {
     ToastComponents.hide(toastId)
 
     const notificationWebSocket = NotificationController.getNotificationWebSocketInstance()
@@ -189,12 +189,13 @@ var PongController = (() => {
       notificationWebSocket.send(JSON.stringify({
         'type': 'notifications',
         'subtype': 'game_decline',
+        'player': player,
         'opponent': opponent,
         'match_id': matchId
       }))
   }
 
-  self.notifyAccept = (opponent, matchId, toastId) => {
+  self.notifyAccept = (player, opponent, matchId, toastId) => {
     ToastComponents.hide(toastId)
 
     const notificationWebSocket = NotificationController.getNotificationWebSocketInstance()
@@ -203,6 +204,7 @@ var PongController = (() => {
       notificationWebSocket.send(JSON.stringify({
         'type': 'notifications',
         'subtype': 'game_accept',
+        'player': player,
         'opponent': opponent,
         'match_id': matchId
       }))

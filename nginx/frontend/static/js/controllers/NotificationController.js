@@ -40,18 +40,23 @@ var NotificationController = (() => {
         case 'game_invite': {
           const game = data['game']
           const matchId = data['id']
+          const player = data['player']
           const toastId = `${subtype}${matchId}Toast`
           const opponent = data['opponent']
           const tournament = data['tournament'] || {}
-          const acceptEvent = `PongController.notifyAccept('${opponent}','${matchId}','${toastId}')`
-          const declineEvent = `PongController.notifyDecline('${opponent}','${matchId}','${toastId}')`
+          const acceptEvent = `PongController.notifyAccept('${player}','${opponent}','${matchId}','${toastId}')`
+          const declineEvent = `PongController.notifyDecline('${player}','${opponent}','${matchId}','${toastId}')`
           const body = `
           <h3 class="fs-6 lh-1 fw-bold">
             Opponent: <u>${opponent || ''}</u>
           </h3>
-          <h3 class="fs-6 lh-1 fw-bold">
-            Tournament: <u>${tournament['name'] || ''}</u>
-          </h3>
+          ${
+            tournament['name'] ? `
+            <h3 class="fs-6 lh-1 fw-bold">
+              Tournament: <u>${tournament['name'] || ''}</u>
+            </h3>
+            ` : ''
+          }
           <hr>
           ${BasicComponents.button({'buttonLabel': 'Decline', 'buttonClass': 'secondary me-4', 'js': {'onclick': declineEvent}})}
           ${BasicComponents.button({'buttonLabel': 'Accept', 'buttonClass': 'primary', 'js': {'onclick': acceptEvent}})}
@@ -71,7 +76,7 @@ var NotificationController = (() => {
         }
         case 'game_accept': {
           const matchId = data['id']
-          const opponent = data['opponent']
+          const player = data['player']
           const toastId = `${subtype}${matchId}Toast`
           let dataLink = 'data-link'
           let href = `href="/pong/${matchId}"`
@@ -84,7 +89,7 @@ var NotificationController = (() => {
           ToastComponents.createToast({
             id: toastId,
             icon: 'check-circle',
-            title: `${opponent} has accepted your request.`,
+            title: `${player} has accepted your request.`,
             body: `<a ${href} type="button" class="btn btn-primary" ${dataLink} onclick="ToastComponents.hide('${toastId}')">Starting to play now.</a>`,
             autohide: false
           })
@@ -94,13 +99,13 @@ var NotificationController = (() => {
         }
         case 'game_decline': {
           const matchId = data['id']
-          const opponent = data['opponent']
+          const player = data['player']
           const toastId = `${subtype}${matchId}Toast`
 
           ToastComponents.createToast({
             id: toastId,
             icon: 'x-circle',
-            title: `${opponent} has declined your request.`,
+            title: `${player} has declined your request.`,
             body: "<u>Don't worry, maybe next time.</u>"
           })
           ToastComponents.show(toastId)

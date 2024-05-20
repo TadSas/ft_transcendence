@@ -122,6 +122,28 @@ class TournamentsController:
 
         return down_level
 
+    def get_tournament_aliases(self, username: str) -> dict:
+        """ Get tournament aliases
+
+        Parameters
+        ----------
+        username : str
+
+        Returns
+        -------
+        dict
+        select participants->'stadevos'->>'alias' from app_tournaments where participants::text ilike '%stadevos%' and status in ('registration', 'started');
+        """
+        aliases = []
+
+        for tournament in list(Tournaments.objects.filter(
+            participants__has_key=username,
+            status__in=('registration', 'started')
+        ).order_by('-created_at').values()):
+            aliases.append(((tournament.get('participants') or {}).get(username) or {}).get('alias') or '')
+
+        return {'data': {'aliases': aliases}}
+
     def create_tournament(self, logged_user: str, request_data: dict) -> dict:
         """ Creates a tournament by the logged user
 

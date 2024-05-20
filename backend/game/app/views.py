@@ -51,6 +51,13 @@ class GetUserTournamentStatsView(APIView):
         })
 
 
+class GetTournamentAliasesView(APIView):
+    authentication_classes = [JWTAuthentication]
+
+    def get(self, request, username = ''):
+        return JsonResponse({'status': 0, **TournamentsController().get_tournament_aliases(username)})
+
+
 class GetUpcomingGamesView(APIView):
     authentication_classes = [JWTAuthentication]
 

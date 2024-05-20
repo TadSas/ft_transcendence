@@ -69,9 +69,52 @@ var LoginController = (() => {
       successCallback: response => response
     }).send()
 
-    window.user = authentication.user
+    if (authentication.authenticated) {
+      window.user = authentication.user
+      self.initUsernameView(window.user.login)
+    }
 
     return authentication
+  }
+
+  self.initUsernameView = (username) => {
+    new httpRequest({
+      resource: `/game/api/tournament/aliases/${username}`,
+      method: 'GET',
+      successCallback: response => {
+        const aliases = response?.data?.aliases || []
+        const userAliases = document.getElementById('userAliases')
+
+        if (!userAliases)
+          return
+
+        if (aliases.length > 0) {
+          userAliases.innerHTML = `
+          <div class="btn-group">
+            <button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+              ${username}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" id="userAliases">
+              <li><div class="dropdown-item pe-none"><u>This user has also played as:</u></div></li>
+              ${
+                (() => {
+                  let content = ''
+
+                  for (const alias of aliases) {
+                    content += `<li><div class="dropdown-item pe-none" name="${alias}Alias">${alias}</div></li>`
+                  }
+
+                  return content
+                })()
+              }
+            </ul>
+          </div>
+          `
+        } else {
+          userAliases.innerHTML = username
+        }
+      }
+    }).send()
   }
 
   return self

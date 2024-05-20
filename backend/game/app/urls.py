@@ -10,6 +10,7 @@ from .views import (
     RegisterTournamentView,
     GetUserMatchHistoryView,
     UnregisterTournamentView,
+    GetTournamentAliasesView,
     GetUserTournamentStatsView,
 )
 
@@ -26,4 +27,5 @@ urlpatterns = [
     path('tournament/unregister', UnregisterTournamentView.as_view(), name='api-tournament-unregister'),
     path('tournament/games/upcoming', GetUpcomingGamesView.as_view(), name='api-tournament-upcoming-games'),
     path('tournament/stats/<slug:username>', GetUserTournamentStatsView.as_view(), name='api-user-tournament-stats'),
+    path('tournament/aliases/<slug:username>', GetTournamentAliasesView.as_view(), name='api-get-tournament-aliases'),
 ]

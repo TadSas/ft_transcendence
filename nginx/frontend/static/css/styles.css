@@ -227,7 +227,6 @@
 
 html {
   scrollbar-width: thin;
-  scrollbar-color: slategrey var(--bs-gray-900);
 }
 
 ::-moz-scrollbar {
@@ -239,10 +238,6 @@ html {
   background-color: slategrey;
   border-radius: 1rem;
   border: 1px solid slategrey;
-}
-
-::-moz-scrollbar-corner {
-  background-color: var(--bs-gray-900);
 }
 
 .text-small {
@@ -262,7 +257,18 @@ html {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 200px;
+
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.message-short-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
 
   overflow: hidden;
   display: -webkit-box;

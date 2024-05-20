@@ -15,6 +15,6 @@ RUN apt-get -y update --no-install-recommends && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf ~/.cache/pip/*
 
-# CMD ["daphne", "-b", "0.0.0.0", "-p", "8081", "game.asgi:application"]
+RUN chmod +x /config/startup.sh
 
-ENTRYPOINT ["tail", "-f", "/dev/null"]
+ENTRYPOINT ["/config/startup.sh"]
