@@ -17,7 +17,7 @@ const routes = [
   {path: "/", view: Dashboard, id: "dashboard", name: "Dashboard", icon: "house-door", sideBar: true},
   {path: "/login", view: Login, name: "Login", container: "login", sideBar: false},
   {path: "/logout", view: Logout, name: "Login", container: "login", sideBar: false},
-  {path: "/pong", view: Pong, id: "pong", name: "Pong", icon: "rocket-takeoff", sideBar: true},
+  {path: "/pong", view: Pong, controller: PongController,  id: "pong", name: "Pong", icon: "rocket-takeoff", sideBar: true},
   {path: "/pong/:matchId", view: Pong, name: "Pong", sideBar: false},
   {path: "/messages", view: Messages, id: "messages", name: "Messages", icon: "chat", sideBar: true},
   {path: "/tournaments", view: Tournaments, id: "matches-tournaments", name: "Games / Tournaments", icon: "trophy", sideBar: true},
@@ -25,6 +25,18 @@ const routes = [
   {path: "/profile/:username", view: Profile, name: "Profile", sideBar: false},
   {path: "/settings", view: Settings, id: "settings", name: "Settings", icon: "speedometer2", sideBar: true},
 ]
+
+var pushState = history.pushState
+history.pushState = function () {
+  const currentLocation = window.location.href.replace(window.location.origin, '')
+  const nextLocation = (arguments[2] || '').replace(window.location.origin, '')
+
+  pushState.apply(history, arguments)
+  // Register after pushstate change events
+  for (const route of routes) {
+    try {route?.controller?.pushState(currentLocation, nextLocation)} catch {}
+  }
+}
 
 const pathToRegex = path => {
   return new RegExp("^" + path.replace(/\//g, "\\/").replace(/:\w+/g, "(.+)") + "$")

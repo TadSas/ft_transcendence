@@ -984,6 +984,10 @@ class MatchesController:
             status__in=['created', 'playing']
         ).order_by('-created_at').values('id', 'game', 'players', 'stats', 'score', 'status', 'tournament', 'created_at'):
             match['created_at'] = timezone.localtime(match['created_at']).strftime("%H:%M - %d/%m/%Y")
+
+            if len(match_players := match.get('players') or []) <= 1 and logged_username not in match_players:
+                continue
+
             matches.append(match)
 
             if (tournament := match.get('tournament')) and (tournament_id := tournament.get('id')):

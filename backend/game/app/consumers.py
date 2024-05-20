@@ -83,20 +83,30 @@ class PongGameConsumer(AsyncWebsocketConsumer):
                     }
                 )
 
-                loop_thread = threading.Thread(
-                    target=game_instance.broadcast_wrapper,
-                    args=(self.channel_layer, self.room_group_name)
-                )
+                loop_thread = threading.Thread(target=game_instance.broadcast_wrapper)
                 self.threads[match_id] = loop_thread
 
                 loop_thread.start()
-            # else:
-                # self.room_game_instances[self.room_group_name].do_broadcast = True
+            else:
+                game_instance = self.room_game_instances[self.room_group_name]
+                game_instance.paused = False
+
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'pong_reconnect',
+                        **await game_instance.initialize()
+                    }
+                )
 
     async def disconnect(self, code):
-        self.connected_users[self.room_group_name].remove(self.user_mapping[self.channel_name])
+        if not hasattr(self, 'room_group_name'):
+            return
 
-        if not len(self.connected_users[self.room_group_name]):
+        if self.channel_name in self.user_mapping:
+            self.connected_users[self.room_group_name].remove(self.user_mapping[self.channel_name])
+
+        if len(self.connected_users[self.room_group_name]) == 0:
             if self.room_group_name in self.room_game_instances:
                 self.room_game_instances[self.room_group_name].do_broadcast = False
 
@@ -106,9 +116,20 @@ class PongGameConsumer(AsyncWebsocketConsumer):
 
             self.room_game_instances.pop(self.room_group_name, None)
             self.connected_users.pop(self.room_group_name, None)
-        # else:
-        #     if self.room_group_name in self.room_game_instances:
-        #         self.room_game_instances[self.room_group_name].do_broadcast = False
+        else:
+            if self.room_group_name in self.room_game_instances:
+                game_instance = self.room_game_instances[self.room_group_name]
+                game_instance.paused = True
+
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'pong_pause',
+                        'paused_player': self.user_mapping[self.channel_name]
+                    }
+                )
+
+        self.user_mapping.pop(self.channel_name, None)
 
         await self.channel_layer.group_discard(
             self.room_group_name,
@@ -132,8 +153,14 @@ class PongGameConsumer(AsyncWebsocketConsumer):
     async def pong_start(self, event):
         await self.send(text_data=json.dumps({**event}))
 
-    async def pong_packet(self, event):
+    async def pong_pause(self, event):
         await self.send(text_data=json.dumps({**event}))
+
+    async def pong_packet(self, event):
+        try:
+            await self.send(text_data=json.dumps({**event}))
+        except Exception:
+            pass
 
     async def pong_reconnect(self, event):
         await self.send(text_data=json.dumps({**event}))

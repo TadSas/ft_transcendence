@@ -17,4 +17,5 @@ RUN apt-get -y update --no-install-recommends && \
 
 RUN chmod +x /config/startup.sh
 
-ENTRYPOINT ["/config/startup.sh"]
+CMD ["tail", "-f", "/dev/null"]
+# ENTRYPOINT ["/config/startup.sh"]

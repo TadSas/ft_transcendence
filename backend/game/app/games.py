@@ -1,3 +1,4 @@
+import random
 import asyncio
 
 from time import sleep
@@ -32,7 +33,7 @@ class Pong:
 
         self.ball = {'x': 0, 'y': 0}
         self.ball_measurements = {'diameter': 0.25}
-        self.ball_direction = -1
+        self.ball_direction = random.choice((1, -1))
         self.ball_step = {'x': 0.075, 'y': 0.05}
         self.ball_speed = {'x': self.ball_step['x'] * self.ball_direction, 'y': 0}
         self.ball_borders = {
@@ -75,16 +76,16 @@ class Pong:
             'score': self.score,
         }
 
-    def broadcast_wrapper(self, channel_layer, room_group_name):
-        asyncio.run(self.broadcast(channel_layer, room_group_name))
+    def broadcast_wrapper(self):
+        asyncio.run(self.broadcast())
 
-    async def broadcast(self, channel_layer, room_group_name):
+    async def broadcast(self):
         while self.do_broadcast:
             if self.paused:
                 continue
 
-            await channel_layer.group_send(
-                room_group_name,
+            await self.channel_layer.group_send(
+                self.room_group_name,
                 {
                     'type': 'pong_packet',
                     'data': {
@@ -97,6 +98,9 @@ class Pong:
             sleep(0.015)
 
     async def move_paddle(self, player, data):
+        if self.paused:
+            return
+
         if (direction := data['direction']) not in (-1, 1):
             return
 
@@ -140,7 +144,7 @@ class Pong:
         return paddle['y'] - self.paddle_measurements['height'] < self.borders['bottom']
 
     async def move_ball(self):
-        if not self.do_broadcast:
+        if not self.do_broadcast or self.paused:
             return
 
         self.check_ball_collisions()
@@ -208,7 +212,7 @@ class Pong:
             paddle['y'] = 0
 
         self.ball = {'x': 0, 'y': 0}
-        self.ball_speed = {'x': self.ball_step['x'] * self.ball_direction, 'y': 0}
+        self.ball_speed = {'x': self.ball_step['x'] * random.choice((1, -1)), 'y': 0}
 
     async def check_game_over(self):
         if 11 in self.score.values():

@@ -35,28 +35,22 @@ var PongController = (() => {
 
     document.addEventListener("visibilitychange", (event) => {
       if (document.visibilityState == "visible") {
-        // send pong pause
-        console.log("tab is active")
-      } else {
-        console.log("tab is inactive")
-      }
+        self.gameInstance.gameWebSocket = self.initGameWebSocketConnection(match, self.gameInstance)
+      } else
+        gameWebSocket.close()
     })
+  }
 
-    window.navigation.addEventListener("navigate", (event) => {
-      const currentLocation = window.location.href.replace(window.location.origin, '')
-      const nextLocation = event.destination.url.replace(window.location.origin, '')
-
-      if (currentLocation.startsWith('/pong') && nextLocation !== currentLocation) {
-        console.log('game is switched')
-      }
-    })
+  self.pushState = (currentLocation, nextLocation) => {
+    if (currentLocation.startsWith('/pong') && nextLocation !== currentLocation) {
+      self.gameInstance.destruct()
+      delete self['gameInstance']
+    }
   }
 
   self.initGameWebSocketConnection = (match, gameInstance) => {
     if (!gameWebSocket || [WebSocket.CLOSING, WebSocket.CLOSED].includes(gameWebSocket.readyState))
       gameWebSocket = new WebSocket(`wss://${location.host}/game/pong/room/${match.id}`)
-    else
-      gameWebSocket.send(JSON.stringify({'type': 'pong_reconnect'}))
 
     gameWebSocket.onmessage = (e) => {
       const data = JSON.parse(e.data)
@@ -73,17 +67,19 @@ var PongController = (() => {
 
           pongCont && pongCont.classList.remove('d-none')
 
-          gameInstance.init(data)
+          if (!gameInstance.initialized)
+            gameInstance.init(data)
 
           break
         case 'pong_packet':
           gameInstance.refresh(data.data)
           break
+        case 'pong_pause':
+          break
         case 'pong_end':
-          if (gameWebSocket && [WebSocket.OPEN, WebSocket.CONNECTING].includes(gameWebSocket.readyState))
-            gameWebSocket.close()
-
+          self.gameInstance.destruct()
           delete self['gameInstance']
+
           if (pongCont) {
             pongCont.innerHTML = ''
             pongCont.classList.add('d-none')

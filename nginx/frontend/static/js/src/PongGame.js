@@ -59,7 +59,17 @@ export default class PongGame {
     this.initialized = true
 
     this.animate()
-    this.interval = setInterval(this.sendPaddleState.bind(this), 10)
+
+    if (!this.interval)
+      this.interval = setInterval(this.sendPaddleState.bind(this), 10)
+  }
+
+  destruct() {
+    clearInterval(this.interval)
+    this.gameWebSocket.close()
+    this.renderer.dispose()
+    this.renderer.forceContextLoss()
+    this.renderer.domElement = null
   }
 
   drawGame(data) {
