@@ -8,7 +8,7 @@ WORKDIR /var/www/auth
 COPY . /
 
 RUN apt-get -y update --no-install-recommends && \
-    apt-get install -y --no-install-recommends vim wget && \
+    apt-get install -y --no-install-recommends vim wget curl && \
     pip install --upgrade pip && \
     pip install -r /config/requirements.txt && \
     apt -y autoremove && \

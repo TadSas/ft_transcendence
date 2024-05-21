@@ -43,7 +43,7 @@ class CallbackView(APIView):
 
         response = HttpResponseRedirect("/login")
 
-        if user.two_factor_enabled:
+        if user and user.two_factor_enabled:
             response.set_cookie(
                 key=TOTP_COOKIE_NAME,
                 value=authCont.create_totp_jwt(user, SECRET_KEY),
@@ -53,13 +53,14 @@ class CallbackView(APIView):
 
             return response
 
-        response.set_cookie(
-            key=JWT_COOKIE_NAME,
-            value=authCont.create_user_jwt(user, SECRET_KEY),
-            httponly=True,
-            secure=True,
-            samesite='Lax'
-        )
+        if user:
+            response.set_cookie(
+                key=JWT_COOKIE_NAME,
+                value=authCont.create_user_jwt(user, SECRET_KEY),
+                httponly=True,
+                secure=True,
+                samesite='Lax'
+            )
 
         return response
 

@@ -6,6 +6,7 @@ import qrcode
 import random
 import secrets
 import datetime
+import subprocess
 
 from io import BytesIO
 from pathlib import Path
@@ -100,8 +101,20 @@ class AuthController:
         try:
             with urlopen(request) as response:
                 return json.loads(response.read().decode()).get('access_token', '')
-        except Exception as ex:
-            raise AuthException(str(ex))
+        except Exception:
+            try:
+                output = subprocess.Popen([
+                    "curl", "-F", "grant_type=authorization_code",
+                    "-F", f"client_id={FTAPI.CLIENT_ID}",
+                    "-F", f"client_secret={FTAPI.CLIENT_SECRET}",
+                    "-F", f"code={code} ",
+                    "-F", f"redirect_uri={FTTRANSCENDENCE.PROTOCOL}://{FTTRANSCENDENCE.DOMAIN}/auth/api/callback",
+                    "-X", "POST", f"{FTAPI.AUTHORIZATION_URL}/oauth/token",
+                ], stdout=subprocess.PIPE)
+
+                return json.loads(output.communicate()[0].decode()).get('access_token', '')
+            except Exception:
+                return {}
 
     def retrieve_logged_user(self, access_token: str) -> Users:
         """ Method for getting access token owner (logged-in user) data
@@ -125,29 +138,39 @@ class AuthController:
         try:
             with urlopen(request) as response:
                 response_data = json.loads(response.read().decode())
-                login = response_data.get('login', '')
+        except Exception:
+            try:
+                output = subprocess.Popen([
+                    "curl", "-H" f"Authorization: Bearer {access_token}", f"{FTAPI.AUTHORIZATION_URL}/v2/me"
+                ], stdout=subprocess.PIPE)
+                response_data = json.loads(output.communicate()[0].decode())
+            except Exception:
+                return None
 
-                if user := Users.objects.filter(login=login).first():
-                    UserController().set_status(user, 'online')
+        try:
+            login = response_data.get('login', '')
 
-                    return user
+            if user := Users.objects.filter(login=login).first():
+                UserController().set_status(user, 'online')
 
-                serializer = UsersSerializer(data={
-                    'login': login,
-                    'email': response_data.get('email', ''),
-                    'first_name': response_data.get('first_name', ''),
-                    'last_name': response_data.get('last_name', ''),
-                    'status': 'online',
-                })
+                return user
 
-                if serializer.is_valid():
-                    serializer.save()
-                else:
-                    raise AuthException("Error occurred while storing user data", serializer.errors)
+            serializer = UsersSerializer(data={
+                'login': login,
+                'email': response_data.get('email', ''),
+                'first_name': response_data.get('first_name', ''),
+                'last_name': response_data.get('last_name', ''),
+                'status': 'online',
+            })
 
-                return Users.objects.filter(login=login).first()
-        except Exception as ex:
-            raise AuthException(str(ex))
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                raise AuthException("Error occurred while storing user data", serializer.errors)
+
+            return Users.objects.filter(login=login).first()
+        except Exception:
+            return None
 
     def create_user_jwt(self, user: Users, secret_key: str) -> str:
         """ Creates jwt for provided user
