@@ -62,6 +62,24 @@ export default class extends BaseView {
             ` : ''
           }
         </div>
+        <div id="pongDisconnectCont" class="p-3 vh-60 overflow-x-scroll bg-opacity-50 border rounded me-1 d-flex justify-content-center align-items-center d-none">
+            <div class="container text-center">
+              <div class="justify-content-center mb-3">
+                <div class="spinner-grow spinner-grow-sm mx-1" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <div class="spinner-grow spinner-grow-sm mx-1" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <div class="spinner-grow spinner-grow-sm mx-1" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+              <div class="row justify-content-center">
+                <strong>It seems your opponent has left the game or switched to another tab. Please wait to continue playing.</strong>
+              </div>
+            </div>
+        </div>
         <div id="pongResultCont" class="p-3 vh-60 overflow-x-scroll bg-opacity-50 border rounded me-1 d-flex justify-content-center align-items-center d-none">
           <div class="container text-center">
             <div class="justify-content-center">

@@ -76,6 +76,7 @@ export default class PongGame {
     const game = data.game
     const gameCanvas = game.canvas
     const gameBorders = game.borders
+    const staticObjects = data.static_objects
     const ball = data.ball
     const ballMeasurements = data.ball_measurements
     const paddles = data.paddles
@@ -85,7 +86,7 @@ export default class PongGame {
     this.createScene(gameCanvas.width, gameCanvas.height)
     this.setGameBorders(gameBorders.top, gameBorders.right, gameBorders.bottom, gameBorders.left)
     this.drawNet()
-    this.drawVerticalBorders()
+    this.drawStaticObjects(staticObjects)
     this.drawBall(ball.x, ball.y, ballMeasurements.diameter)
     this.drawPaddles(paddles, paddleMeasurements)
     this.drawScoreBorad(score)
@@ -125,9 +126,10 @@ export default class PongGame {
     }
   }
 
-  drawVerticalBorders() {
-    this.createCube(0, this.gameTopBound + 1.5, -1, this.gameRightBound * 2, 1, 0, this.cubeSideColors)
-    this.createCube(0, this.gameBottomBound - 1.5, -1, this.gameRightBound * 2, 1, 0, this.cubeSideColors)
+  drawStaticObjects(staticObjects) {
+    for (const object of staticObjects) {
+      this.createCube(object.x, object.y, object.z, object.width, object.height, object.length, this.cubeSideColors)
+    }
   }
 
   drawBall(x, y, diameter) {

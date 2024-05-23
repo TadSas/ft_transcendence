@@ -24,6 +24,7 @@ class Pong:
         self.channel_layer = channel_layer
         self.room_group_name = room_group_name
         self.borders = {'top': 7, 'right': 12, 'bottom': -7, 'left': -12}
+        self.static_objects = self.init_static_objects()
 
         self.paddles = self.init_paddles(players)
         self.paddle_measurements = {'width': 0.25, 'height': 3}
@@ -36,10 +37,6 @@ class Pong:
         self.ball_direction = random.choice((1, -1))
         self.ball_step = {'x': 0.075, 'y': 0.05}
         self.ball_speed = {'x': self.ball_step['x'] * self.ball_direction, 'y': 0}
-        self.ball_borders = {
-            'left': -10 + self.paddle_measurements['width'] / 2,
-            'right': 10 - self.paddle_measurements['width'] / 2
-        }
 
         self.score = score or {'left': 0, 'right': 0}
         self.do_broadcast = True
@@ -69,12 +66,27 @@ class Pong:
                 'canvas': {'width': self.width, 'height': self.height},
                 'borders': self.borders,
             },
+            'static_objects': self.static_objects,
             'ball': self.ball,
             'ball_measurements': self.ball_measurements,
             'paddles': self.paddles,
             'paddle_measurements': self.paddle_measurements,
             'score': self.score,
         }
+
+    def init_static_objects(self) -> list:
+        vertical_borders = [
+            {
+                'x': 0, 'y': self.borders['top'] + 0.75, 'z': 0,
+                'width': self.borders['right'] * 2, 'height': 1, 'length': 0
+            },
+            {
+                'x': 0, 'y': self.borders['bottom'] - 0.75, 'z': 0,
+                'width': self.borders['right'] * 2, 'height': 1, 'length': 0
+            },
+        ]
+
+        return [*vertical_borders]
 
     def broadcast_wrapper(self):
         asyncio.run(self.broadcast())
@@ -154,37 +166,56 @@ class Pong:
         self.ball['y'] += self.ball_speed['y']
 
     def check_ball_collisions(self):
-        ball_x_coordinate = self.ball['x']
-        ball_y_coordinate = self.ball['y']
-        ball_half_width = self.ball_measurements['diameter'] / 2
-        paddle_half_height = self.paddle_measurements['height'] / 2
+        ball_x = self.ball['x']
+        ball_y = self.ball['y']
+        ball_diameter = self.ball_measurements['diameter']
+        paddle_width = self.paddle_measurements['width']
+        paddle_height = self.paddle_measurements['height']
 
-        # left paddle
-        if round(ball_x_coordinate - ball_half_width, 3) == round(self.ball_borders['left'], 3):
-            for paddle in self.paddles['left'].values():
-                paddle_y_coordinate = paddle['y']
+        for object in (*self.paddles['left'].values(), *self.paddles['right'].values(), *self.static_objects):
+            object_x = object['x']
+            object_y = object['y']
+            object_half_width = (object.get('width') or paddle_width) / 2
+            object_half_height = (object.get('height') or paddle_height) / 2
 
-                if (
-                    paddle_y_coordinate - paddle_half_height < ball_y_coordinate + ball_half_width and
-                    paddle_y_coordinate + paddle_half_height > ball_y_coordinate - ball_half_width
-                ):
+            collision = self.collision(
+                ball_diameter,
+                ball_x,
+                ball_y,
+                object_x - object_half_width,
+                object_y - object_half_height,
+                object_x + object_half_width,
+                object_y + object_half_height,
+            )
+
+            if collision['occurred']:
+                if collision['horizontal']:
                     self.ball_speed['x'] *= -1
-                    self.ball_speed['y'] = (ball_y_coordinate - paddle_y_coordinate) / 30
+                    self.ball_speed['y'] = (ball_y - object_y) / 30
+                if collision['vertical']:
+                    self.ball_speed['y'] *= -1
 
-        # right paddle
-        elif round(ball_x_coordinate + ball_half_width, 3) == round(self.ball_borders['right'], 3):
-            for paddle in self.paddles['right'].values():
-                paddle_y_coordinate = paddle['y']
+    def collision(
+        self,
+        ball_diameter: int,
+        ball_x: int,
+        ball_y: int,
+        obj_left_bottom_x: int,
+        obj_left_bottom_y: int,
+        obj_top_right_x: int,
+        obj_top_right_y: int,
+    ) -> tuple:
+        x = max(obj_left_bottom_x, min(ball_x, obj_top_right_x))
+        y = max(obj_left_bottom_y, min(ball_y, obj_top_right_y))
 
-                if (
-                    paddle_y_coordinate - paddle_half_height < ball_y_coordinate + ball_half_width and
-                    paddle_y_coordinate + paddle_half_height > ball_y_coordinate - ball_half_width
-                ):
-                    self.ball_speed['x'] *= -1
-                    self.ball_speed['y'] = (ball_y_coordinate - paddle_y_coordinate) / 30
+        x_diff = x - ball_x
+        y_diff = y - ball_y
 
-        elif ball_y_coordinate >= self.borders['top'] or ball_y_coordinate <= self.borders['bottom']:
-            self.ball_speed['y'] *= -1
+        return {
+            'occurred': (x_diff ** 2 + y_diff ** 2) <= ball_diameter,
+            'vertical': bool(y_diff),
+            'horizontal': bool(x_diff),
+        }
 
     async def check_ball_out_of_bounds(self):
         if self.ball['x'] < self.borders['left']:

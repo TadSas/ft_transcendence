@@ -36,9 +36,9 @@ const showMessage = (message, type = 'primary', duration = 5000) => {
   }, duration)
 }
 
-const showLoader = () => document.getElementById('loader').classList.add('show')
+const showLoader = () => document.getElementById('loader').classList.remove('d-none')
 
-const hideLoader = () => document.getElementById('loader').classList.remove('show')
+const hideLoader = () => document.getElementById('loader').classList.add('d-none')
 
 const getCookie = (name) => {
   const dc = document.cookie

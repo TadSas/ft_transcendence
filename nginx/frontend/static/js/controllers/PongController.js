@@ -65,6 +65,9 @@ var PongController = (() => {
           const pongWaintingCont = document.getElementById('pongWaintingCont')
           pongWaintingCont && pongWaintingCont.classList.add('d-none')
 
+          const pongDisconnectCont = document.getElementById('pongDisconnectCont')
+          pongDisconnectCont && pongDisconnectCont.classList.add('d-none')
+
           pongCont && pongCont.classList.remove('d-none')
 
           if (!gameInstance.initialized)
@@ -74,8 +77,11 @@ var PongController = (() => {
         case 'pong_packet':
           gameInstance.refresh(data.data)
           break
-        case 'pong_pause':
+        case 'pong_pause': {
+          const pongWaintingCont = document.getElementById('pongWaintingCont')
+          pongWaintingCont && pongWaintingCont.classList.remove('d-none')
           break
+        }
         case 'pong_end':
           self.gameInstance.destruct()
           delete self['gameInstance']
