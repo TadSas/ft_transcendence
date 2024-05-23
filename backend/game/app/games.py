@@ -180,18 +180,24 @@ class Pong:
 
             collision = self.collision(
                 ball_diameter,
-                ball_x,
-                ball_y,
-                object_x - object_half_width,
-                object_y - object_half_height,
-                object_x + object_half_width,
-                object_y + object_half_height,
+                round(ball_x, 2),
+                round(ball_y, 2),
+                round(object_x - object_half_width, 2),
+                round(object_y - object_half_height, 2),
+                round(object_x + object_half_width, 2),
+                round(object_y + object_half_height, 2),
             )
 
             if collision['occurred']:
+                if ball_x > 0:
+                    self.ball['x'] -= 0.05
+                else:
+                    self.ball['x'] += 0.05
+
                 if collision['horizontal']:
                     self.ball_speed['x'] *= -1
                     self.ball_speed['y'] = (ball_y - object_y) / 30
+
                 if collision['vertical']:
                     self.ball_speed['y'] *= -1
 
@@ -208,8 +214,8 @@ class Pong:
         x = max(obj_left_bottom_x, min(ball_x, obj_top_right_x))
         y = max(obj_left_bottom_y, min(ball_y, obj_top_right_y))
 
-        x_diff = x - ball_x
-        y_diff = y - ball_y
+        x_diff = round(x - ball_x, 2)
+        y_diff = round(y - ball_y, 2)
 
         return {
             'occurred': (x_diff ** 2 + y_diff ** 2) <= ball_diameter,
