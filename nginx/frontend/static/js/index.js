@@ -15,7 +15,9 @@ window.PongGame = PongGame
 
 const routes = [
   {path: "/", view: Dashboard, id: "dashboard", name: "Dashboard", icon: "house-door", sideBar: true},
+  {path: "/?code=:code", view: Dashboard, name: "Dashboard", sideBar: false},
   {path: "/login", view: Login, name: "Login", container: "login", sideBar: false},
+  {path: "/login?terminal=:terminal", view: Login, name: "Login", container: "login", sideBar: false},
   {path: "/logout", view: Logout, name: "Login", container: "login", sideBar: false},
   {path: "/pong", view: Pong, controller: PongController,  id: "pong", name: "Pong", icon: "rocket-takeoff", sideBar: true},
   {path: "/pong/:matchId", view: Pong, name: "Pong", sideBar: false},
@@ -39,7 +41,7 @@ history.pushState = function () {
 }
 
 const pathToRegex = path => {
-  return new RegExp("^" + path.replace(/\//g, "\\/").replace(/:\w+/g, "(.+)") + "$")
+  return new RegExp("^" + path.replace(/\//g, "\\/").replace(/\?/g, "\\?").replace(/:\w+/g, "(.+)") + "$")
 }
 
 const getParams = match => {
@@ -60,7 +62,7 @@ const router = async () => {
   const potentialMatches = routes.map(route => {
     return {
       route: route,
-      result: location.pathname.match(pathToRegex(route.path))
+      result: `${location.pathname}${location.search}`.match(pathToRegex(route.path))
     }
   })
 
@@ -86,11 +88,11 @@ window.addEventListener("popstate", router)
 
 document.addEventListener("DOMContentLoaded", () => {
   if (LoginController.authenticationCheck().authenticated) {
-    history.pushState(null, null, '/')
+    history.pushState(null, null, ['/', '/login'].includes(location.pathname) ? `${location.pathname}${location.search}` : '/')
     NotificationController.init()
   }
   else {
-    history.pushState(null, null, `/login`)
+    history.pushState(null, null, location.pathname === '/login' ? `${location.pathname}${location.search}` : '/login')
   }
 
   router()

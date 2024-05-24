@@ -5,6 +5,12 @@ export default class extends BaseView {
   constructor(params) {
     super(params)
     this.setTitle("Login")
+
+    if ('terminal' in params && params['terminal'] === 'true') {
+      localStorage.setItem('showCode', 'true')
+    }
+
+    window.history.replaceState(null, null, window.location.pathname)
   }
 
   toggleContainer() {

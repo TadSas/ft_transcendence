@@ -5,6 +5,13 @@ export default class extends BaseView {
   constructor(params) {
     super(params)
     this.setTitle("Dashboard")
+
+    if ('code' in params && params['code'] && localStorage.getItem('showCode')) {
+      localStorage.removeItem('showCode')
+      this.showCodeModal(params['code'])
+    }
+
+    window.history.replaceState(null, null, window.location.pathname)
   }
 
   async getContent(routes, match) {
@@ -99,5 +106,24 @@ export default class extends BaseView {
       </div>
     </div>
     `
+  }
+
+  showCodeModal(code) {
+    document.getElementsByClassName('modals')[0].innerHTML = BasicComponents.modal({
+      'size': 'default',
+      'centered': true,
+      'modalId': 'codeModalId',
+      'modalTitle': 'You need to paste this in you terminal',
+      'modalBody': `
+        <div class="text-break">
+          <p>${code}</p>
+        </div>
+        <button id="loginCode" type="button" class="btn btn-outline-secondary" onclick="copyToClipboard('loginCode')" value="${code}">
+          <i class="bi bi-clipboard"></i>
+          <span class="ms-2 sidebar-title-transition">Copy the code to clipboard</span>
+        </button>
+      `
+    })
+    new bootstrap.Modal(document.getElementById("codeModalId"), {}).show()
   }
 }

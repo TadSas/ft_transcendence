@@ -72,7 +72,7 @@ export default class extends BaseView {
               </div>
               <hr class="mt-0">
               <a id="startUserPong" type="button" class="btn btn-outline-secondary" onclick="PongController.createPongGameModal('${this.username}')">
-                Pong
+                Play Pong
               </a>
               ` : ''
             }

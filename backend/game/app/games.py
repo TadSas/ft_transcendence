@@ -30,7 +30,7 @@ class Pong:
         self.static_objects = self.init_static_objects()
 
         self.paddles = self.init_paddles(players)
-        self.paddle_measurements = {'width': 0.25, 'height': 3}
+        self.paddle_measurements = {'width': 0.25, 'height': 3, 'length': 0.5}
         self.paddle_step = 0.15
 
         self.players = self.init_players(players)
@@ -50,7 +50,7 @@ class Pong:
 
         for path in players.values():
             side, paddle_id = path.split('.')
-            paddles[side][int(paddle_id)] = {'x': -10 if side == 'left' else 10, 'y': 0}
+            paddles[side][int(paddle_id)] = {'x': -10 if side == 'left' else 10, 'y': 0, 'paddle': True}
 
         return paddles
 
@@ -80,12 +80,12 @@ class Pong:
     def init_static_objects(self) -> list:
         vertical_borders = [
             {
-                'x': 0, 'y': self.borders['top'] + 0.75, 'z': 0,
-                'width': self.borders['right'] * 2, 'height': 1, 'length': 0
+                'x': 0, 'y': self.borders['top'] + 0.25, 'z': 0,
+                'width': self.borders['right'] * 2, 'height': 0.5, 'length': 0
             },
             {
-                'x': 0, 'y': self.borders['bottom'] - 0.75, 'z': 0,
-                'width': self.borders['right'] * 2, 'height': 1, 'length': 0
+                'x': 0, 'y': self.borders['bottom'] - 0.25, 'z': 0,
+                'width': self.borders['right'] * 2, 'height': 0.5, 'length': 0
             },
         ]
 
@@ -178,8 +178,9 @@ class Pong:
         for object in (*self.paddles['left'].values(), *self.paddles['right'].values(), *self.static_objects):
             object_x = object['x']
             object_y = object['y']
-            object_half_width = (object.get('width') or paddle_width) / 2
-            object_half_height = (object.get('height') or paddle_height) / 2
+            object_is_paddle = object.get('paddle')
+            object_half_width = (paddle_width if object_is_paddle else object.get('width')) / 2
+            object_half_height = (paddle_height if object_is_paddle else object.get('height')) / 2
 
             collision = self.collision(
                 ball_diameter,
@@ -192,16 +193,12 @@ class Pong:
             )
 
             if collision['occurred']:
-                if ball_x > 0:
-                    self.ball['x'] -= 0.05
-                else:
-                    self.ball['x'] += 0.05
-
                 if collision['horizontal']:
                     self.ball_speed['x'] *= -1
-                    self.ball_speed['y'] = (ball_y - object_y) / 30
 
-                if collision['vertical']:
+                    if object_is_paddle:
+                        self.ball_speed['y'] = (ball_y - object_y) / 30
+                elif collision['vertical']:
                     self.ball_speed['y'] *= -1
 
     def collision(
@@ -214,17 +211,48 @@ class Pong:
         obj_top_right_x: int,
         obj_top_right_y: int,
     ) -> tuple:
-        x = max(obj_left_bottom_x, min(ball_x, obj_top_right_x))
-        y = max(obj_left_bottom_y, min(ball_y, obj_top_right_y))
+        radius = ball_diameter / 2
 
-        x_diff = round(x - ball_x, 2)
-        y_diff = round(y - ball_y, 2)
+        closest_x = max(obj_left_bottom_x, min(ball_x, obj_top_right_x))
+        closest_y = max(obj_left_bottom_y, min(ball_y, obj_top_right_y))
 
-        return {
-            'occurred': (x_diff ** 2 + y_diff ** 2) <= ball_diameter,
-            'vertical': bool(y_diff),
-            'horizontal': bool(x_diff),
-        }
+        distance_x = round(ball_x - closest_x, 2)
+        distance_y = round(ball_y - closest_y, 2)
+
+        distance_squared = distance_x ** 2 + distance_y ** 2
+
+        occurred = distance_squared < (radius ** 2)
+
+        vertical = occurred and (ball_y < obj_left_bottom_y or ball_y > obj_top_right_y)
+        horizontal = occurred and (ball_x < obj_left_bottom_x or ball_x > obj_top_right_x)
+
+        if occurred:
+            if distance_squared != 0:
+                distance = (distance_squared ** 0.5)
+                overlap = radius - distance
+
+                if vertical:
+                    if ball_y < obj_left_bottom_y:
+                        self.ball['y'] -= overlap
+                    else:
+                        self.ball['y'] += overlap
+                if horizontal:
+                    if ball_x < obj_left_bottom_x:
+                        self.ball['x'] -= overlap
+                    else:
+                        self.ball['x'] += overlap
+            else:
+                if vertical and horizontal:
+                    if ball_x < obj_left_bottom_x:
+                        self.ball['x'] -= radius
+                    else:
+                        self.ball['x'] += radius
+                    if ball_y < obj_left_bottom_y:
+                        self.ball['y'] -= radius
+                    else:
+                        self.ball['y'] += radius
+
+        return {'occurred': occurred, 'vertical': vertical, 'horizontal': horizontal}
 
     async def check_ball_out_of_bounds(self):
         if self.ball['x'] < self.borders['left']:

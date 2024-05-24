@@ -78,8 +78,9 @@ var PongController = (() => {
           gameInstance && gameInstance.refresh(data.data)
           break
         case 'pong_pause': {
-          const pongWaintingCont = document.getElementById('pongWaintingCont')
-          pongWaintingCont && pongWaintingCont.classList.remove('d-none')
+          const pongDisconnectCont = document.getElementById('pongDisconnectCont')
+          pongDisconnectCont && pongDisconnectCont.classList.remove('d-none')
+          pongCont && pongCont.classList.add('d-none')
           break
         }
         case 'pong_end':
@@ -371,11 +372,11 @@ var PongController = (() => {
       <div class="card border-secondary mb-3">
         <div class="card-header">
           <div class="form-check">
-            <input class="form-check-input" type="radio" name="pongMap" id="pongMap${number}" value="${number}">
+            <input class="form-check-input" type="radio" name="pongMap" id="pongMap${number}" value="${number}" ${number === 1 ? 'checked' : ''}>
             <label class="form-check-label" for="pongMap${number}">#${number}</label>
           </div>
         </div>
-        <img src="/static/images/maps/default_avatar.jpg" class="img-fluid rounded mx-auto d-block">
+        <img src="/static/images/maps/pongMap${number}.png" class="img-fluid rounded mx-auto d-block">
       </div>
     </label>
     `

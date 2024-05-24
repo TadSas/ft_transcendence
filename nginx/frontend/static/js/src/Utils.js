@@ -88,3 +88,8 @@ const arraysEqual = (a1, a2) => {
 const setsEqual = (xs, ys) => {
   return xs.size === ys.size && [...xs].every((x) => ys.has(x))
 }
+
+const copyToClipboard = (elementId) => {
+  const element = document.getElementById(elementId)
+  element && navigator.clipboard.writeText(element.value)
+}

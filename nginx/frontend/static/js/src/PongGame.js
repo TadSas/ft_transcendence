@@ -68,7 +68,7 @@ export default class PongGame {
     clearInterval(this.interval)
     this.gameWebSocket.close()
     this.renderer.dispose()
-    // this.renderer.forceContextLoss()
+    this.renderer.forceContextLoss()
     this.renderer.domElement = null
   }
 
@@ -193,18 +193,19 @@ export default class PongGame {
     const rightPaddles = paddles.right
     const paddleWidth = paddleMeasurements.width
     const paddleHeight = paddleMeasurements.height
+    const paddleLength = paddleMeasurements.length
 
     for (let index in leftPaddles) {
       leftSide[index] = this.createCube(
         leftPaddles[index].x, leftPaddles[index].y, 0,
-        paddleWidth, paddleHeight, 0.5, this.cubeSideColors
+        paddleWidth, paddleHeight, paddleLength, this.cubeSideColors
       )
     }
 
     for (let index in rightPaddles) {
       rightSide[index] = this.createCube(
         rightPaddles[index].x, rightPaddles[index].y, 0,
-        paddleWidth, paddleHeight, 0.5, this.cubeSideColors
+        paddleWidth, paddleHeight, paddleLength, this.cubeSideColors
       )
     }
 

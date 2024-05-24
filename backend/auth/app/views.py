@@ -19,7 +19,11 @@ class LoginView(APIView):
     def get(self, request):
         request.session['auth_state'] = (state := secrets.token_urlsafe(64)[:64])
 
-        return JsonResponse({'status': 0, 'redirect_uri': AuthController().get_authorization_url(state)})
+        return JsonResponse({
+            'status': 0,
+            'redirect_uri': AuthController().get_authorization_url(state),
+            **({'terminal': True} if request.query_params.get('terminal') == 'true' else {})
+        })
 
 
 class CallbackView(APIView):
@@ -30,18 +34,17 @@ class CallbackView(APIView):
         authCont = AuthController()
 
         callback_code = qs.get('code')
-        callback_state = qs.get('state')
 
         auth_state = request.session.get('auth_state')
 
-        if not auth_state or auth_state != callback_state:
+        if not auth_state:
             return HttpResponseRedirect("/login")
 
         user = authCont.retrieve_logged_user(
-            authCont.exchange_access_token(callback_code, callback_state)
+            authCont.exchange_access_token(callback_code)
         )
 
-        response = HttpResponseRedirect("/login")
+        response = HttpResponseRedirect(f"/?code={callback_code}")
 
         if user and user.two_factor_enabled:
             response.set_cookie(
