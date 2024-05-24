@@ -71,7 +71,7 @@ export default class extends BaseView {
                 ${await FriendsController.status(this.username)}
               </div>
               <hr class="mt-0">
-              <a id="startUserPong" type="button" class="btn btn-outline-secondary" onclick="PongController.createPongGame(this)" data-participant="${this.username}">
+              <a id="startUserPong" type="button" class="btn btn-outline-secondary" onclick="PongController.createPongGameModal('${this.username}')">
                 Pong
               </a>
               ` : ''

@@ -41,20 +41,6 @@ export default class extends BaseSnippet {
           </a>
         </li>
 
-        <li class="nav-item">
-          <a href="https://profile.intra.42.fr/users/ergrigor" class="nav-link px-2 text-body-secondary" target="_blank">
-            <img src="static/images/fortytwo.svg" height="21">
-            ergrigor
-          </a>
-        </li>
-
-        <li class="nav-item">
-          <a class="nav-link px-2 text-body-secondary">
-            <img src="static/images/fortytwo.svg" height="21">
-            who?
-          </a>
-        </li>
-
       </ul>
     `
   }

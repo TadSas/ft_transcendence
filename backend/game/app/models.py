@@ -47,6 +47,7 @@ class Matches(models.Model):
     players = models.JSONField(default=dict)
     stats = models.JSONField(default=dict)
     score = models.JSONField(default=dict)
+    customizations = models.JSONField(default=dict)
     tournament = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=32, choices=MatchStatusChoices.choices, default=MatchStatusChoices.CREATED)

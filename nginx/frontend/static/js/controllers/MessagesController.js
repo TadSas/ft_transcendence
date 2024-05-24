@@ -81,6 +81,7 @@ var MessagesController = (() => {
     if (chatPongInvite && isUser) {
       chatPongInvite.classList.remove('invisible')
       chatPongInvite.dataset.participant = participant
+      chatPongInvite.setAttribute('onclick', `PongController.createPongGameModal('${participant}')`)
     } else
       chatPongInvite.classList.add('invisible')
   }

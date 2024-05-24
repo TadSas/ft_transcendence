@@ -4,22 +4,25 @@ import asyncio
 from time import sleep
 from channels.db import database_sync_to_async
 
+from .maps import PongMaps
 from .main import MatchesController
 
 
 class Pong:
     def __init__(
         self,
-        width = 720,
-        height = 405,
-        multiplayer = False,
+        width=720,
+        height=405,
+        multiplayer=False,
         players={},
         score={},
         channel_layer=None,
         room_group_name=None,
+        match_map=1,
     ):
         self.width = width
         self.height = height
+        self.match_map = match_map
         self.multiplayer = multiplayer
         self.channel_layer = channel_layer
         self.room_group_name = room_group_name
@@ -86,7 +89,7 @@ class Pong:
             },
         ]
 
-        return [*vertical_borders]
+        return [*vertical_borders, *PongMaps.get(self.match_map, PongMaps[1])]
 
     def broadcast_wrapper(self):
         asyncio.run(self.broadcast())

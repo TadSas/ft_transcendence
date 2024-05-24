@@ -63,7 +63,7 @@ export default class extends BaseView {
             <p class="h5 mb-0 py-1 me-4 pe-none"></p>
           </div>
 
-          <a id="chatPongInvite" class="d-flex align-items-center link-body-emphasis text-decoration-none invisible" onclick="PongController.createPongGame(this)" role="button">
+          <a id="chatPongInvite" class="d-flex align-items-center link-body-emphasis text-decoration-none invisible" role="button">
             <i class="bi bi-rocket-takeoff pe-none me-2 mb-0 h6"></i>
             <p class="h5 mb-0 py-1 me-4 pe-none">Play Pong</p>
           </a>

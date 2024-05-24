@@ -101,7 +101,9 @@ export default class extends BaseView {
         </div>
       </div>
       <div class="col-2 px-0">
-        <div class="p-3 vh-80 overflow-x-scroll bg-opacity-50 border rounded me-1"></div>
+        <div class="p-3 vh-80 overflow-x-scroll bg-opacity-50 border rounded me-1">
+          ${this.matchId ? '' : PongController.initDifferentMapsView()}
+        </div>
       </div>
     </div>
     `
@@ -119,40 +121,4 @@ export default class extends BaseView {
     `
   }
 
-  initReadyView = (matchObject) => {
-    const readyButtons = []
-    const players = matchObject.players
-
-    if (players[0] == window.user.login)
-      readyButtons.push(
-        `<button type="button" class="btn btn-secondary me-5" onclick="PongController.gameInstance.insertGamecanvas()">
-          ${players[0]}
-          <span class="bi bi-question-circle" aria-hidden="true"></span>
-        </button>`
-    )
-    else
-      readyButtons.push(
-        `<button type="button" class="btn btn-secondary me-5" disabled>
-          <span class="me-2" role="status">${players[0]}</span>
-          <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-        </button>`
-      )
-
-    if (players[1] == window.user.login)
-      readyButtons.push(
-        `<button type="button" class="ms-5 btn btn-secondary" onclick="PongController.gameInstance.insertGamecanvas()">
-          <span class="bi bi-question-circle me-2" aria-hidden="true"></span>
-          ${players[1]}
-        </button>`
-      )
-    else
-      readyButtons.push(
-        `<button type="button" class="ms-5 btn btn-secondary" disabled>
-        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
-        <span role="status">${players[1]}</span>
-        </button>`
-      )
-
-    return readyButtons.join('')
-  }
 }

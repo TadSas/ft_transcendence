@@ -68,7 +68,7 @@ export default class PongGame {
     clearInterval(this.interval)
     this.gameWebSocket.close()
     this.renderer.dispose()
-    this.renderer.forceContextLoss()
+    // this.renderer.forceContextLoss()
     this.renderer.domElement = null
   }
 

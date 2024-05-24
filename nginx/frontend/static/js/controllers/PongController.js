@@ -35,7 +35,7 @@ var PongController = (() => {
 
     document.addEventListener("visibilitychange", (event) => {
       if (document.visibilityState == "visible") {
-        self.gameInstance.gameWebSocket = self.initGameWebSocketConnection(match, self.gameInstance)
+        self.gameInstance && (self.gameInstance.gameWebSocket = self.initGameWebSocketConnection(match, self.gameInstance))
       } else
         gameWebSocket.close()
     })
@@ -43,7 +43,7 @@ var PongController = (() => {
 
   self.pushState = (currentLocation, nextLocation) => {
     if (currentLocation.startsWith('/pong') && nextLocation !== currentLocation) {
-      self.gameInstance.destruct()
+      self.gameInstance && self.gameInstance.destruct()
       delete self['gameInstance']
     }
   }
@@ -75,7 +75,7 @@ var PongController = (() => {
 
           break
         case 'pong_packet':
-          gameInstance.refresh(data.data)
+          gameInstance && gameInstance.refresh(data.data)
           break
         case 'pong_pause': {
           const pongWaintingCont = document.getElementById('pongWaintingCont')
@@ -138,10 +138,34 @@ var PongController = (() => {
     return gameWebSocket
   }
 
+  self.createPongGameModal = (username) => {
+    if (!username)
+      return
+
+    document.getElementsByClassName('modals')[0].innerHTML = BasicComponents.modal({
+      'size': 'default',
+      'modalId': 'createPongMatchModalId',
+      'modalTitle': 'Choose the map for the pong game',
+      'modalBody': `
+        ${self.initDifferentMapsView()}
+        <div class="mt-3 d-flex justify-content-center align-items-center">
+          <a role="button" class="btn btn btn-primary" onclick="PongController.createPongGame(this)" data-participant="${username}">Create</a>
+        </div>
+      `
+    })
+    new bootstrap.Modal(document.getElementById("createPongMatchModalId"), {}).show()
+  }
+
   self.createPongGame = async (e) => {
-    const dataset = e.dataset
-    const participant = dataset.participant
-    const matchId = await self.createMatch(participant)
+    const participant = e?.dataset?.participant
+
+    if (!participant)
+      return
+
+    const matchId = await self.createMatch(
+      participant,
+      Number(document.querySelector('input[name="pongMap"]:checked')?.value || '1')
+    )
 
     if (!matchId)
       return
@@ -151,6 +175,11 @@ var PongController = (() => {
     e.dataset.link = ''
     e.onclick = ''
     e.click()
+
+    const createPongMatchModalId = bootstrap.Modal.getInstance(document.getElementById("createPongMatchModalId"))
+    createPongMatchModalId && createPongMatchModalId.hide()
+    document.getElementsByClassName('modals')[0].innerHTML = ''
+
     showMessage('The match was successfully created', 'success')
   }
 
@@ -162,11 +191,11 @@ var PongController = (() => {
     }).send()
   }
 
-  self.createMatch = async (participant) => {
+  self.createMatch = async (participant, map) => {
     return new httpRequest({
       resource: `/game/api/match/create`,
       method: 'POST',
-      body: JSON.stringify({'game': 'pong', 'username': participant}),
+      body: JSON.stringify({'game': 'pong', 'username': participant, 'map': map}),
       successCallback: response => response['data']['match_id']
     }).send()
   }
@@ -273,6 +302,82 @@ var PongController = (() => {
       <h3 class="border-bottom pb-2">Match history</h3>
       ${TableComponent.init({'headers': matchHistoryData['headers'], 'data': matchHistoryData['match_history']})}
     </div>
+    `
+  }
+
+  self.initDifferentMapsView = () => {
+    return `
+    <div class="accordion">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
+            Default map
+          </button>
+        </h2>
+        <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show">
+          <div class="accordion-body d-flex justify-content-center align-items-center">
+            ${self.initMapCard(1)}
+          </div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseTwo" aria-expanded="false" aria-controls="panelsStayOpen-collapseTwo">
+            Easy maps
+          </button>
+        </h2>
+        <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse">
+          <div class="accordion-body d-flex flex-column justify-content-center align-items-center">
+            ${self.initMapCard(2)}
+            ${self.initMapCard(3)}
+            ${self.initMapCard(4)}
+          </div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseThree" aria-expanded="false" aria-controls="panelsStayOpen-collapseThree">
+            Medium maps
+          </button>
+        </h2>
+        <div id="panelsStayOpen-collapseThree" class="accordion-collapse collapse">
+          <div class="accordion-body d-flex flex-column justify-content-center align-items-center">
+            ${self.initMapCard(5)}
+            ${self.initMapCard(6)}
+            ${self.initMapCard(7)}
+          </div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseFour" aria-expanded="false" aria-controls="panelsStayOpen-collapseFour">
+            Hard maps
+          </button>
+        </h2>
+        <div id="panelsStayOpen-collapseFour" class="accordion-collapse collapse">
+          <div class="accordion-body d-flex flex-column justify-content-center align-items-center">
+            ${self.initMapCard(8)}
+            ${self.initMapCard(9)}
+            ${self.initMapCard(10)}
+          </div>
+        </div>
+      </div>
+    </div>`
+  }
+
+  self.initMapCard = (number) => {
+    return `
+    <label class="form-check-label" for="pongMap${number}">
+      <div class="card border-secondary mb-3">
+        <div class="card-header">
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="pongMap" id="pongMap${number}" value="${number}">
+            <label class="form-check-label" for="pongMap${number}">#${number}</label>
+          </div>
+        </div>
+        <img src="/static/images/maps/default_avatar.jpg" class="img-fluid rounded mx-auto d-block">
+      </div>
+    </label>
     `
   }
 

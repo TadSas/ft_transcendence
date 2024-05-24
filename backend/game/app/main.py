@@ -915,21 +915,32 @@ class MatchesController:
         dict
 
         """
+        pong_map = request_data.get('map') or 1
         players = [logged_user]
         game = game if (game := request_data.get('game')) in ['pong'] else 'pong'
 
         if (username := request_data.get('username')) and username not in players:
             players.append(username)
 
-        return {'data': {'match_id': self.create_match(game=game, players=players)}}
+        return {'data': {'match_id': self.create_match(game=game, players=players, match_map=pong_map)}}
 
-    def create_match(self, game: str, players: list, tournament_path='', tournament_id='') -> str:
+    def create_match(
+        self,
+        game: str,
+        players: list,
+        tournament_path: str = '',
+        tournament_id: str = '',
+        match_map: int = 1
+    ) -> str:
         """ Create a arbitrary match record for singl or tournament games
 
         Parameters
         ----------
         game : str
         players : list
+        tournament_path : str
+        tournament_id : str
+        match_map : int
 
         Returns
         -------
@@ -957,6 +968,7 @@ class MatchesController:
             'players': players,
             'stats': stats,
             'score': score,
+            'customizations': {'map': match_map},
             'tournament': tournament_data
         })
 
