@@ -4,6 +4,7 @@ from .views import (
     GetMatchView,
     CreateMatchView,
     GetUserStatsView,
+	GetUserMatchesView,
     CreateTournamentView,
     GetUpcomingGamesView,
     GetTournamentListView,
@@ -19,6 +20,7 @@ urlpatterns = [
     path('match/create', CreateMatchView.as_view(), name='api-create-match'),
     path('match/<slug:match_id>', GetMatchView.as_view(), name='api-get-match'),
     path('match/stats/<slug:username>', GetUserStatsView.as_view(), name='api-user-stats'),
+    path('match/<slug:username>/all', GetUserMatchesView.as_view(), name='api-get-user-matches'),
     path('match/history/<slug:username>', GetUserMatchHistoryView.as_view(), name='api-user-match-history'),
 
     path('tournament/list', GetTournamentListView.as_view(), name='api-tournament-list'),

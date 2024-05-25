@@ -719,6 +719,25 @@ class MatchesController:
 
         return {'data': {'match': match}}
 
+    def get_user_matches(self, logged_username: str, username: str) -> dict:
+        """ Get user matches
+
+        Parameters
+        ----------
+        logged_username : str
+        username : str
+
+        Returns
+        -------
+        dict
+
+        """
+        matches = list(Matches.objects.filter(
+            players__contains=[logged_username, username]
+        ).exclude(status='finished').order_by('-created_at').values())
+
+        return {'data': {'matches': matches}}
+
     def get_user_stats(self, logged_username: str, username: str) -> dict:
         """ Get user stats
 

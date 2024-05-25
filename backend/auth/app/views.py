@@ -34,19 +34,23 @@ class CallbackView(APIView):
         authCont = AuthController()
 
         callback_code = qs.get('code')
+        callback_state = qs.get('state')
 
         auth_state = request.session.get('auth_state')
 
-        if not auth_state:
+        if not auth_state or auth_state != callback_state:
             return HttpResponseRedirect("/login")
 
-        user = authCont.retrieve_logged_user(
-            authCont.exchange_access_token(callback_code)
-        )
+        if not (user := authCont.retrieve_logged_user(
+            authCont.exchange_access_token(callback_code, callback_state)
+        )):
+            return HttpResponseRedirect("/login")
 
-        response = HttpResponseRedirect(f"/?code={callback_code}")
+        jwt = authCont.create_user_jwt(user, SECRET_KEY)
 
-        if user and user.two_factor_enabled:
+        response = HttpResponseRedirect(f"/?code={jwt}")
+
+        if user.two_factor_enabled:
             response.set_cookie(
                 key=TOTP_COOKIE_NAME,
                 value=authCont.create_totp_jwt(user, SECRET_KEY),
@@ -56,14 +60,13 @@ class CallbackView(APIView):
 
             return response
 
-        if user:
-            response.set_cookie(
-                key=JWT_COOKIE_NAME,
-                value=authCont.create_user_jwt(user, SECRET_KEY),
-                httponly=True,
-                secure=True,
-                samesite='Lax'
-            )
+        response.set_cookie(
+            key=JWT_COOKIE_NAME,
+            value=jwt,
+            httponly=True,
+            secure=True,
+            samesite='Lax'
+        )
 
         return response
 

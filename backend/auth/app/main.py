@@ -69,12 +69,13 @@ class AuthController:
 
         return f"{FTAPI.AUTHORIZATION_URL}/oauth/authorize?{query_string}"
 
-    def exchange_access_token(self, code: str) -> str:
+    def exchange_access_token(self, code: str, state: str) -> str:
         """ Method to exchange code for an access token
 
         Parameters
         ----------
         code : str
+        state : str
 
         Returns
         -------
@@ -93,6 +94,7 @@ class AuthController:
                 'client_secret': FTAPI.CLIENT_SECRET,
                 'code': code,
                 'redirect_uri': f"{FTTRANSCENDENCE.PROTOCOL}://{FTTRANSCENDENCE.DOMAIN}/auth/api/callback",
+                'state': state,
             }).encode()
         )
 
