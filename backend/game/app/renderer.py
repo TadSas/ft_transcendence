@@ -27,7 +27,7 @@ class PongRenderer:
 		return _map
 
 
-	def render_frame(self, paddles, paddle_measurements, ball, ball_measurements, score):
+	def render_frame(self, paddles, paddle_measurements, ball, ball_measurements, score, players):
 		self.working_map = copy.deepcopy(self._map)
 
 		try:
@@ -48,7 +48,7 @@ class PongRenderer:
 		except Exception:
 			return ''
 
-		return self.init_frame(score)
+		return self.init_frame(score, players)
 
 
 	def draw_object(self, object_x, object_y, object_width, object_height):
@@ -93,13 +93,22 @@ class PongRenderer:
 					self.working_map[x_point][y_point] = 'X'
 
 
-	def init_frame(self, score):
+	def init_frame(self, score, players):
+		left_user = ''
+		right_user = ''
 		left_number = str(score['left'])
 		right_number = str(score['right'])
 
-		output = '-' + '-' * ((self.width) // 2 - 4 - len(left_number))
-		output += f"  {left_number}  -  {right_number}  "
-		output += '-' + '-' * (self.width // 2 - 4 - len(right_number)) + '\n'
+		for player, path in players.items():
+			side, _ = path.split('.')
+			if side == 'left':
+				left_user = player
+			elif side == 'right':
+				right_user = player
+
+		output = '-' + '-' * ((self.width) // 2 - 4 - len(left_number) - len(left_user) - 2)
+		output += f" {left_user} - {left_number}  -  {right_number} - {right_user} "
+		output += '-' + '-' * (self.width // 2 - 4 - len(right_number) - len(right_user) - 2) + '\n'
 
 		output += 'X' * (self.width + 2) + '\n'
 

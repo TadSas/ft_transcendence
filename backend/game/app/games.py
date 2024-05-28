@@ -34,6 +34,7 @@ class Pong:
         self.paddle_measurements = {'width': 0.25, 'height': 3, 'length': 0.5}
         self.paddle_step = 0.15
 
+        self.raw_players = players
         self.players = self.init_players(players)
 
         self.ball = {'x': 0, 'y': 0}
@@ -78,7 +79,8 @@ class Pong:
             'ball_measurements': self.ball_measurements,
             'paddles': self.paddles,
             'paddle_measurements': self.paddle_measurements,
-            'score': self.score
+            'score': self.score,
+            'players': self.raw_players,
         }
 
         return {
@@ -119,7 +121,8 @@ class Pong:
                 'ball_measurements': self.ball_measurements,
                 'paddles': self.paddles,
                 'paddle_measurements': self.paddle_measurements,
-                'score': self.score
+                'score': self.score,
+                'players': self.raw_players,
             }
 
             await self.channel_layer.group_send(
