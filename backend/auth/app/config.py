@@ -15,8 +15,8 @@ FTTRANSCENDENCE = namedtuple(
         'DOMAIN',
     )
 )(
-    PROTOCOL=config.get('ft-transcendence', 'protocol'),
-    DOMAIN=config.get('ft-transcendence', 'domain'),
+    PROTOCOL=os.environ.get('AUTH_API_PROTOCOL'),
+    DOMAIN=os.environ.get('AUTH_API_DOMAIN'),
 )
 
 FTAPI = namedtuple(
@@ -27,7 +27,7 @@ FTAPI = namedtuple(
         'CLIENT_SECRET',
     )
 )(
-    AUTHORIZATION_URL=config.get('ft-api', 'authorization-url'),
+    AUTHORIZATION_URL=os.environ.get('AUTH_API_URL'),
     CLIENT_ID=os.environ.get('AUTH_API_CLIENT_ID'),
     CLIENT_SECRET=os.environ.get('AUTH_API_CLIENT_SECRET'),
 )

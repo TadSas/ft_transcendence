@@ -9,7 +9,7 @@ services:
       - ft_transcendence
     volumes:
       - ./postgres/DB_DATA:/var/lib/postgresql/data
-    env_file: .env
+    env_file: .pgenv
 
   nginx:
     container_name: nginx
@@ -19,6 +19,7 @@ services:
       - game
       - chat
       - postgres
+      - logstash
     restart: always
     networks:
       - ft_transcendence
@@ -26,12 +27,18 @@ services:
       - ./nginx/frontend/:/usr/share/nginx/html
     ports:
       - 443:443
+    logging:
+      driver: syslog
+      options:
+        syslog-address: "tcp://localhost:514"
+        tag: nginx
 
   auth:
     container_name: auth
     build: ./backend/auth
     depends_on:
       - postgres
+      - logstash
     restart: always
     expose:
       - 8080
@@ -39,13 +46,19 @@ services:
       - ft_transcendence
     volumes:
       - ./backend/auth:/var/www/auth
-    env_file: .env
+    env_file: .doenv
+    logging:
+      driver: syslog
+      options:
+        syslog-address: "tcp://localhost:514"
+        tag: auth
 
   game:
     container_name: game
     build: ./backend/game
     depends_on:
       - postgres
+      - logstash
     restart: always
     expose:
       - 8081
@@ -53,13 +66,19 @@ services:
       - ft_transcendence
     volumes:
       - ./backend/game:/var/www/game
-    env_file: .env
+    env_file: .doenv
+    logging:
+      driver: syslog
+      options:
+        syslog-address: "tcp://localhost:514"
+        tag: game
 
   chat:
     container_name: chat
     build: ./backend/chat
     depends_on:
       - postgres
+      - logstash
     restart: always
     expose:
       - 8082
@@ -67,7 +86,12 @@ services:
       - ft_transcendence
     volumes:
       - ./backend/chat:/var/www/chat
-    env_file: .env
+    env_file: .doenv
+    logging:
+      driver: syslog
+      options:
+        syslog-address: "tcp://localhost:514"
+        tag: chat
 
   prometheus:
     container_name: prometheus
@@ -83,7 +107,7 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.retention.time=15d'
 
-  cadvprometheusisor:
+  cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor
     ports:
@@ -112,7 +136,7 @@ services:
       - 9187:9187
     networks:
       - ft_transcendence
-    env_file: .env
+    env_file: .doenv
 
   grafana:
     container_name: grafana
@@ -123,7 +147,41 @@ services:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
     networks:
       - ft_transcendence
-    env_file: .env
+    env_file: .doenv
+
+  elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    environment:
+      discovery.type: single-node
+      xpack.security.transport.ssl.enabled: "false"
+      xpack.security.enrollment.enabled: "true"
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    ports:
+      - 9200:9200
+    volumes:
+      - ./elasticsearch/esdata:/usr/share/elasticsearch/data
+    env_file: .doenv
+
+  logstash:
+    container_name: logstash
+    image: docker.elastic.co/logstash/logstash:8.13.4
+    ports:
+      - 514:514
+    volumes:
+      - ./logstash/config:/usr/share/logstash/config
+      - ./logstash/pipeline:/usr/share/logstash/pipeline
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:8.13.4
+    ports:
+      - 5601:5601
+    depends_on:
+      - elasticsearch
+    env_file: .doenv
 
 networks:
   ft_transcendence:

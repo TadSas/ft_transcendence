@@ -1,7 +1,7 @@
 FROM nginx:latest
 
+COPY ./config/nginx.conf /etc/nginx
 COPY ./config/modsec /etc/nginx/conf.d/modsec
-COPY ./config/nginx.conf /etc/nginx/conf.d
 COPY ./config/ssl/cert.crt /etc/ssl/private
 COPY ./config/ssl/private/cert.key /etc/ssl/private
 
