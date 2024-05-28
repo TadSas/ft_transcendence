@@ -242,6 +242,7 @@ var TournamentsController = (() => {
           let playerNames = []
           let playerImages = []
           const game = match['game']
+          const matchId = match['id']
           const score = match['score']
           const status = match['status']
           const players = match['players']
@@ -276,6 +277,7 @@ var TournamentsController = (() => {
             <div class="card card-cover h-100 overflow-hidden bg-body-tertiary rounded-4">
               <div class="d-flex flex-column px-4 text-shadow-1">
                 <h3 class="pt-4 mb-3 fs-6 lh-1 fw-bold">
+                  ${matchId ? `ID: <u>${matchId}</u><hr class="my-2">` : ''}
                   ${game ? `Game: <u>${game}</u><hr class="my-2">` : ''}
                   ${createdAt ? `Created at: <u>${createdAt}</u><hr class="my-2">` : ''}
                   ${tournamentName ? `Tournament: <u>${tournamentName}</u><hr class="my-2">` : ''}

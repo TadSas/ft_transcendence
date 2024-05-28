@@ -79,12 +79,6 @@ export default class extends BaseView {
             </div>
             ${BasicComponents.file({'id': 'userAvatarInput', 'hide': true, 'js': {'onchange': `SettingsController.uploadAvatar('userAvatarInput','userAvatar')`}})}
             <h1>${userInformation['login'] || ''}</h1>
-            <div class="pb-3">
-              <span class="badge rounded-pill text-bg-${statuses[status || 'offline']}">
-                <span class="align-middle">Status: ${status}</span>
-                ${status === 'online' ? '<span class="spinner-grow spinner-grow-sm align-middle"></span>': ''}
-              </span>
-            </div>
           </div>
         </div>
 

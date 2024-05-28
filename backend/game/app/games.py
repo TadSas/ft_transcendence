@@ -5,6 +5,7 @@ from time import sleep
 from channels.db import database_sync_to_async
 
 from .maps import PongMaps
+from .renderer import PongRenderer
 from .main import MatchesController
 
 
@@ -45,6 +46,14 @@ class Pong:
         self.do_broadcast = True
         self.paused = False
 
+        self.renderer = PongRenderer({
+            'borders': self.borders,
+            'ball': self.ball,
+            'ball_measurements': self.ball_measurements,
+            'paddles': self.paddles,
+            'paddle_measurements': self.paddle_measurements,
+        })
+
     def init_paddles(self, players):
         paddles = {'left': {}, 'right': {}}
 
@@ -64,17 +73,23 @@ class Pong:
         return result
 
     async def initialize(self) -> dict:
+        data = {
+            'ball': self.ball,
+            'ball_measurements': self.ball_measurements,
+            'paddles': self.paddles,
+            'paddle_measurements': self.paddle_measurements,
+            'score': self.score
+        }
+
         return {
             'game': {
                 'canvas': {'width': self.width, 'height': self.height},
                 'borders': self.borders,
             },
             'static_objects': self.static_objects,
-            'ball': self.ball,
-            'ball_measurements': self.ball_measurements,
-            'paddles': self.paddles,
-            'paddle_measurements': self.paddle_measurements,
+            **data,
             'score': self.score,
+            'map': self.renderer.render_frame(**data)
         }
 
     def init_static_objects(self) -> list:
@@ -99,15 +114,20 @@ class Pong:
             if self.paused:
                 continue
 
+            data = {
+                'ball': self.ball,
+                'ball_measurements': self.ball_measurements,
+                'paddles': self.paddles,
+                'paddle_measurements': self.paddle_measurements,
+                'score': self.score
+            }
+
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
                     'type': 'pong_packet',
-                    'data': {
-                        'ball': self.ball,
-                        'paddles': self.paddles,
-                        'score': self.score
-                    }
+                    'data': data,
+                    'map': self.renderer.render_frame(**data)
                 }
             )
             sleep(0.015)
